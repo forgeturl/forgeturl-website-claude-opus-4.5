@@ -85,7 +85,7 @@
       </div>
 
       <!-- Sub Links -->
-      <div v-if="editForm.sub_links.length > 0 || showSubLinks">
+      <div v-if="editForm.sub_links.length > 0">
         <label class="block text-xs font-medium text-gray-500 mb-2">子链接</label>
         <div class="space-y-2">
           <div
@@ -126,8 +126,8 @@
       <!-- Actions -->
       <div class="flex items-center justify-between pt-2 border-t border-gray-100">
         <button
-          v-if="!showSubLinks && editForm.sub_links.length === 0"
-          @click="showSubLinks = true"
+          v-if="editForm.sub_links.length === 0"
+          @click="addSubLink"
           class="text-xs text-gray-400 hover:text-gray-600 transition-colors"
         >
           + 添加子链接
@@ -159,8 +159,6 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['update', 'delete'])
-
-const showSubLinks = ref(false)
 
 // Sub links dropdown state
 const showSubLinksDropdown = ref(false)
@@ -213,7 +211,6 @@ watch(() => props.isEditing, (newVal) => {
       sub_links: JSON.parse(JSON.stringify(props.link.sub_links || []))
     }
     tagsInput.value = (props.link.tags || []).join(', ')
-    showSubLinks.value = false
   }
 }, { immediate: true })
 
