@@ -1,0 +1,169 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* 全局样式 */
+@layer base {
+    body {
+        @apply bg-gray-50 text-gray-900;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
+    }
+
+    * {
+        @apply box-border;
+    }
+
+    /* 选择文本样式 */
+    ::selection {
+        @apply bg-gray-900 text-white;
+    }
+}
+
+/* 自定义组件样式 */
+@layer components {
+
+    /* 按钮基础样式 */
+    .btn {
+        @apply px-4 py-2 rounded-lg font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed;
+    }
+
+    .btn-primary {
+        @apply bg-gray-900 text-white hover:bg-gray-800 focus:ring-gray-900;
+    }
+
+    .btn-secondary {
+        @apply bg-white text-gray-700 border border-gray-200 hover:bg-gray-50 hover:border-gray-300 focus:ring-gray-500;
+    }
+
+    .btn-ghost {
+        @apply bg-transparent text-gray-600 hover:bg-gray-100 hover:text-gray-900 focus:ring-gray-500;
+    }
+
+    .btn-danger {
+        @apply bg-red-500 text-white hover:bg-red-600 focus:ring-red-500;
+    }
+
+    /* 输入框样式 */
+    .input {
+        @apply w-full px-3 py-2 border border-gray-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-gray-900/10 focus:border-gray-400 transition-all duration-200 placeholder:text-gray-400;
+    }
+
+    .textarea {
+        @apply w-full px-3 py-2 border border-gray-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-gray-900/10 focus:border-gray-400 transition-all duration-200 resize-none placeholder:text-gray-400;
+    }
+
+    /* 卡片样式 */
+    .card {
+        @apply bg-white rounded-xl border border-gray-200 p-5 hover:border-gray-300 hover:shadow-sm transition-all duration-200;
+    }
+
+    /* 链接样式 */
+    .link {
+        @apply text-gray-700 hover:text-gray-900 transition-colors duration-200;
+    }
+
+    .link-primary {
+        @apply text-blue-600 hover:text-blue-700 transition-colors duration-200;
+    }
+}
+
+/* 工具类 */
+@layer utilities {
+    .animate-fade-in {
+        animation: fadeIn 0.2s ease-in-out;
+    }
+
+    .animate-slide-up {
+        animation: slideUp 0.3s ease-out;
+    }
+
+    /* 平滑滚动 */
+    .smooth-scroll {
+        scroll-behavior: smooth;
+    }
+
+    /* 隐藏滚动条 */
+    .scrollbar-hide::-webkit-scrollbar {
+        display: none;
+    }
+
+    .scrollbar-hide {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+    }
+
+    /* 文本截断 */
+    .line-clamp-1 {
+        display: -webkit-box;
+        -webkit-line-clamp: 1;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+
+    .line-clamp-2 {
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+}
+
+/* 动画 */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes slideUp {
+    from {
+        transform: translateY(10px);
+        opacity: 0;
+    }
+
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+/* 自定义滚动条 */
+::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #d1d5db;
+    border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #9ca3af;
+}
+
+/* 侧边栏滚动条 */
+aside::-webkit-scrollbar {
+    width: 4px;
+}
+
+aside::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+aside::-webkit-scrollbar-thumb {
+    background: #e5e7eb;
+    border-radius: 2px;
+}
+
+aside::-webkit-scrollbar-thumb:hover {
+    background: #d1d5db;
+}
