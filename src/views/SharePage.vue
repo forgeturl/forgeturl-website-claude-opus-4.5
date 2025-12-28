@@ -20,7 +20,7 @@
                     :style="{ width: autoSave.saveProgress.value + '%' }"
                   ></div>
                 </div>
-                <span class="text-xs text-gray-500">保存中...</span>
+                <span class="text-xs text-gray-500">Saving...</span>
               </div>
               
               <!-- Saved message -->
@@ -28,7 +28,7 @@
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
                 </svg>
-                <span class="text-xs font-medium">已保存</span>
+                <span class="text-xs font-medium">Saved</span>
               </div>
               
               <!-- Error message -->
@@ -36,7 +36,7 @@
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
-                <span class="text-xs font-medium">保存失败</span>
+                <span class="text-xs font-medium">Save failed</span>
               </div>
             </div>
 
@@ -62,6 +62,18 @@
         <div class="animate-spin rounded-full h-10 w-10 border-2 border-gray-900 border-t-transparent"></div>
       </div>
 
+      <!-- Need Login -->
+      <div v-else-if="needLogin" class="text-center py-24">
+        <div class="w-16 h-16 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-4">
+          <svg class="w-8 h-8 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+          </svg>
+        </div>
+        <h3 class="text-lg font-medium text-gray-900 mb-2">Login Required</h3>
+        <p class="text-gray-500 mb-6">Please login to access this page</p>
+        <button @click="goToLogin" class="btn btn-primary">Login</button>
+      </div>
+
       <!-- Error -->
       <div v-else-if="error" class="text-center py-24">
         <div class="w-16 h-16 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -69,9 +81,9 @@
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M6 18L18 6M6 6l12 12" />
           </svg>
         </div>
-        <h3 class="text-lg font-medium text-gray-900 mb-2">加载失败</h3>
+        <h3 class="text-lg font-medium text-gray-900 mb-2">Load Failed</h3>
         <p class="text-gray-500 mb-6">{{ error }}</p>
-        <button @click="loadPage" class="btn btn-secondary">重试</button>
+        <button @click="loadPage" class="btn btn-secondary">Retry</button>
       </div>
 
       <!-- Page Content -->
@@ -104,12 +116,12 @@
           v-if="!localCollections.length || localCollections.every(c => !c.links?.length)"
           class="text-center py-16 border-2 border-dashed border-gray-200 rounded-xl mt-6"
         >
-          <p class="text-gray-400">此页面还没有书签</p>
+          <p class="text-gray-400">No bookmarks on this page yet</p>
         </div>
 
         <!-- Page Info -->
         <div class="mt-8 pt-6 border-t border-gray-200 text-sm text-gray-400">
-          <p>更新时间: {{ formatDate(page.update_time) }}</p>
+          <p>Updated: {{ formatDate(page.update_time) }}</p>
         </div>
       </div>
     </main>
@@ -118,16 +130,18 @@
 
 <script setup>
 import { ref, computed, onMounted, watch } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { getPage, updatePage } from '@/api/space'
 import { useAutoSave } from '@/composables/useAutoSave'
 import LinkCollection from '@/components/LinkCollection.vue'
 
 const route = useRoute()
+const router = useRouter()
 
 const page = ref(null)
 const loading = ref(false)
 const error = ref('')
+const needLogin = ref(false)
 
 // Page config
 const pageConf = computed(() => page.value?.page_conf)
@@ -166,23 +180,36 @@ const formatDate = (timestamp) => {
   return date.toLocaleString('zh-CN')
 }
 
+const goToLogin = () => {
+  router.push({
+    path: '/login',
+    query: { redirect: route.fullPath }
+  })
+}
+
 // Load page
 const loadPage = async () => {
   const pageId = route.params.pageId
   if (!pageId) {
-    error.value = '页面ID不存在'
+    error.value = 'Page ID does not exist'
     return
   }
 
   loading.value = true
   error.value = ''
+  needLogin.value = false
 
   try {
     const data = await getPage(pageId)
     page.value = data.page || data
   } catch (err) {
     console.error('Load page error:', err)
-    error.value = err.message || '加载页面失败，可能没有访问权限'
+    if (err.code === 40001) {
+      needLogin.value = true
+      error.value = 'Please login to access this page'
+    } else {
+      error.value = err.message || 'Failed to load page, you may not have access'
+    }
   } finally {
     loading.value = false
   }

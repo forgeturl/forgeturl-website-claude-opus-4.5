@@ -151,13 +151,19 @@ export const usePageStore = defineStore('page', () => {
     }
 
     // 删除页面链接
-    const removePageLink = async (pageId) => {
+    const removePageLink = async (pageId, pageType) => {
         loading.value = true
         try {
-            await apiRemovePageLink(pageId)
+            await apiRemovePageLink(pageId, pageType)
             // 刷新当前页面
-            if (currentPage.value?.page_id === pageId) {
-                await fetchPage(pageId)
+            await fetchPage(pageId)
+            
+            // 同步更新 myPages 中对应的页面
+            if (currentPage.value) {
+                const index = myPages.value.findIndex(p => p.page_id === pageId)
+                if (index !== -1) {
+                    myPages.value[index] = { ...myPages.value[index], ...currentPage.value }
+                }
             }
         } catch (error) {
             console.error('Remove page link error:', error)

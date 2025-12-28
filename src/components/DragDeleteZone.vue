@@ -32,7 +32,7 @@
           class="text-xs font-medium transition-colors"
           :class="isOver ? 'text-white' : 'text-red-500'"
         >
-          {{ isOver ? '松开删除' : '拖到这里删除' }}
+          {{ isOver ? 'Release to delete' : 'Drag here to delete' }}
         </span>
       </div>
     </div>

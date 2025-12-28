@@ -33,12 +33,12 @@
               <!-- Title -->
               <div>
                 <label class="block text-sm font-medium text-gray-700 mb-1.5">
-                  标题 <span class="text-red-500">*</span>
+                  Title <span class="text-red-500">*</span>
                 </label>
                 <input
                   v-model="form.title"
                   type="text"
-                  placeholder="输入页面标题"
+                  placeholder="Enter page title"
                   required
                   class="input"
                 />
@@ -47,11 +47,11 @@
               <!-- Brief -->
               <div>
                 <label class="block text-sm font-medium text-gray-700 mb-1.5">
-                  描述
+                  Description
                 </label>
                 <textarea
                   v-model="form.brief"
-                  placeholder="输入页面描述（可选）"
+                  placeholder="Enter page description (optional)"
                   rows="2"
                   class="textarea"
                 />
@@ -59,12 +59,12 @@
 
               <!-- Initial Link (Optional) -->
               <div class="pt-4 border-t border-gray-100">
-                <h4 class="text-sm font-medium text-gray-700 mb-3">添加第一个链接（可选）</h4>
+                <h4 class="text-sm font-medium text-gray-700 mb-3">Add first link (optional)</h4>
                 <div class="space-y-3">
                   <input
                     v-model="form.link.title"
                     type="text"
-                    placeholder="链接标题"
+                    placeholder="Link title"
                     class="input"
                   />
                   <input
@@ -89,14 +89,14 @@
                 @click="close"
                 class="btn btn-secondary"
               >
-                取消
+                Cancel
               </button>
               <button
                 @click="handleSubmit"
                 :disabled="creating || !form.title"
                 class="btn btn-primary"
               >
-                {{ creating ? '创建中...' : '创建' }}
+                {{ creating ? 'Creating...' : 'Create' }}
               </button>
             </div>
           </div>
@@ -191,7 +191,7 @@ const handleSubmit = async () => {
     close()
   } catch (err) {
     console.error('Create page error:', err)
-    error.value = err.message || '创建失败，请重试'
+    error.value = err.message || 'Creation failed, please try again'
   } finally {
     creating.value = false
   }

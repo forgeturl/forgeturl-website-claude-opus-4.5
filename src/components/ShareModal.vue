@@ -63,6 +63,16 @@
                     </svg>
                     Copy
                   </button>
+                  <button
+                    @click="removeLink('readonly')"
+                    :disabled="removing"
+                    class="px-3 py-2 bg-white border border-red-200 rounded-lg text-sm font-medium text-red-600 hover:bg-red-50 transition-colors flex items-center gap-1 disabled:opacity-50"
+                    title="Delete this link"
+                  >
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
+                  </button>
                 </div>
                 <button
                   v-else
@@ -70,7 +80,7 @@
                   :disabled="generating"
                   class="w-full mt-3 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-200 transition-colors disabled:opacity-50"
                 >
-                  {{ generating ? '生成中...' : '生成只读链接' }}
+                  {{ generating ? 'Generating...' : 'Generate Read-only Link' }}
                 </button>
               </div>
 
@@ -106,6 +116,16 @@
                     </svg>
                     Copy
                   </button>
+                  <button
+                    @click="removeLink('edit')"
+                    :disabled="removing"
+                    class="px-3 py-2 bg-white border border-red-200 rounded-lg text-sm font-medium text-red-600 hover:bg-red-50 transition-colors flex items-center gap-1 disabled:opacity-50"
+                    title="Delete this link"
+                  >
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
+                  </button>
                 </div>
                 <button
                   v-else
@@ -113,7 +133,7 @@
                   :disabled="generating"
                   class="w-full mt-3 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-200 transition-colors disabled:opacity-50"
                 >
-                  {{ generating ? '生成中...' : '生成编辑链接' }}
+                  {{ generating ? 'Generating...' : 'Generate Edit Link' }}
                 </button>
               </div>
 
@@ -149,6 +169,16 @@
                     </svg>
                     Copy
                   </button>
+                  <button
+                    @click="removeLink('admin')"
+                    :disabled="removing"
+                    class="px-3 py-2 bg-white border border-red-200 rounded-lg text-sm font-medium text-red-600 hover:bg-red-50 transition-colors flex items-center gap-1 disabled:opacity-50"
+                    title="Delete this link"
+                  >
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
+                  </button>
                 </div>
                 <button
                   v-else
@@ -156,7 +186,7 @@
                   :disabled="generating"
                   class="w-full mt-3 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-200 transition-colors disabled:opacity-50"
                 >
-                  {{ generating ? '生成中...' : '生成超级权限链接' }}
+                  {{ generating ? 'Generating...' : 'Generate Super Link' }}
                 </button>
               </div>
 
@@ -202,6 +232,7 @@ const emit = defineEmits(['update:show'])
 const pageStore = usePageStore()
 
 const generating = ref(false)
+const removing = ref(false)
 const error = ref('')
 const copiedType = ref('')
 
@@ -223,9 +254,23 @@ const generateLink = async (type) => {
     await pageStore.addPageLink(props.page.page_id, type)
   } catch (err) {
     console.error('Generate link error:', err)
-    error.value = err.message || '生成链接失败'
+    error.value = err.message || 'Failed to generate link'
   } finally {
     generating.value = false
+  }
+}
+
+const removeLink = async (type) => {
+  error.value = ''
+  removing.value = true
+
+  try {
+    await pageStore.removePageLink(props.page.page_id, type)
+  } catch (err) {
+    console.error('Remove link error:', err)
+    error.value = err.message || 'Failed to delete link'
+  } finally {
+    removing.value = false
   }
 }
 

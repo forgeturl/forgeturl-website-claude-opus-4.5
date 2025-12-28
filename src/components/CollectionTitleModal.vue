@@ -18,7 +18,7 @@
 
           <!-- Header -->
           <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100">
-            <h3 class="text-lg font-semibold text-gray-900">编辑文件夹名称</h3>
+            <h3 class="text-lg font-semibold text-gray-900">Edit Folder Name</h3>
             <button
               @click="handleClose"
               class="p-2 -mr-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
@@ -35,7 +35,7 @@
               ref="inputRef"
               v-model="titleValue"
               type="text"
-              placeholder="输入文件夹名称"
+              placeholder="Enter folder name"
               class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-gray-900 focus:border-transparent outline-none transition-all text-lg"
               @keyup.enter="handleSave"
             />
@@ -47,13 +47,13 @@
               @click="handleClose"
               class="px-5 py-2.5 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-xl transition-colors font-medium"
             >
-              取消
+              Cancel
             </button>
             <button
               @click="handleSave"
               class="px-5 py-2.5 bg-gray-900 text-white rounded-xl hover:bg-gray-800 transition-colors font-medium"
             >
-              确定
+              Save
             </button>
           </div>
         </div>

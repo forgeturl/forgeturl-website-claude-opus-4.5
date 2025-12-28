@@ -21,7 +21,7 @@
             :style="{ width: autoSave.saveProgress.value + '%' }"
           ></div>
         </div>
-        <span class="text-xs text-gray-500 whitespace-nowrap">等待保存...</span>
+        <span class="text-xs text-gray-500 whitespace-nowrap">Saving...</span>
       </div>
       
       <!-- Saved message -->
@@ -29,7 +29,7 @@
         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
         </svg>
-        <span class="text-xs font-medium">已保存修改</span>
+        <span class="text-xs font-medium">Saved</span>
       </div>
       
       <!-- Error message -->
@@ -62,10 +62,10 @@
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
           </svg>
         </div>
-        <h3 class="text-lg font-medium text-gray-900 mb-2">还没有页面</h3>
-        <p class="text-gray-500 mb-6">创建您的第一个书签页面开始使用</p>
+        <h3 class="text-lg font-medium text-gray-900 mb-2">No Pages Yet</h3>
+        <p class="text-gray-500 mb-6">Create your first bookmark page to get started</p>
         <button @click="showCreateModal = true" class="btn btn-primary">
-          创建页面
+          Create Page
         </button>
       </div>
 
@@ -74,8 +74,43 @@
         <!-- Header -->
         <div class="flex items-start justify-between mb-8">
           <div class="flex-1">
-            <h1 class="text-3xl font-bold text-gray-900 mb-2">{{ selectedPage.title }}</h1>
-            <p v-if="selectedPage.brief" class="text-gray-500">{{ selectedPage.brief }}</p>
+            <h1 
+              class="text-3xl font-bold text-gray-900 mb-2 select-none"
+              :class="{ 'cursor-pointer hover:text-blue-600 transition-colors': canEdit }"
+              @mousedown="handlePageTitleMouseDown"
+              @mouseup="handlePageTitleMouseUp"
+              @mouseleave="handlePageTitleMouseLeave"
+              @touchstart="handlePageTitleTouchStart"
+              @touchend="handlePageTitleTouchEnd"
+              @touchmove="handlePageTitleTouchMove"
+            >
+              {{ selectedPage.title }}
+            </h1>
+            <p 
+              v-if="selectedPage.brief" 
+              class="text-gray-500 select-none"
+              :class="{ 'cursor-pointer hover:text-gray-700 transition-colors': canEdit }"
+              @mousedown="handlePageTitleMouseDown"
+              @mouseup="handlePageTitleMouseUp"
+              @mouseleave="handlePageTitleMouseLeave"
+              @touchstart="handlePageTitleTouchStart"
+              @touchend="handlePageTitleTouchEnd"
+              @touchmove="handlePageTitleTouchMove"
+            >
+              {{ selectedPage.brief }}
+            </p>
+            <p 
+              v-else-if="canEdit" 
+              class="text-gray-400 select-none cursor-pointer hover:text-gray-500 transition-colors"
+              @mousedown="handlePageTitleMouseDown"
+              @mouseup="handlePageTitleMouseUp"
+              @mouseleave="handlePageTitleMouseLeave"
+              @touchstart="handlePageTitleTouchStart"
+              @touchend="handlePageTitleTouchEnd"
+              @touchmove="handlePageTitleTouchMove"
+            >
+              Add description
+            </p>
           </div>
           
           <!-- Action Buttons -->
@@ -154,7 +189,7 @@
 
         <!-- Empty Links -->
         <div v-if="!localCollections.length || localCollections.every(c => !c.links?.length)" class="text-center py-16 border-2 border-dashed border-gray-200 rounded-xl mt-6">
-          <p class="text-gray-400 mb-4">此页面还没有书签</p>
+          <p class="text-gray-400 mb-4">No bookmarks on this page yet</p>
           <button
             v-if="canEdit"
             @click="showAddLinkModal = true"
@@ -170,7 +205,7 @@
         <svg class="w-12 h-12 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5M7.188 2.239l.777 2.897M5.136 7.965l-2.898-.777M13.95 4.05l-2.122 2.122m-5.657 5.656l-2.12 2.122" />
         </svg>
-        <p>请从左侧选择一个页面</p>
+        <p>Select a page from the sidebar</p>
       </div>
     </div>
 
@@ -196,6 +231,15 @@
       v-model:show="showAddCollectionModal"
       @confirm="handleAddCollection"
     />
+
+    <!-- Edit Page Modal -->
+    <EditPageModal
+      v-model:show="showEditPageModal"
+      :title="selectedPage?.title"
+      :brief="selectedPage?.brief"
+      :saving="savingPageInfo"
+      @save="handleSavePageInfo"
+    />
   </AppLayout>
 </template>
 
@@ -214,6 +258,7 @@ import LinkCollection from '@/components/LinkCollection.vue'
 import AddLinkModal from '@/components/AddLinkModal.vue'
 import AddCollectionModal from '@/components/AddCollectionModal.vue'
 import DragDeleteZone from '@/components/DragDeleteZone.vue'
+import EditPageModal from '@/components/EditPageModal.vue'
 
 const router = useRouter()
 const authStore = useAuthStore()
@@ -224,6 +269,8 @@ const showCreateModal = ref(false)
 const showShareModal = ref(false)
 const showAddLinkModal = ref(false)
 const showAddCollectionModal = ref(false)
+const showEditPageModal = ref(false)
+const savingPageInfo = ref(false)
 const selectedPageId = ref('')
 
 // Drag delete state
@@ -233,7 +280,6 @@ const dragType = ref(null) // 'collection' or 'link'
 const dragCollectionIndex = ref(-1)
 const dragLinkIndex = ref(-1)
 
-// 选中的页面
 const selectedPage = computed(() => {
   if (!selectedPageId.value) return null
   return pageStore.myPages.find(p => p.page_id === selectedPageId.value)
@@ -244,6 +290,79 @@ const canEdit = computed(() => selectedPage.value?.page_conf?.can_edit)
 
 // Local collections for editing (reactive copy)
 const localCollections = ref([])
+
+// Long press detection for page title/brief
+let pageTitleLongPressTimer = null
+const longPressDelay = 500
+
+// Mouse handlers (desktop) - long press to edit page info
+const handlePageTitleMouseDown = (e) => {
+  if (!canEdit.value) return
+  
+  pageTitleLongPressTimer = setTimeout(() => {
+    showEditPageModal.value = true
+  }, longPressDelay)
+}
+
+const handlePageTitleMouseUp = () => {
+  if (pageTitleLongPressTimer) {
+    clearTimeout(pageTitleLongPressTimer)
+    pageTitleLongPressTimer = null
+  }
+}
+
+const handlePageTitleMouseLeave = () => {
+  if (pageTitleLongPressTimer) {
+    clearTimeout(pageTitleLongPressTimer)
+    pageTitleLongPressTimer = null
+  }
+}
+
+// Touch handlers (mobile) - long press to edit page info
+const handlePageTitleTouchStart = (e) => {
+  if (!canEdit.value) return
+  pageTitleLongPressTimer = setTimeout(() => {
+    showEditPageModal.value = true
+  }, longPressDelay)
+}
+
+const handlePageTitleTouchEnd = () => {
+  if (pageTitleLongPressTimer) {
+    clearTimeout(pageTitleLongPressTimer)
+    pageTitleLongPressTimer = null
+  }
+}
+
+const handlePageTitleTouchMove = () => {
+  if (pageTitleLongPressTimer) {
+    clearTimeout(pageTitleLongPressTimer)
+    pageTitleLongPressTimer = null
+  }
+}
+
+// Save page info (title and brief)
+const handleSavePageInfo = async ({ title, brief }) => {
+  if (!selectedPage.value) return
+  
+  savingPageInfo.value = true
+  try {
+    await pageStore.updatePage({
+      page_id: selectedPage.value.page_id,
+      title: title,
+      brief: brief,
+      version: selectedPage.value.version,
+      mask: 3 // Only update title (1) and brief (2) = 3
+    })
+    
+    // Update will be reflected through the store
+    showEditPageModal.value = false
+  } catch (err) {
+    console.error('Save page info error:', err)
+    alert('Save failed: ' + (err.message || 'Unknown error'))
+  } finally {
+    savingPageInfo.value = false
+  }
+}
 
 // Auto save functionality
 const autoSave = useAutoSave(async () => {
@@ -266,13 +385,10 @@ watch(() => selectedPage.value, (newPage) => {
   }
 }, { immediate: true, deep: true })
 
-// 选择页面
 const selectPage = async (pageId) => {
   selectedPageId.value = pageId
-  // 获取页面详情
   try {
     await pageStore.fetchPage(pageId)
-    // 更新 myPages 中对应页面的完整信息
     const index = pageStore.myPages.findIndex(p => p.page_id === pageId)
     if (index !== -1 && pageStore.currentPage) {
       pageStore.myPages[index] = { ...pageStore.myPages[index], ...pageStore.currentPage }
@@ -282,9 +398,8 @@ const selectPage = async (pageId) => {
   }
 }
 
-// 删除页面
 const handleDeletePage = async (pageId) => {
-  if (!confirm('确定要删除此页面吗？此操作不可撤销。')) return
+  if (!confirm('Are you sure you want to delete this page? This action cannot be undone.')) return
   
   try {
     await pageStore.deletePage(pageId)
@@ -293,11 +408,10 @@ const handleDeletePage = async (pageId) => {
     }
   } catch (error) {
     console.error('Failed to delete page:', error)
-    alert('删除失败：' + (error.message || '未知错误'))
+    alert('Delete failed: ' + (error.message || 'Unknown error'))
   }
 }
 
-// 处理页面创建
 const handlePageCreated = async (pageId) => {
   showCreateModal.value = false
   if (pageId) {
@@ -306,7 +420,6 @@ const handlePageCreated = async (pageId) => {
   }
 }
 
-// 处理登出
 const handleLogout = async () => {
   await logout()
 }
@@ -340,9 +453,9 @@ const handleLinkDragEnd = () => {
 }
 
 const handleDragDelete = () => {
-  const itemType = dragType.value === 'collection' ? '文件夹' : '链接'
+  const itemType = dragType.value === 'collection' ? 'folder' : 'link'
   
-  if (confirm(`确定要删除此${itemType}吗？`)) {
+  if (confirm(`Are you sure you want to delete this ${itemType}?`)) {
     if (dragType.value === 'collection' && dragCollectionIndex.value >= 0) {
       localCollections.value.splice(dragCollectionIndex.value, 1)
       autoSave.markDirty()
@@ -431,11 +544,9 @@ const handleAddNewLink = ({ link, collectionIndex, newCollectionName }) => {
   autoSave.markDirty()
 }
 
-// 初始化
 onMounted(async () => {
   try {
     await pageStore.fetchMySpace()
-    // 自动选中第一个页面
     if (pageStore.myPages.length > 0 && !selectedPageId.value) {
       selectPage(pageStore.myPages[0].page_id)
     }
@@ -444,7 +555,6 @@ onMounted(async () => {
   }
 })
 
-// 监听页面列表变化，自动选中
 watch(() => pageStore.myPages, (pages) => {
   if (pages.length > 0 && !selectedPageId.value) {
     selectPage(pages[0].page_id)

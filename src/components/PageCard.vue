@@ -10,7 +10,7 @@
           {{ page.title }}
         </h3>
         <p class="text-sm text-gray-600 line-clamp-2">
-          {{ page.brief || '暂无描述' }}
+          {{ page.brief || 'No description' }}
         </p>
       </div>
 
@@ -19,7 +19,7 @@
         v-if="page.is_self"
         class="ml-2 px-2 py-1 text-xs bg-blue-100 text-blue-700 rounded-full flex-shrink-0"
       >
-        我的
+        Mine
       </span>
     </div>
 
@@ -72,23 +72,23 @@ const formatDate = (timestamp) => {
 
   // Less than 1 minute
   if (diff < 60000) {
-    return '刚刚'
+    return 'Just now'
   }
   // Less than 1 hour
   if (diff < 3600000) {
-    return `${Math.floor(diff / 60000)}分钟前`
+    return `${Math.floor(diff / 60000)} min ago`
   }
   // Less than 1 day
   if (diff < 86400000) {
-    return `${Math.floor(diff / 3600000)}小时前`
+    return `${Math.floor(diff / 3600000)} hour${Math.floor(diff / 3600000) > 1 ? 's' : ''} ago`
   }
   // Less than 7 days
   if (diff < 604800000) {
-    return `${Math.floor(diff / 86400000)}天前`
+    return `${Math.floor(diff / 86400000)} day${Math.floor(diff / 86400000) > 1 ? 's' : ''} ago`
   }
 
   // Format as date
-  return date.toLocaleDateString('zh-CN', {
+  return date.toLocaleDateString('en-US', {
     year: 'numeric',
     month: '2-digit',
     day: '2-digit'

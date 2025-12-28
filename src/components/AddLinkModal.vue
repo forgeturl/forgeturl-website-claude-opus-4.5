@@ -10,7 +10,7 @@
         <div class="absolute inset-0 bg-black/40 backdrop-blur-sm" @click="handleClose"></div>
         
         <!-- Modal Content -->
-        <div class="relative bg-white w-full sm:w-[480px] sm:rounded-2xl rounded-t-2xl shadow-2xl max-h-[90vh] overflow-hidden animate-slide-up">
+        <div class="relative bg-white w-full sm:w-[560px] sm:rounded-2xl rounded-t-2xl shadow-2xl max-h-[90vh] overflow-hidden animate-slide-up">
           <!-- Handle bar for mobile -->
           <div class="sm:hidden flex justify-center pt-3 pb-2">
             <div class="w-10 h-1 bg-gray-300 rounded-full"></div>
@@ -18,7 +18,7 @@
 
           <!-- Header -->
           <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100">
-            <h3 class="text-lg font-semibold text-gray-900">添加链接</h3>
+            <h3 class="text-lg font-semibold text-gray-900">Add Link</h3>
             <button
               @click="handleClose"
               class="p-2 -mr-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
@@ -33,18 +33,18 @@
           <div class="px-6 py-5 space-y-5 overflow-y-auto max-h-[60vh]">
             <!-- Title -->
             <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2">标题</label>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Title</label>
               <input
                 v-model="form.title"
                 type="text"
-                placeholder="链接标题"
+                placeholder="Link title"
                 class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-gray-900 focus:border-transparent outline-none transition-all"
               />
             </div>
 
             <!-- URL -->
             <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2">链接地址</label>
+              <label class="block text-sm font-medium text-gray-700 mb-2">URL</label>
               <input
                 v-model="form.url"
                 type="url"
@@ -55,18 +55,18 @@
 
             <!-- Tags -->
             <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2">标签 <span class="text-gray-400 font-normal">(逗号分隔)</span></label>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Tags <span class="text-gray-400 font-normal">(comma separated)</span></label>
               <input
                 v-model="tagsInput"
                 type="text"
-                placeholder="工具, 开发, 设计"
+                placeholder="tools, dev, design"
                 class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-gray-900 focus:border-transparent outline-none transition-all"
               />
             </div>
 
             <!-- Sub Links -->
             <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2">子链接</label>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Sub Links</label>
               <div class="space-y-3">
                 <div
                   v-for="(subLink, index) in form.sub_links"
@@ -77,13 +77,13 @@
                     <input
                       v-model="subLink.sub_title"
                       type="text"
-                      placeholder="子链接标题"
+                      placeholder="Sub link title"
                       class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-gray-900 focus:border-transparent outline-none transition-all"
                     />
                     <input
                       v-model="subLink.sub_url"
                       type="url"
-                      placeholder="子链接地址"
+                      placeholder="Sub link URL"
                       class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-gray-900 focus:border-transparent outline-none transition-all"
                     />
                   </div>
@@ -100,27 +100,27 @@
                   @click="addSubLink"
                   class="w-full py-3 border-2 border-dashed border-gray-200 rounded-xl text-gray-400 hover:border-gray-300 hover:text-gray-500 transition-colors text-sm"
                 >
-                  + 添加子链接
+                  + Add sub link
                 </button>
               </div>
             </div>
 
             <!-- Collection Selection -->
             <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2">添加到文件夹</label>
-              <div class="space-y-2">
+              <label class="block text-sm font-medium text-gray-700 mb-2">Add to Folder</label>
+              <div class="grid grid-cols-3 gap-2">
                 <!-- Existing Collections -->
                 <div 
                   v-for="(collection, index) in collections" 
                   :key="index"
                   @click="selectCollection(index)"
-                  class="flex items-center gap-3 px-4 py-3 border rounded-xl cursor-pointer transition-all"
+                  class="flex flex-col items-center gap-1.5 p-3 border rounded-xl cursor-pointer transition-all text-center"
                   :class="selectedCollectionIndex === index 
                     ? 'border-gray-900 bg-gray-50' 
                     : 'border-gray-200 hover:border-gray-300'"
                 >
                   <div 
-                    class="w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all"
+                    class="w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all flex-shrink-0"
                     :class="selectedCollectionIndex === index 
                       ? 'border-gray-900 bg-gray-900' 
                       : 'border-gray-300'"
@@ -135,19 +135,19 @@
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7" />
                     </svg>
                   </div>
-                  <span class="text-gray-700">{{ collection.title || '未命名文件夹' }}</span>
+                  <span class="text-gray-700 text-xs leading-tight line-clamp-2">{{ collection.title || 'Unnamed' }}</span>
                 </div>
 
                 <!-- Create New Collection Option -->
                 <div 
                   @click="selectNewCollection"
-                  class="flex items-center gap-3 px-4 py-3 border rounded-xl cursor-pointer transition-all"
+                  class="flex flex-col items-center gap-1.5 p-3 border rounded-xl cursor-pointer transition-all text-center"
                   :class="isCreateNew 
                     ? 'border-gray-900 bg-gray-50' 
                     : 'border-gray-200 hover:border-gray-300'"
                 >
                   <div 
-                    class="w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all"
+                    class="w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all flex-shrink-0"
                     :class="isCreateNew 
                       ? 'border-gray-900 bg-gray-900' 
                       : 'border-gray-300'"
@@ -162,18 +162,18 @@
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7" />
                     </svg>
                   </div>
-                  <span class="text-gray-700">+ 创建新文件夹</span>
+                  <span class="text-gray-700 text-xs leading-tight">+ New Folder</span>
                 </div>
+              </div>
 
-                <!-- New Collection Name Input -->
-                <div v-if="isCreateNew" class="pl-8">
-                  <input
-                    v-model="newCollectionName"
-                    type="text"
-                    placeholder="输入新文件夹名称"
-                    class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-gray-900 focus:border-transparent outline-none transition-all"
-                  />
-                </div>
+              <!-- New Collection Name Input -->
+              <div v-if="isCreateNew" class="mt-3">
+                <input
+                  v-model="newCollectionName"
+                  type="text"
+                  placeholder="Enter new folder name"
+                  class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-gray-900 focus:border-transparent outline-none transition-all"
+                />
               </div>
             </div>
           </div>
@@ -184,14 +184,14 @@
               @click="handleClose"
               class="px-5 py-2.5 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-xl transition-colors font-medium"
             >
-              取消
+              Cancel
             </button>
             <button
               @click="handleSave"
               :disabled="!canSave"
               class="px-5 py-2.5 bg-gray-900 text-white rounded-xl hover:bg-gray-800 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              添加
+              Add
             </button>
           </div>
         </div>
@@ -304,7 +304,7 @@ const handleSave = () => {
   emit('add', {
     link,
     collectionIndex: isCreateNew.value ? -1 : selectedCollectionIndex.value,
-    newCollectionName: isCreateNew.value ? (newCollectionName.value || '新文件夹') : null
+    newCollectionName: isCreateNew.value ? (newCollectionName.value || 'New Folder') : null
   })
 
   handleClose()

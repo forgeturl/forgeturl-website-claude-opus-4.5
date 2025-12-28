@@ -14,7 +14,7 @@
           <button
             @click="$emit('create-page')"
             class="p-1 hover:bg-gray-100 rounded text-gray-500 hover:text-gray-700 transition-colors"
-            title="创建新页面"
+            title="Create new page"
           >
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
@@ -35,12 +35,12 @@
                 : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
             ]"
           >
-            <span class="truncate text-sm">{{ page.title || '未命名页面' }}</span>
+            <span class="truncate text-sm">{{ page.title || 'Unnamed Page' }}</span>
             <button
               v-if="page.is_self"
               @click.stop="$emit('delete-page', page.page_id)"
               class="p-1 rounded opacity-0 group-hover:opacity-100 hover:bg-gray-200 text-gray-400 hover:text-red-500 transition-all"
-              title="删除页面"
+              title="Delete page"
             >
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
@@ -51,7 +51,7 @@
 
         <!-- Empty State -->
         <div v-if="!pages || pages.length === 0" class="px-3 py-8 text-center">
-          <p class="text-sm text-gray-400">暂无页面</p>
+          <p class="text-sm text-gray-400">No pages yet</p>
         </div>
       </div>
 

@@ -19,7 +19,7 @@
       v-if="canEdit"
       @click="handleCopyCollection"
       class="absolute -top-2 left-6 w-6 h-6 bg-white border border-gray-300 hover:bg-blue-50 hover:border-blue-300 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all hover:scale-110"
-      title="复制此集合"
+      title="Duplicate this collection"
     >
       <svg class="w-3 h-3 text-gray-400 hover:text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
@@ -52,7 +52,7 @@
         @touchend="handleTitleTouchEnd"
         @touchmove="handleTitleTouchMove"
       >
-        未命名集合
+        Unnamed Collection
       </h3>
     </div>
 
@@ -65,7 +65,7 @@
       handle=".link-drag-handle"
       ghost-class="opacity-50"
       :animation="200"
-      class="flex flex-wrap gap-x-6 gap-y-2 min-h-[32px]"
+      class="links-draggable flex flex-wrap gap-x-6 gap-y-2 min-h-[60px] relative"
       @change="handleLinksChange"
       @start="handleDragStart"
       @end="handleDragEnd"
@@ -78,6 +78,15 @@
           @edit="handleEditLink(index, link)"
         />
       </template>
+      <!-- Empty State inside draggable for drop target -->
+      <template #footer>
+        <div 
+          v-if="localLinks.length === 0" 
+          class="empty-state-hint w-full text-center py-4 text-gray-400 text-sm"
+        >
+          Drag links here
+        </div>
+      </template>
     </draggable>
 
     <!-- Links (Read-only) -->
@@ -89,11 +98,10 @@
         :linkIndex="linkIndex"
         :canEdit="false"
       />
-    </div>
-
-    <!-- Empty State -->
-    <div v-if="!collection.links || collection.links.length === 0" class="text-center py-4 text-gray-400 text-sm">
-      {{ canEdit ? '拖拽链接到这里' : '暂无链接' }}
+      <!-- Empty State for read-only -->
+      <div v-if="!collection.links || collection.links.length === 0" class="w-full text-center py-4 text-gray-400 text-sm">
+        No links yet
+      </div>
     </div>
 
     <!-- Title Edit Modal -->
@@ -252,3 +260,11 @@ const handleLinksChange = (evt) => {
   emit('links-changed', localLinks.value)
 }
 </script>
+
+<style scoped>
+/* Hide empty state hint when there are items being dragged in */
+.links-draggable:has(.sortable-ghost) .empty-state-hint,
+.links-draggable:has(.link-drag-handle) .empty-state-hint {
+  display: none;
+}
+</style>

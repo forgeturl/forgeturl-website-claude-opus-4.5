@@ -75,7 +75,7 @@
               class="block px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-blue-600 transition-colors truncate"
               :title="subLink.sub_title"
             >
-              {{ subLink.sub_title || '未命名子链接' }}
+              {{ subLink.sub_title || 'Unnamed sub link' }}
             </a>
           </div>
         </div>

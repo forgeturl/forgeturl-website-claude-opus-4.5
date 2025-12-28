@@ -18,7 +18,7 @@
 
           <!-- Header -->
           <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100">
-            <h3 class="text-lg font-semibold text-gray-900">编辑链接</h3>
+            <h3 class="text-lg font-semibold text-gray-900">Edit Link</h3>
             <button
               @click="handleClose"
               class="p-2 -mr-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
@@ -33,18 +33,18 @@
           <div class="px-6 py-5 space-y-5 overflow-y-auto max-h-[60vh]">
             <!-- Title -->
             <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2">标题</label>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Title</label>
               <input
                 v-model="editForm.title"
                 type="text"
-                placeholder="链接标题"
+                placeholder="Link title"
                 class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-gray-900 focus:border-transparent outline-none transition-all"
               />
             </div>
 
             <!-- URL -->
             <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2">链接地址</label>
+              <label class="block text-sm font-medium text-gray-700 mb-2">URL</label>
               <input
                 v-model="editForm.url"
                 type="url"
@@ -55,18 +55,18 @@
 
             <!-- Tags -->
             <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2">标签 <span class="text-gray-400 font-normal">(逗号分隔)</span></label>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Tags <span class="text-gray-400 font-normal">(comma separated)</span></label>
               <input
                 v-model="tagsInput"
                 type="text"
-                placeholder="工具, 开发, 设计"
+                placeholder="tools, dev, design"
                 class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-gray-900 focus:border-transparent outline-none transition-all"
               />
             </div>
 
             <!-- Sub Links -->
             <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2">子链接</label>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Sub Links</label>
               <div class="space-y-3">
                 <div
                   v-for="(subLink, index) in editForm.sub_links"
@@ -77,13 +77,13 @@
                     <input
                       v-model="subLink.sub_title"
                       type="text"
-                      placeholder="子链接标题"
+                      placeholder="Sub link title"
                       class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-gray-900 focus:border-transparent outline-none transition-all"
                     />
                     <input
                       v-model="subLink.sub_url"
                       type="url"
-                      placeholder="子链接地址"
+                      placeholder="Sub link URL"
                       class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-gray-900 focus:border-transparent outline-none transition-all"
                     />
                   </div>
@@ -100,7 +100,7 @@
                   @click="addSubLink"
                   class="w-full py-3 border-2 border-dashed border-gray-200 rounded-xl text-gray-400 hover:border-gray-300 hover:text-gray-500 transition-colors text-sm"
                 >
-                  + 添加子链接
+                  + Add sub link
                 </button>
               </div>
             </div>
@@ -112,13 +112,13 @@
               @click="handleClose"
               class="px-5 py-2.5 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-xl transition-colors font-medium"
             >
-              取消
+              Cancel
             </button>
             <button
               @click="handleSave"
               class="px-5 py-2.5 bg-gray-900 text-white rounded-xl hover:bg-gray-800 transition-colors font-medium"
             >
-              确定
+              Save
             </button>
           </div>
         </div>

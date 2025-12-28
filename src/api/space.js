@@ -108,14 +108,18 @@ export function addPageLink(pageId, pageType) {
 
 /**
  * 删除页面分享链接
- * @param {string} pageId - 页面ID
+ * @param {string} pageId - 原始页面ID（owner page id）
+ * @param {string} pageType - 页面类型 (readonly/edit/admin)
  * @returns {Promise}
  */
-export function removePageLink(pageId) {
+export function removePageLink(pageId, pageType) {
     return request({
         url: '/space/removePageLink',
         method: 'POST',
-        data: { page_id: pageId }
+        data: {
+            page_id: pageId,
+            page_type: pageType
+        }
     })
 }
 

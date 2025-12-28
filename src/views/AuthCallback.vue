@@ -4,8 +4,8 @@
       <!-- Loading -->
       <div v-if="!error" class="animate-fade-in">
         <div class="inline-block animate-spin rounded-full h-16 w-16 border-b-2 border-gray-900 mb-4"></div>
-        <h2 class="text-xl font-semibold text-gray-900 mb-2">登录中...</h2>
-        <p class="text-gray-600">正在处理您的登录信息</p>
+        <h2 class="text-xl font-semibold text-gray-900 mb-2">Signing in...</h2>
+        <p class="text-gray-600">Processing your login information</p>
       </div>
 
       <!-- Error -->
@@ -20,10 +20,10 @@
             />
           </svg>
         </div>
-        <h2 class="text-xl font-semibold text-gray-900 mb-2">登录失败</h2>
+        <h2 class="text-xl font-semibold text-gray-900 mb-2">Login Failed</h2>
         <p class="text-gray-600 mb-6">{{ error }}</p>
         <button @click="goToLogin" class="btn btn-primary">
-          返回登录页
+          Back to Login
         </button>
       </div>
     </div>
@@ -45,23 +45,18 @@ onMounted(async () => {
   const provider = route.params.provider
 
   if (!provider) {
-    error.value = '缺少登录提供商参数'
+    error.value = 'Missing login provider parameter'
     return
   }
 
   try {
-    // 获取URL中的查询参数
     const params = { ...route.query }
-
-    // 处理登录回调
     await handleAuthCallback(provider, params)
-
-    // 登录成功，跳转到首页或重定向地址
     const redirect = route.query.redirect || '/'
     router.replace(redirect)
   } catch (err) {
     console.error('Auth callback error:', err)
-    error.value = err.message || '登录失败，请重试'
+    error.value = err.message || 'Login failed, please try again'
   }
 })
 

@@ -21,7 +21,7 @@
             :style="{ width: autoSave.saveProgress.value + '%' }"
           ></div>
         </div>
-        <span class="text-xs text-gray-500 whitespace-nowrap">等待保存...</span>
+        <span class="text-xs text-gray-500 whitespace-nowrap">Saving...</span>
       </div>
       
       <!-- Saved message -->
@@ -29,7 +29,7 @@
         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
         </svg>
-        <span class="text-xs font-medium">已保存修改</span>
+        <span class="text-xs font-medium">Saved</span>
       </div>
       
       <!-- Error message -->
@@ -62,7 +62,7 @@
           </svg>
         </div>
         <p class="text-red-600 mb-4">{{ error }}</p>
-        <button @click="loadPage" class="btn btn-secondary">重试</button>
+        <button @click="loadPage" class="btn btn-secondary">Retry</button>
       </div>
 
       <!-- Page Content -->
@@ -154,7 +154,7 @@
           v-if="!localCollections.length || localCollections.every(c => !c.links?.length)"
           class="text-center py-16 border-2 border-dashed border-gray-200 rounded-xl mt-6"
         >
-          <p class="text-gray-400 mb-4">此页面还没有书签</p>
+          <p class="text-gray-400 mb-4">No bookmarks on this page yet</p>
           <button
             v-if="canEdit"
             @click="showAddLinkModal = true"
@@ -261,7 +261,7 @@ watch(() => page.value, (newPage) => {
 const loadPage = async () => {
   const id = pageId.value
   if (!id) {
-    error.value = '页面ID不存在'
+    error.value = 'Page ID does not exist'
     return
   }
 
@@ -272,7 +272,7 @@ const loadPage = async () => {
     await pageStore.fetchPage(id)
   } catch (err) {
     console.error('Load page error:', err)
-    error.value = err.message || '加载页面失败'
+    error.value = err.message || 'Failed to load page'
   } finally {
     loading.value = false
   }
@@ -287,7 +287,7 @@ const selectPage = (id) => {
 
 // Delete page
 const handleDeletePage = async (id) => {
-  if (!confirm('确定要删除此页面吗？此操作不可撤销。')) return
+  if (!confirm('Are you sure you want to delete this page? This action cannot be undone.')) return
   
   try {
     await pageStore.deletePage(id)
@@ -296,7 +296,7 @@ const handleDeletePage = async (id) => {
     }
   } catch (err) {
     console.error('Failed to delete page:', err)
-    alert('删除失败：' + (err.message || '未知错误'))
+    alert('Delete failed: ' + (err.message || 'Unknown error'))
   }
 }
 
@@ -342,9 +342,9 @@ const handleLinkDragEnd = () => {
 }
 
 const handleDragDelete = () => {
-  const itemType = dragType.value === 'collection' ? '文件夹' : '链接'
+  const itemType = dragType.value === 'collection' ? 'folder' : 'link'
   
-  if (confirm(`确定要删除此${itemType}吗？`)) {
+  if (confirm(`Are you sure you want to delete this ${itemType}?`)) {
     if (dragType.value === 'collection' && dragCollectionIndex.value >= 0) {
       localCollections.value.splice(dragCollectionIndex.value, 1)
       autoSave.markDirty()
