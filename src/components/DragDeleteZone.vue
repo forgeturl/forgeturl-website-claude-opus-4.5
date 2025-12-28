@@ -2,7 +2,7 @@
   <Transition name="trash">
     <div
       v-if="visible"
-      class="absolute top-4 left-0 right-0 z-50 flex justify-center pointer-events-none"
+      class="fixed top-[3vh] left-56 right-0 z-50 flex justify-center pointer-events-none"
     >
       <div
         ref="dropZone"

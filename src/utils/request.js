@@ -26,14 +26,8 @@ request.interceptors.request.use(
 
         // 添加X-Forget-Cookie（用于登录流程）
         const forgetCookie = sessionStore.get(STORAGE_KEYS.FORGET_COOKIE)
-        console.log('🔍 [Request Interceptor] URL:', config.url)
-        console.log('🔍 [Request Interceptor] forgetCookie from sessionStorage:', forgetCookie)
-        console.log('🔍 [Request Interceptor] Raw sessionStorage value:', window.sessionStorage.getItem(STORAGE_KEYS.FORGET_COOKIE))
         if (forgetCookie) {
             config.headers['X-Forget-Cookie'] = forgetCookie
-            console.log('✅ [Request Interceptor] Added X-Forget-Cookie header:', forgetCookie)
-        } else {
-            console.log('⚠️ [Request Interceptor] No forgetCookie found in sessionStorage')
         }
 
         return config
@@ -47,25 +41,16 @@ request.interceptors.request.use(
 // 响应拦截器
 request.interceptors.response.use(
     (response) => {
-        console.log('🔍 [Response Interceptor] URL:', response.config.url)
-        console.log('🔍 [Response Interceptor] Response headers:', response.headers)
-
         // 保存响应头中的X-Token
         const token = response.headers['x-token']
         if (token) {
             storage.set(STORAGE_KEYS.TOKEN, token)
-            console.log('✅ [Response Interceptor] Saved X-Token:', token)
         }
 
         // 保存响应头中的X-Forget-Cookie
         const forgetCookie = response.headers['x-forget-cookie']
-        console.log('🔍 [Response Interceptor] x-forget-cookie from response:', forgetCookie)
         if (forgetCookie) {
             sessionStore.set(STORAGE_KEYS.FORGET_COOKIE, forgetCookie)
-            console.log('✅ [Response Interceptor] Saved X-Forget-Cookie:', forgetCookie)
-            console.log('🔍 [Response Interceptor] Saved to sessionStorage as:', window.sessionStorage.getItem(STORAGE_KEYS.FORGET_COOKIE))
-        } else {
-            console.log('⚠️ [Response Interceptor] No x-forget-cookie in response headers')
         }
 
         // 处理响应数据

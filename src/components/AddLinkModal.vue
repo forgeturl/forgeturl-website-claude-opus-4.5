@@ -16,21 +16,43 @@
             <div class="w-10 h-1 bg-gray-300 rounded-full"></div>
           </div>
 
-          <!-- Header -->
-          <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100">
-            <h3 class="text-lg font-semibold text-gray-900">Add Link</h3>
-            <button
-              @click="handleClose"
-              class="p-2 -mr-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
-            >
-              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
+          <!-- Header with Tabs -->
+          <div class="px-6 py-4 border-b border-gray-100">
+            <div class="flex items-center justify-between">
+              <!-- Tab Switcher -->
+              <div class="flex bg-gray-100 rounded-lg p-1">
+                <button
+                  @click="activeTab = 'single'"
+                  class="px-4 py-2 text-sm font-medium rounded-md transition-all"
+                  :class="activeTab === 'single' 
+                    ? 'bg-white text-gray-900 shadow-sm' 
+                    : 'text-gray-500 hover:text-gray-700'"
+                >
+                  Add Link
+                </button>
+                <button
+                  @click="activeTab = 'batch'"
+                  class="px-4 py-2 text-sm font-medium rounded-md transition-all"
+                  :class="activeTab === 'batch' 
+                    ? 'bg-white text-gray-900 shadow-sm' 
+                    : 'text-gray-500 hover:text-gray-700'"
+                >
+                  Batch Add Links
+                </button>
+              </div>
+              <button
+                @click="handleClose"
+                class="p-2 -mr-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+              >
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
           </div>
 
-          <!-- Body -->
-          <div ref="scrollContainerRef" class="px-6 py-5 space-y-5 overflow-y-auto max-h-[60vh]">
+          <!-- Body - Single Link Mode -->
+          <div v-if="activeTab === 'single'" ref="scrollContainerRef" class="px-6 py-5 space-y-5 overflow-y-auto max-h-[60vh]">
             <!-- URL -->
             <div class="flex items-center gap-4">
               <label class="text-sm font-medium text-gray-700 w-12 flex-shrink-0">URL</label>
@@ -68,7 +90,7 @@
               </button>
               <button
                 v-if="!showSubLinks"
-                @click="showSubLinks = true"
+                @click="expandSubLinks"
                 class="px-3 py-2 text-sm text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors flex items-center gap-1"
               >
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -224,6 +246,134 @@
             </div>
           </div>
 
+          <!-- Body - Batch Add Mode -->
+          <div v-else ref="batchScrollContainerRef" class="px-6 py-5 space-y-5 overflow-y-auto max-h-[60vh]">
+            <!-- Collection Selection (First) -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Add to Collection</label>
+              <div class="grid grid-cols-3 gap-2">
+                <!-- Existing Collections -->
+                <div 
+                  v-for="(collection, index) in collections" 
+                  :key="index"
+                  @click="selectBatchCollection(index)"
+                  class="flex flex-col items-center gap-1.5 p-3 border rounded-xl cursor-pointer transition-all text-center"
+                  :class="batchSelectedCollectionIndex === index 
+                    ? 'border-gray-900 bg-gray-50' 
+                    : 'border-gray-200 hover:border-gray-300'"
+                >
+                  <div 
+                    class="w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all flex-shrink-0"
+                    :class="batchSelectedCollectionIndex === index 
+                      ? 'border-gray-900 bg-gray-900' 
+                      : 'border-gray-300'"
+                  >
+                    <svg 
+                      v-if="batchSelectedCollectionIndex === index" 
+                      class="w-3 h-3 text-white" 
+                      fill="none" 
+                      stroke="currentColor" 
+                      viewBox="0 0 24 24"
+                    >
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7" />
+                    </svg>
+                  </div>
+                  <span class="text-gray-700 text-xs leading-tight line-clamp-2">{{ collection.title || 'Unnamed' }}</span>
+                </div>
+
+                <!-- Create New Collection Option -->
+                <div 
+                  @click="selectBatchNewCollection"
+                  class="flex flex-col items-center gap-1.5 p-3 border rounded-xl cursor-pointer transition-all text-center"
+                  :class="isBatchCreateNew 
+                    ? 'border-gray-900 bg-gray-50' 
+                    : 'border-gray-200 hover:border-gray-300'"
+                >
+                  <div 
+                    class="w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all flex-shrink-0"
+                    :class="isBatchCreateNew 
+                      ? 'border-gray-900 bg-gray-900' 
+                      : 'border-gray-300'"
+                  >
+                    <svg 
+                      v-if="isBatchCreateNew" 
+                      class="w-3 h-3 text-white" 
+                      fill="none" 
+                      stroke="currentColor" 
+                      viewBox="0 0 24 24"
+                    >
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7" />
+                    </svg>
+                  </div>
+                  <span class="text-gray-700 text-xs leading-tight">+ New Folder</span>
+                </div>
+              </div>
+
+              <!-- New Collection Name Input -->
+              <div v-if="isBatchCreateNew" class="mt-3">
+                <input
+                  ref="batchNewFolderInputRef"
+                  v-model="batchNewCollectionName"
+                  type="text"
+                  placeholder="Enter new folder name"
+                  class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-gray-900 focus:border-transparent outline-none transition-all"
+                />
+              </div>
+            </div>
+
+            <!-- Batch Links Input -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Paste Links</label>
+              <textarea
+                v-model="batchLinksInput"
+                placeholder="Paste multiple links here, separated by spaces or new lines...&#10;&#10;Example:&#10;https://google.com&#10;https://github.com&#10;https://twitter.com"
+                class="w-full h-32 px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-gray-900 focus:border-transparent outline-none transition-all resize-none text-sm"
+                @input="parseBatchLinks"
+              ></textarea>
+            </div>
+
+            <!-- Parsed Links Preview -->
+            <div v-if="parsedLinks.length > 0">
+              <div class="flex items-center justify-between mb-2">
+                <label class="block text-sm font-medium text-gray-700">
+                  Parsed Links 
+                  <span class="text-gray-400 font-normal">({{ parsedLinks.length }} links)</span>
+                </label>
+                <button
+                  @click="clearBatchLinks"
+                  class="px-2 py-1 text-xs text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded transition-colors"
+                >
+                  Clear All
+                </button>
+              </div>
+              <div class="space-y-2 max-h-48 overflow-y-auto">
+                <div
+                  v-for="(link, index) in parsedLinks"
+                  :key="index"
+                  class="flex items-center gap-3 p-3 bg-gray-50 rounded-lg group"
+                >
+                  <div class="flex-1 min-w-0">
+                    <input
+                      v-model="link.title"
+                      type="text"
+                      class="w-full text-sm font-medium text-gray-700 bg-transparent border-none outline-none focus:ring-0 p-0"
+                      placeholder="Link title"
+                    />
+                    <p class="text-xs text-gray-400 truncate mt-0.5">{{ link.url }}</p>
+                  </div>
+                  <button
+                    @click="removeParsedLink(index)"
+                    class="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded transition-colors opacity-0 group-hover:opacity-100"
+                  >
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
           <!-- Footer -->
           <div class="px-6 py-4 bg-gray-50 border-t border-gray-100 flex justify-end gap-3">
             <button
@@ -233,11 +383,20 @@
               Cancel
             </button>
             <button
+              v-if="activeTab === 'single'"
               @click="handleSave"
               :disabled="!canSave"
               class="px-5 py-2.5 bg-gray-900 text-white rounded-xl hover:bg-gray-800 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
             >
               Add
+            </button>
+            <button
+              v-else
+              @click="handleBatchSave"
+              :disabled="!canBatchSave"
+              class="px-5 py-2.5 bg-gray-900 text-white rounded-xl hover:bg-gray-800 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Add {{ parsedLinks.length }} Links
             </button>
           </div>
         </div>
@@ -260,9 +419,12 @@ const props = defineProps({
   }
 })
 
-const emit = defineEmits(['update:show', 'add'])
+const emit = defineEmits(['update:show', 'add', 'batch-add'])
 
-// Form data
+// Tab state
+const activeTab = ref('single')
+
+// Form data for single add
 const form = ref({
   title: '',
   url: '',
@@ -276,6 +438,13 @@ const selectedCollectionIndex = ref(0)
 const isCreateNew = ref(false)
 const newCollectionName = ref('')
 
+// Batch add state
+const batchLinksInput = ref('')
+const parsedLinks = ref([])
+const batchSelectedCollectionIndex = ref(0)
+const isBatchCreateNew = ref(false)
+const batchNewCollectionName = ref('')
+
 // Optional fields visibility
 const showTags = ref(false)
 const showSubLinks = ref(false)
@@ -283,6 +452,8 @@ const showSubLinks = ref(false)
 // Refs for auto-scroll
 const scrollContainerRef = ref(null)
 const newFolderInputRef = ref(null)
+const batchScrollContainerRef = ref(null)
+const batchNewFolderInputRef = ref(null)
 
 // Track if user has manually edited the title
 const userEditedTitle = ref(false)
@@ -290,6 +461,7 @@ const userEditedTitle = ref(false)
 // Reset form when modal opens
 watch(() => props.show, (newShow) => {
   if (newShow) {
+    // Reset single add form
     form.value = {
       title: '',
       url: '',
@@ -304,6 +476,16 @@ watch(() => props.show, (newShow) => {
     userEditedTitle.value = false
     showTags.value = false
     showSubLinks.value = false
+    
+    // Reset batch add form
+    batchLinksInput.value = ''
+    parsedLinks.value = []
+    batchSelectedCollectionIndex.value = props.collections.length > 0 ? 0 : -1
+    isBatchCreateNew.value = props.collections.length === 0
+    batchNewCollectionName.value = ''
+    
+    // Reset tab to single
+    activeTab.value = 'single'
   }
 })
 
@@ -336,11 +518,18 @@ watch(() => form.value.url, (newUrl) => {
   }
 })
 
-// Can save check
+// Can save check for single add
 const canSave = computed(() => {
   const hasUrl = form.value.url.trim().length > 0
   const hasValidTarget = !isCreateNew.value || newCollectionName.value.trim().length > 0
   return hasUrl && hasValidTarget
+})
+
+// Can save check for batch add
+const canBatchSave = computed(() => {
+  const hasLinks = parsedLinks.value.length > 0
+  const hasValidTarget = !isBatchCreateNew.value || batchNewCollectionName.value.trim().length > 0
+  return hasLinks && hasValidTarget
 })
 
 // Handle title input - mark as user edited
@@ -374,11 +563,81 @@ const selectNewCollection = () => {
   })
 }
 
+// Batch collection selection
+const selectBatchCollection = (index) => {
+  batchSelectedCollectionIndex.value = index
+  isBatchCreateNew.value = false
+}
+
+const selectBatchNewCollection = () => {
+  batchSelectedCollectionIndex.value = -1
+  isBatchCreateNew.value = true
+  
+  // Auto scroll and focus input after DOM updates
+  nextTick(() => {
+    setTimeout(() => {
+      if (batchNewFolderInputRef.value) {
+        batchNewFolderInputRef.value.focus()
+      }
+    }, 150)
+  })
+}
+
+// Parse batch links from input
+const parseBatchLinks = () => {
+  const input = batchLinksInput.value.trim()
+  if (!input) {
+    parsedLinks.value = []
+    return
+  }
+  
+  // Split by whitespace and newlines
+  const urlRegex = /https?:\/\/[^\s]+/gi
+  const matches = input.match(urlRegex) || []
+  
+  // Create unique links with auto-generated titles
+  const seenUrls = new Set()
+  parsedLinks.value = matches
+    .filter(url => {
+      const normalized = url.toLowerCase()
+      if (seenUrls.has(normalized)) return false
+      seenUrls.add(normalized)
+      return true
+    })
+    .map(url => ({
+      url: url,
+      title: extractDomainName(url) || url,
+      tags: [],
+      photo_url: '',
+      sub_links: []
+    }))
+}
+
+// Remove a parsed link
+const removeParsedLink = (index) => {
+  parsedLinks.value.splice(index, 1)
+}
+
+// Clear all batch links
+const clearBatchLinks = () => {
+  batchLinksInput.value = ''
+  parsedLinks.value = []
+}
+
 const addSubLink = () => {
   form.value.sub_links.push({
     sub_title: '',
     sub_url: ''
   })
+}
+
+// Expand sub links section and auto-add one empty sub link
+const expandSubLinks = () => {
+  showSubLinks.value = true
+  // Auto-add one empty sub link if there are none
+  if (form.value.sub_links.length === 0) {
+    addSubLink()
+  }
 }
 
 const removeSubLink = (index) => {
@@ -415,6 +674,26 @@ const handleSave = () => {
     link,
     collectionIndex: isCreateNew.value ? -1 : selectedCollectionIndex.value,
     newCollectionName: isCreateNew.value ? (newCollectionName.value || 'New Folder') : null
+  })
+
+  handleClose()
+}
+
+// Handle batch save
+const handleBatchSave = () => {
+  if (!canBatchSave.value) return
+
+  // Emit batch-add event with all parsed links
+  emit('batch-add', {
+    links: parsedLinks.value.map(link => ({
+      title: link.title || link.url,
+      url: link.url,
+      tags: [],
+      photo_url: '',
+      sub_links: []
+    })),
+    collectionIndex: isBatchCreateNew.value ? -1 : batchSelectedCollectionIndex.value,
+    newCollectionName: isBatchCreateNew.value ? (batchNewCollectionName.value || 'New Folder') : null
   })
 
   handleClose()

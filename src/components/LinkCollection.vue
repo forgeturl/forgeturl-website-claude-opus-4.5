@@ -65,7 +65,7 @@
       handle=".link-drag-handle"
       ghost-class="opacity-50"
       :animation="200"
-      class="links-draggable flex flex-wrap gap-x-6 gap-y-2 min-h-[60px] relative"
+      class="links-draggable flex flex-wrap gap-x-10 gap-y-2 min-h-[60px] relative"
       @change="handleLinksChange"
       @start="handleDragStart"
       @end="handleDragEnd"
@@ -90,7 +90,7 @@
     </draggable>
 
     <!-- Links (Read-only) -->
-    <div v-else class="flex flex-wrap gap-x-6 gap-y-2">
+    <div v-else class="flex flex-wrap gap-x-10 gap-y-2">
       <LinkItem
         v-for="(link, linkIndex) in collection.links"
         :key="linkIndex"

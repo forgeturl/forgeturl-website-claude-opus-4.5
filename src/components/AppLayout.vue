@@ -3,8 +3,53 @@
     <!-- Sidebar -->
     <aside class="w-56 bg-white border-r border-gray-200 flex flex-col fixed h-full">
       <!-- Logo -->
-      <div class="px-5 py-5">
-        <h1 class="text-xl font-bold text-gray-900 tracking-tight">ForgetURL</h1>
+      <div class="px-4 py-5">
+        <router-link to="/" class="group flex items-center gap-3 select-none">
+          <!-- Animated Logo Icon -->
+          <div class="logo-icon relative w-9 h-9 flex-shrink-0">
+            <!-- Background glow effect -->
+            <div class="absolute inset-0 bg-gradient-to-br from-violet-500/20 to-fuchsia-500/20 rounded-xl blur-md opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+            
+            <!-- Main logo container -->
+            <div class="relative w-full h-full bg-gradient-to-br from-violet-500 via-purple-500 to-fuchsia-500 rounded-xl shadow-lg shadow-purple-500/25 flex items-center justify-center overflow-hidden group-hover:shadow-purple-500/40 transition-shadow duration-300">
+              <!-- Shimmer effect -->
+              <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
+              
+              <!-- Link chain icon with memory bubble -->
+              <svg class="w-5 h-5 text-white relative z-10" viewBox="0 0 24 24" fill="none">
+                <!-- Memory bubble / cloud -->
+                <circle cx="17" cy="7" r="4" fill="currentColor" opacity="0.3" class="animate-pulse-slow"/>
+                <circle cx="19" cy="9" r="2.5" fill="currentColor" opacity="0.25" class="animate-pulse-slow" style="animation-delay: 0.5s"/>
+                
+                <!-- Link chain -->
+                <path 
+                  d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" 
+                  stroke="currentColor" 
+                  stroke-width="2" 
+                  stroke-linecap="round" 
+                  stroke-linejoin="round"
+                  class="group-hover:stroke-[2.5] transition-all duration-300"
+                />
+                <path 
+                  d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" 
+                  stroke="currentColor" 
+                  stroke-width="2" 
+                  stroke-linecap="round" 
+                  stroke-linejoin="round"
+                  class="group-hover:stroke-[2.5] transition-all duration-300"
+                />
+              </svg>
+            </div>
+          </div>
+          
+          <!-- Brand text -->
+          <div class="flex flex-col">
+            <span class="text-lg font-bold tracking-tight leading-none">
+              <span class="bg-gradient-to-r from-violet-600 via-purple-600 to-fuchsia-600 bg-clip-text text-transparent">Forget</span><span class="text-gray-800">URL</span>
+            </span>
+            <span class="text-[10px] text-gray-400 font-medium tracking-wider uppercase mt-0.5">Bookmark Manager</span>
+          </div>
+        </router-link>
       </div>
 
       <!-- Pages Section -->

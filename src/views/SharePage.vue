@@ -1,10 +1,28 @@
 <template>
   <div class="min-h-screen bg-gray-50">
     <!-- Navigation Bar -->
-    <nav class="bg-white border-b border-gray-200 sticky top-0 z-10">
+    <nav class="bg-white/80 backdrop-blur-lg border-b border-gray-200/50 sticky top-0 z-10">
       <div class="max-w-6xl mx-auto px-6 lg:px-8">
         <div class="flex justify-between items-center h-14">
-          <h1 class="text-lg font-bold text-gray-900 tracking-tight">ForgetURL</h1>
+          <!-- Logo -->
+          <router-link to="/" class="group flex items-center gap-2.5 select-none">
+            <!-- Logo Icon -->
+            <div class="relative w-8 h-8 flex-shrink-0">
+              <div class="absolute inset-0 bg-gradient-to-br from-violet-500/20 to-fuchsia-500/20 rounded-lg blur-md opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+              <div class="relative w-full h-full bg-gradient-to-br from-violet-500 via-purple-500 to-fuchsia-500 rounded-lg shadow-md shadow-purple-500/20 flex items-center justify-center overflow-hidden group-hover:shadow-purple-500/30 transition-shadow duration-300">
+                <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
+                <svg class="w-4 h-4 text-white relative z-10" viewBox="0 0 24 24" fill="none">
+                  <circle cx="17" cy="7" r="4" fill="currentColor" opacity="0.3" class="animate-pulse-slow"/>
+                  <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </div>
+            </div>
+            <!-- Brand text -->
+            <span class="text-lg font-bold tracking-tight">
+              <span class="bg-gradient-to-r from-violet-600 via-purple-600 to-fuchsia-600 bg-clip-text text-transparent">Forget</span><span class="text-gray-800">URL</span>
+            </span>
+          </router-link>
           
           <!-- Save Status -->
           <div class="flex items-center gap-3">

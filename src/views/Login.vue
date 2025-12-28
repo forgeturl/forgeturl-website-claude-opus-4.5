@@ -1,10 +1,55 @@
 <template>
-  <div class="min-h-screen flex items-center justify-center bg-gray-50 px-4">
-    <div class="max-w-md w-full animate-fade-in">
+  <div class="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 via-purple-50/30 to-fuchsia-50/40 px-4 relative overflow-hidden">
+    <!-- Background decoration -->
+    <div class="absolute inset-0 overflow-hidden pointer-events-none">
+      <div class="absolute -top-24 -right-24 w-96 h-96 bg-gradient-to-br from-violet-200/40 to-fuchsia-200/40 rounded-full blur-3xl"></div>
+      <div class="absolute -bottom-24 -left-24 w-80 h-80 bg-gradient-to-tr from-purple-200/30 to-violet-200/30 rounded-full blur-3xl"></div>
+    </div>
+    
+    <div class="max-w-md w-full animate-fade-in relative z-10">
       <!-- Logo and Title -->
       <div class="text-center mb-8">
-        <h1 class="text-4xl font-bold text-gray-900 mb-2">ForgetURL</h1>
-        <p class="text-gray-600">Minimalist Bookmark Manager</p>
+        <!-- Animated Logo -->
+        <div class="flex justify-center mb-5">
+          <div class="logo-icon-large relative w-20 h-20 group">
+            <!-- Outer glow -->
+            <div class="absolute inset-0 bg-gradient-to-br from-violet-500/30 to-fuchsia-500/30 rounded-2xl blur-xl animate-pulse-slow"></div>
+            
+            <!-- Main container -->
+            <div class="relative w-full h-full bg-gradient-to-br from-violet-500 via-purple-500 to-fuchsia-500 rounded-2xl shadow-2xl shadow-purple-500/30 flex items-center justify-center overflow-hidden">
+              <!-- Shimmer -->
+              <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/25 to-transparent -translate-x-full animate-shimmer"></div>
+              
+              <!-- Icon -->
+              <svg class="w-10 h-10 text-white relative z-10" viewBox="0 0 24 24" fill="none">
+                <!-- Memory bubbles -->
+                <circle cx="17" cy="7" r="4" fill="currentColor" opacity="0.3" class="animate-pulse-slow"/>
+                <circle cx="19" cy="9" r="2.5" fill="currentColor" opacity="0.25" class="animate-pulse-slow" style="animation-delay: 0.5s"/>
+                
+                <!-- Link chain -->
+                <path 
+                  d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" 
+                  stroke="currentColor" 
+                  stroke-width="2" 
+                  stroke-linecap="round" 
+                  stroke-linejoin="round"
+                />
+                <path 
+                  d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" 
+                  stroke="currentColor" 
+                  stroke-width="2" 
+                  stroke-linecap="round" 
+                  stroke-linejoin="round"
+                />
+              </svg>
+            </div>
+          </div>
+        </div>
+        
+        <h1 class="text-4xl font-bold mb-2">
+          <span class="bg-gradient-to-r from-violet-600 via-purple-600 to-fuchsia-600 bg-clip-text text-transparent">Forget</span><span class="text-gray-800">URL</span>
+        </h1>
+        <p class="text-gray-500 font-medium">Save links, free your mind</p>
       </div>
 
       <!-- Login Card -->

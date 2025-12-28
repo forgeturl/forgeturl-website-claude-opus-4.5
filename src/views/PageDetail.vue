@@ -181,6 +181,7 @@
       v-model:show="showAddLinkModal"
       :collections="localCollections"
       @add="handleAddNewLink"
+      @batch-add="handleBatchAddLinks"
     />
 
     <!-- Add Collection Modal -->
@@ -391,27 +392,13 @@ const handleCollectionDragStart = (evt) => {
 }
 
 const handleCollectionDragEnd = (evt) => {
-  console.log('[handleCollectionDragEnd] Called, evt:', evt)
-  console.log('[handleCollectionDragEnd] Current drag state:', { 
-    dragType: dragType.value, 
-    dragCollectionIndex: dragCollectionIndex.value 
-  })
-  
   // Check if dropped on delete zone using mouse position
   if (evt.originalEvent && deleteZoneRef.value?.isPointInZone) {
     const { clientX, clientY } = evt.originalEvent
-    console.log('[handleCollectionDragEnd] Mouse position:', { clientX, clientY })
-    const inZone = deleteZoneRef.value.isPointInZone(clientX, clientY)
-    console.log('[handleCollectionDragEnd] isPointInZone:', inZone)
-    if (inZone) {
+    if (deleteZoneRef.value.isPointInZone(clientX, clientY)) {
       handleDragDelete()
       return
     }
-  } else {
-    console.log('[handleCollectionDragEnd] Cannot check delete zone:', { 
-      hasOriginalEvent: !!evt.originalEvent, 
-      hasIsPointInZone: !!deleteZoneRef.value?.isPointInZone 
-    })
   }
   
   isDragging.value = false
@@ -449,8 +436,6 @@ const handleDragDelete = async () => {
   const currentCollectionIndex = dragCollectionIndex.value
   const currentLinkIndex = dragLinkIndex.value
   
-  console.log('[handleDragDelete] Called with:', { currentDragType, currentCollectionIndex, currentLinkIndex })
-  
   const itemType = currentDragType === 'collection' ? 'folder' : 'link'
   
   const confirmed = await showConfirm(
@@ -458,21 +443,13 @@ const handleDragDelete = async () => {
     { type: 'danger', title: `Delete ${itemType.charAt(0).toUpperCase() + itemType.slice(1)}`, confirmText: 'Delete' }
   )
   
-  console.log('[handleDragDelete] User confirmed:', confirmed)
-  
   if (confirmed) {
     if (currentDragType === 'collection' && currentCollectionIndex >= 0) {
-      console.log('[handleDragDelete] Deleting collection at index:', currentCollectionIndex)
       localCollections.value.splice(currentCollectionIndex, 1)
-      console.log('[handleDragDelete] Calling autoSave.markDirty()')
       autoSave.markDirty()
     } else if (currentDragType === 'link' && currentCollectionIndex >= 0 && currentLinkIndex >= 0) {
-      console.log('[handleDragDelete] Deleting link at collection:', currentCollectionIndex, 'link:', currentLinkIndex)
       localCollections.value[currentCollectionIndex].links.splice(currentLinkIndex, 1)
-      console.log('[handleDragDelete] Calling autoSave.markDirty()')
       autoSave.markDirty()
-    } else {
-      console.log('[handleDragDelete] No deletion performed - conditions not met')
     }
   }
   
@@ -557,6 +534,24 @@ const handleAddNewLink = ({ link, collectionIndex, newCollectionName }) => {
       localCollections.value[collectionIndex].links = []
     }
     localCollections.value[collectionIndex].links.push(link)
+  }
+  autoSave.markDirty()
+}
+
+// Handle batch add links from modal
+const handleBatchAddLinks = ({ links, collectionIndex, newCollectionName }) => {
+  if (collectionIndex === -1 && newCollectionName) {
+    // Create new collection with all the links
+    localCollections.value.push({
+      title: newCollectionName,
+      links: links
+    })
+  } else if (collectionIndex >= 0) {
+    // Add all links to existing collection
+    if (!localCollections.value[collectionIndex].links) {
+      localCollections.value[collectionIndex].links = []
+    }
+    localCollections.value[collectionIndex].links.push(...links)
   }
   autoSave.markDirty()
 }

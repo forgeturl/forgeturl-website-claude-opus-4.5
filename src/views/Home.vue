@@ -224,6 +224,7 @@
       v-model:show="showAddLinkModal"
       :collections="localCollections"
       @add="handleAddNewLink"
+      @batch-add="handleBatchAddLinks"
     />
 
     <!-- Add Collection Modal -->
@@ -638,6 +639,24 @@ const handleAddNewLink = ({ link, collectionIndex, newCollectionName }) => {
       localCollections.value[collectionIndex].links = []
     }
     localCollections.value[collectionIndex].links.push(link)
+  }
+  autoSave.markDirty()
+}
+
+// Handle batch add links from modal
+const handleBatchAddLinks = ({ links, collectionIndex, newCollectionName }) => {
+  if (collectionIndex === -1 && newCollectionName) {
+    // Create new collection with all the links
+    localCollections.value.push({
+      title: newCollectionName,
+      links: links
+    })
+  } else if (collectionIndex >= 0) {
+    // Add all links to existing collection
+    if (!localCollections.value[collectionIndex].links) {
+      localCollections.value[collectionIndex].links = []
+    }
+    localCollections.value[collectionIndex].links.push(...links)
   }
   autoSave.markDirty()
 }

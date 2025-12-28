@@ -67,7 +67,7 @@
               </button>
               <button
                 v-if="!showSubLinks"
-                @click="showSubLinks = true"
+                @click="expandSubLinks"
                 class="px-3 py-2 text-sm text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors flex items-center gap-1"
               >
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -241,6 +241,15 @@ const addSubLink = () => {
     sub_title: '',
     sub_url: ''
   })
+}
+
+// Expand sub links section and auto-add one empty sub link
+const expandSubLinks = () => {
+  showSubLinks.value = true
+  // Auto-add one empty sub link if there are none
+  if (editForm.value.sub_links.length === 0) {
+    addSubLink()
+  }
 }
 
 const removeSubLink = (index) => {
