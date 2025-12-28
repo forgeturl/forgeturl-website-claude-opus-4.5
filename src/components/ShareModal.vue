@@ -147,7 +147,7 @@
                   </div>
                   <div>
                     <h4 class="font-medium text-gray-900">Super Link</h4>
-                    <p class="text-sm text-gray-500">Others have full control.</p>
+                    <p class="text-sm text-gray-500">Others can view, edit, and delete content.</p>
                   </div>
                 </div>
                 

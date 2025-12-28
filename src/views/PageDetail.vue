@@ -116,12 +116,16 @@
           :group="{ name: 'collections' }"
           item-key="__idx"
           handle=".collection-drag-handle"
-          ghost-class="opacity-50"
-          :animation="200"
+          ghost-class="collection-drop-indicator"
+          chosen-class="collection-dragging-source"
+          drag-class="collection-drag-preview"
+          :force-fallback="true"
+          :fallback-class="'collection-drag-fallback'"
+          :animation="0"
           @start="handleCollectionDragStart"
           @end="handleCollectionDragEnd"
           @change="handleCollectionsChange"
-          class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+          class="collections-grid grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
         >
           <template #item="{ element: collection, index }">
             <LinkCollection
@@ -574,3 +578,82 @@ onMounted(async () => {
   loadPage()
 })
 </script>
+
+<style scoped>
+/* Prevent layout shift during collection drag */
+.collections-grid {
+  min-height: 100px;
+}
+</style>
+
+<style>
+/* Collection drag styles - must be global for vuedraggable dynamic classes */
+
+/* Source element - stays in place but faded */
+.collection-dragging-source {
+  opacity: 0.4 !important;
+  background: rgba(59, 130, 246, 0.08) !important;
+  border: 2px dashed #93c5fd !important;
+  box-shadow: none !important;
+}
+
+/* Drop indicator - blue line showing where item will be inserted */
+.collection-drop-indicator {
+  position: relative !important;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  opacity: 1 !important;
+  min-height: 8px !important;
+  max-height: 8px !important;
+  height: 8px !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  overflow: visible !important;
+  border-radius: 0 !important;
+}
+
+.collection-drop-indicator::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  height: 4px;
+  transform: translateY(-50%);
+  background: linear-gradient(90deg, #3b82f6, #60a5fa, #3b82f6);
+  border-radius: 2px;
+  box-shadow: 0 0 12px rgba(59, 130, 246, 0.6), 0 0 4px rgba(59, 130, 246, 0.8);
+  animation: collection-indicator-pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes collection-indicator-pulse {
+  0%, 100% {
+    box-shadow: 0 0 12px rgba(59, 130, 246, 0.6), 0 0 4px rgba(59, 130, 246, 0.8);
+  }
+  50% {
+    box-shadow: 0 0 20px rgba(59, 130, 246, 0.8), 0 0 8px rgba(59, 130, 246, 1);
+  }
+}
+
+.collection-drop-indicator > * {
+  display: none !important;
+}
+
+/* Drag preview - the element being dragged */
+.collection-drag-preview {
+  opacity: 0.9 !important;
+  transform: rotate(2deg) !important;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15) !important;
+}
+
+/* Fallback drag element */
+.collection-drag-fallback {
+  opacity: 0.95 !important;
+  transform: rotate(1deg) scale(1.02) !important;
+  box-shadow: 0 12px 35px rgba(0, 0, 0, 0.25) !important;
+  border: 2px solid #3b82f6 !important;
+  background: white !important;
+  z-index: 9999 !important;
+}
+</style>

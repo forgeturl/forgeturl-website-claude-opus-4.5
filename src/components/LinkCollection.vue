@@ -63,8 +63,9 @@
       :group="{ name: 'links', pull: true, put: true }"
       item-key="__idx"
       handle=".link-drag-handle"
-      ghost-class="opacity-50"
-      :animation="200"
+      ghost-class="link-drop-indicator"
+      chosen-class="link-dragging-source"
+      :animation="0"
       class="links-draggable flex flex-wrap gap-x-10 gap-y-2 min-h-[60px] relative"
       @change="handleLinksChange"
       @start="handleDragStart"
@@ -267,4 +268,87 @@ const handleLinksChange = (evt) => {
 .links-draggable:has(.link-drag-handle) .empty-state-hint {
   display: none;
 }
+</style>
+
+<style>
+/* Link drag styles - must be global for vuedraggable dynamic classes */
+
+/* Source element - stays in place but faded */
+.link-dragging-source {
+  opacity: 0.4 !important;
+  position: relative;
+}
+
+.link-dragging-source::after {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  background: rgba(59, 130, 246, 0.15);
+  border-radius: 4px;
+  pointer-events: none;
+}
+
+/* Drop indicator - blue vertical line */
+.link-drop-indicator {
+  display: inline-block !important;
+  width: 3px !important;
+  min-width: 3px !important;
+  max-width: 3px !important;
+  height: 18px !important;
+  min-height: 18px !important;
+  max-height: 18px !important;
+  padding: 0 !important;
+  margin: 0 6px !important;
+  background: #3b82f6 !important;
+  border-radius: 2px !important;
+  border: none !important;
+  opacity: 1 !important;
+  box-shadow: 0 0 10px rgba(59, 130, 246, 0.6);
+  overflow: hidden !important;
+  position: relative !important;
+  vertical-align: middle !important;
+  flex: none !important;
+  align-self: center !important;
+}
+
+.link-drop-indicator,
+.link-drop-indicator * {
+  box-sizing: border-box !important;
+}
+
+.link-drop-indicator > *,
+.link-drop-indicator > div,
+.link-drop-indicator > a,
+.link-drop-indicator .link-drag-handle,
+.link-drop-indicator .inline-block {
+  display: none !important;
+  visibility: hidden !important;
+  width: 0 !important;
+  height: 0 !important;
+  opacity: 0 !important;
+  position: absolute !important;
+  pointer-events: none !important;
+}
+
+/* Animated glow effect on indicator */
+.link-drop-indicator::before {
+  content: '';
+  position: absolute;
+  top: -100%;
+  left: 0;
+  right: 0;
+  height: 100%;
+  background: linear-gradient(180deg, transparent, rgba(255, 255, 255, 0.9), transparent);
+  animation: link-indicator-glow 1s ease-in-out infinite;
+}
+
+@keyframes link-indicator-glow {
+  0% {
+    top: -100%;
+  }
+  100% {
+    top: 200%;
+  }
+}
+
 </style>
