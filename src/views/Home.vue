@@ -240,6 +240,25 @@
       :saving="savingPageInfo"
       @save="handleSavePageInfo"
     />
+
+    <!-- Alert Modal -->
+    <AlertModal
+      v-model:show="alertModal.show"
+      :type="alertModal.type"
+      :title="alertModal.title"
+      :message="alertModal.message"
+    />
+
+    <!-- Confirm Modal -->
+    <ConfirmModal
+      v-model:show="confirmModal.show"
+      :type="confirmModal.type"
+      :title="confirmModal.title"
+      :message="confirmModal.message"
+      :confirm-text="confirmModal.confirmText"
+      @confirm="confirmModal.onConfirm"
+      @cancel="confirmModal.onCancel"
+    />
   </AppLayout>
 </template>
 
@@ -259,6 +278,8 @@ import AddLinkModal from '@/components/AddLinkModal.vue'
 import AddCollectionModal from '@/components/AddCollectionModal.vue'
 import DragDeleteZone from '@/components/DragDeleteZone.vue'
 import EditPageModal from '@/components/EditPageModal.vue'
+import AlertModal from '@/components/AlertModal.vue'
+import ConfirmModal from '@/components/ConfirmModal.vue'
 
 const router = useRouter()
 const authStore = useAuthStore()
@@ -272,6 +293,50 @@ const showAddCollectionModal = ref(false)
 const showEditPageModal = ref(false)
 const savingPageInfo = ref(false)
 const selectedPageId = ref('')
+
+// Alert modal state
+const alertModal = ref({
+  show: false,
+  type: 'error',
+  title: 'Error',
+  message: ''
+})
+
+// Confirm modal state
+const confirmModal = ref({
+  show: false,
+  type: 'warning',
+  title: 'Confirm',
+  message: '',
+  confirmText: 'Confirm',
+  onConfirm: () => {},
+  onCancel: () => {}
+})
+
+// Show alert modal
+const showAlert = (message, type = 'error', title = 'Error') => {
+  alertModal.value = {
+    show: true,
+    type,
+    title,
+    message
+  }
+}
+
+// Show confirm modal with promise
+const showConfirm = (message, options = {}) => {
+  return new Promise((resolve) => {
+    confirmModal.value = {
+      show: true,
+      type: options.type || 'warning',
+      title: options.title || 'Confirm',
+      message,
+      confirmText: options.confirmText || 'Confirm',
+      onConfirm: () => resolve(true),
+      onCancel: () => resolve(false)
+    }
+  })
+}
 
 // Drag delete state
 const isDragging = ref(false)
@@ -358,7 +423,7 @@ const handleSavePageInfo = async ({ title, brief }) => {
     showEditPageModal.value = false
   } catch (err) {
     console.error('Save page info error:', err)
-    alert('Save failed: ' + (err.message || 'Unknown error'))
+    showAlert(err.message || 'Unknown error', 'error', 'Save Failed')
   } finally {
     savingPageInfo.value = false
   }
@@ -399,7 +464,11 @@ const selectPage = async (pageId) => {
 }
 
 const handleDeletePage = async (pageId) => {
-  if (!confirm('Are you sure you want to delete this page? This action cannot be undone.')) return
+  const confirmed = await showConfirm(
+    'Are you sure you want to delete this page? This action cannot be undone.',
+    { type: 'danger', title: 'Delete Page', confirmText: 'Delete' }
+  )
+  if (!confirmed) return
   
   try {
     await pageStore.deletePage(pageId)
@@ -408,7 +477,7 @@ const handleDeletePage = async (pageId) => {
     }
   } catch (error) {
     console.error('Failed to delete page:', error)
-    alert('Delete failed: ' + (error.message || 'Unknown error'))
+    showAlert(error.message || 'Unknown error', 'error', 'Delete Failed')
   }
 }
 
@@ -433,6 +502,15 @@ const handleCollectionDragStart = (evt) => {
 }
 
 const handleCollectionDragEnd = (evt) => {
+  // Check if dropped on delete zone using mouse position
+  if (evt.originalEvent && deleteZoneRef.value?.isPointInZone) {
+    const { clientX, clientY } = evt.originalEvent
+    if (deleteZoneRef.value.isPointInZone(clientX, clientY)) {
+      handleDragDelete()
+      return
+    }
+  }
+  
   isDragging.value = false
   dragType.value = null
   dragCollectionIndex.value = -1
@@ -445,22 +523,42 @@ const handleLinkDragStart = (collectionIndex, { linkIndex }) => {
   dragLinkIndex.value = linkIndex
 }
 
-const handleLinkDragEnd = () => {
+const handleLinkDragEnd = (evt) => {
+  // Check if dropped on delete zone using mouse position
+  if (evt?.originalEvent && deleteZoneRef.value?.isPointInZone) {
+    const { clientX, clientY } = evt.originalEvent
+    if (deleteZoneRef.value.isPointInZone(clientX, clientY)) {
+      handleDragDelete()
+      return
+    }
+  }
+  
   isDragging.value = false
   dragType.value = null
   dragCollectionIndex.value = -1
   dragLinkIndex.value = -1
 }
 
-const handleDragDelete = () => {
-  const itemType = dragType.value === 'collection' ? 'folder' : 'link'
+const handleDragDelete = async () => {
+  // Capture current drag state before async operation
+  // (drag end handlers may reset these values while confirm modal is open)
+  const currentDragType = dragType.value
+  const currentCollectionIndex = dragCollectionIndex.value
+  const currentLinkIndex = dragLinkIndex.value
   
-  if (confirm(`Are you sure you want to delete this ${itemType}?`)) {
-    if (dragType.value === 'collection' && dragCollectionIndex.value >= 0) {
-      localCollections.value.splice(dragCollectionIndex.value, 1)
+  const itemType = currentDragType === 'collection' ? 'folder' : 'link'
+  
+  const confirmed = await showConfirm(
+    `Are you sure you want to delete this ${itemType}?`,
+    { type: 'danger', title: `Delete ${itemType.charAt(0).toUpperCase() + itemType.slice(1)}`, confirmText: 'Delete' }
+  )
+  
+  if (confirmed) {
+    if (currentDragType === 'collection' && currentCollectionIndex >= 0) {
+      localCollections.value.splice(currentCollectionIndex, 1)
       autoSave.markDirty()
-    } else if (dragType.value === 'link' && dragCollectionIndex.value >= 0 && dragLinkIndex.value >= 0) {
-      localCollections.value[dragCollectionIndex.value].links.splice(dragLinkIndex.value, 1)
+    } else if (currentDragType === 'link' && currentCollectionIndex >= 0 && currentLinkIndex >= 0) {
+      localCollections.value[currentCollectionIndex].links.splice(currentLinkIndex, 1)
       autoSave.markDirty()
     }
   }

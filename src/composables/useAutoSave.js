@@ -48,6 +48,7 @@ export function useAutoSave(saveFn, delay = 5000) {
 
   // 执行保存
   const executeSave = async () => {
+    console.log('[useAutoSave] executeSave called')
     // 停止进度条动画
     if (progressTimer) {
       clearInterval(progressTimer)
@@ -58,6 +59,7 @@ export function useAutoSave(saveFn, delay = 5000) {
     isSaving.value = true
 
     try {
+      console.log('[useAutoSave] Calling saveFn...')
       await saveFn()
       lastSaveTime.value = new Date()
       isDirty.value = false
@@ -84,6 +86,7 @@ export function useAutoSave(saveFn, delay = 5000) {
 
   // 标记有修改，触发自动保存
   const markDirty = () => {
+    console.log('[useAutoSave] markDirty called, starting countdown')
     startSaveCountdown()
   }
 

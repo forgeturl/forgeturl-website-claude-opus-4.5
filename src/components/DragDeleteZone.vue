@@ -66,6 +66,19 @@ const handleDrop = (e) => {
   isOver.value = false
   emit('delete')
 }
+
+// Check if a point (x, y) is inside the delete zone
+// Used by vuedraggable which doesn't trigger native drop events
+const isPointInZone = (x, y) => {
+  if (!dropZone.value) return false
+  const rect = dropZone.value.getBoundingClientRect()
+  return x >= rect.left && x <= rect.right && y >= rect.top && y <= rect.bottom
+}
+
+// Expose methods for parent component
+defineExpose({
+  isPointInZone
+})
 </script>
 
 <style scoped>

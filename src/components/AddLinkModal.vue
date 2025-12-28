@@ -30,32 +30,67 @@
           </div>
 
           <!-- Body -->
-          <div class="px-6 py-5 space-y-5 overflow-y-auto max-h-[60vh]">
-            <!-- Title -->
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2">Title</label>
-              <input
-                v-model="form.title"
-                type="text"
-                placeholder="Link title"
-                class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-gray-900 focus:border-transparent outline-none transition-all"
-              />
-            </div>
-
+          <div ref="scrollContainerRef" class="px-6 py-5 space-y-5 overflow-y-auto max-h-[60vh]">
             <!-- URL -->
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2">URL</label>
+            <div class="flex items-center gap-4">
+              <label class="text-sm font-medium text-gray-700 w-12 flex-shrink-0">URL</label>
               <input
                 v-model="form.url"
                 type="url"
                 placeholder="https://..."
-                class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-gray-900 focus:border-transparent outline-none transition-all"
+                class="flex-1 px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-gray-900 focus:border-transparent outline-none transition-all"
               />
             </div>
 
-            <!-- Tags -->
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2">Tags <span class="text-gray-400 font-normal">(comma separated)</span></label>
+            <!-- Title -->
+            <div class="flex items-center gap-4">
+              <label class="text-sm font-medium text-gray-700 w-12 flex-shrink-0">Title</label>
+              <input
+                v-model="form.title"
+                type="text"
+                placeholder="Link title"
+                class="flex-1 px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-gray-900 focus:border-transparent outline-none transition-all"
+                @input="handleTitleInput"
+              />
+            </div>
+
+            <!-- Optional Fields Buttons -->
+            <div v-if="!showTags || !showSubLinks" class="flex gap-2">
+              <button
+                v-if="!showTags"
+                @click="showTags = true"
+                class="px-3 py-2 text-sm text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors flex items-center gap-1"
+              >
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                </svg>
+                Tags
+              </button>
+              <button
+                v-if="!showSubLinks"
+                @click="showSubLinks = true"
+                class="px-3 py-2 text-sm text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors flex items-center gap-1"
+              >
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                </svg>
+                Sub Links
+              </button>
+            </div>
+
+            <!-- Tags (shown when expanded) -->
+            <div v-if="showTags">
+              <div class="flex items-center justify-between mb-2">
+                <label class="block text-sm font-medium text-gray-700">Tags <span class="text-gray-400 font-normal">(comma separated)</span></label>
+                <button
+                  @click="showTags = false; tagsInput = ''"
+                  class="p-1 text-gray-400 hover:text-gray-600 rounded transition-colors"
+                >
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
               <input
                 v-model="tagsInput"
                 type="text"
@@ -64,9 +99,19 @@
               />
             </div>
 
-            <!-- Sub Links -->
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2">Sub Links</label>
+            <!-- Sub Links (shown when expanded) -->
+            <div v-if="showSubLinks">
+              <div class="flex items-center justify-between mb-2">
+                <label class="block text-sm font-medium text-gray-700">Sub Links</label>
+                <button
+                  @click="showSubLinks = false; form.sub_links = []"
+                  class="p-1 text-gray-400 hover:text-gray-600 rounded transition-colors"
+                >
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
               <div class="space-y-3">
                 <div
                   v-for="(subLink, index) in form.sub_links"
@@ -107,7 +152,7 @@
 
             <!-- Collection Selection -->
             <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2">Add to Folder</label>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Add to Collection</label>
               <div class="grid grid-cols-3 gap-2">
                 <!-- Existing Collections -->
                 <div 
@@ -169,6 +214,7 @@
               <!-- New Collection Name Input -->
               <div v-if="isCreateNew" class="mt-3">
                 <input
+                  ref="newFolderInputRef"
                   v-model="newCollectionName"
                   type="text"
                   placeholder="Enter new folder name"
@@ -201,7 +247,7 @@
 </template>
 
 <script setup>
-import { ref, computed, watch } from 'vue'
+import { ref, computed, watch, nextTick } from 'vue'
 
 const props = defineProps({
   show: {
@@ -230,6 +276,17 @@ const selectedCollectionIndex = ref(0)
 const isCreateNew = ref(false)
 const newCollectionName = ref('')
 
+// Optional fields visibility
+const showTags = ref(false)
+const showSubLinks = ref(false)
+
+// Refs for auto-scroll
+const scrollContainerRef = ref(null)
+const newFolderInputRef = ref(null)
+
+// Track if user has manually edited the title
+const userEditedTitle = ref(false)
+
 // Reset form when modal opens
 watch(() => props.show, (newShow) => {
   if (newShow) {
@@ -244,6 +301,38 @@ watch(() => props.show, (newShow) => {
     selectedCollectionIndex.value = props.collections.length > 0 ? 0 : -1
     isCreateNew.value = props.collections.length === 0
     newCollectionName.value = ''
+    userEditedTitle.value = false
+    showTags.value = false
+    showSubLinks.value = false
+  }
+})
+
+// Extract domain name from URL
+const extractDomainName = (url) => {
+  try {
+    const urlObj = new URL(url)
+    let hostname = urlObj.hostname
+    // Remove www. prefix
+    hostname = hostname.replace(/^www\./, '')
+    // Remove common TLDs to get the core name
+    const parts = hostname.split('.')
+    if (parts.length >= 2) {
+      // Return the main domain part (e.g., 'watermarkremoversora' from 'watermarkremoversora.com')
+      return parts[0]
+    }
+    return hostname
+  } catch {
+    return ''
+  }
+}
+
+// Auto-fill title from URL when title is empty and user hasn't edited it
+watch(() => form.value.url, (newUrl) => {
+  if (newUrl && !form.value.title && !userEditedTitle.value) {
+    const domainName = extractDomainName(newUrl)
+    if (domainName) {
+      form.value.title = domainName
+    }
   }
 })
 
@@ -254,6 +343,11 @@ const canSave = computed(() => {
   return hasUrl && hasValidTarget
 })
 
+// Handle title input - mark as user edited
+const handleTitleInput = () => {
+  userEditedTitle.value = true
+}
+
 const selectCollection = (index) => {
   selectedCollectionIndex.value = index
   isCreateNew.value = false
@@ -262,6 +356,22 @@ const selectCollection = (index) => {
 const selectNewCollection = () => {
   selectedCollectionIndex.value = -1
   isCreateNew.value = true
+  
+  // Auto scroll to bottom and focus input after DOM updates
+  nextTick(() => {
+    if (scrollContainerRef.value) {
+      scrollContainerRef.value.scrollTo({
+        top: scrollContainerRef.value.scrollHeight,
+        behavior: 'smooth'
+      })
+    }
+    // Focus the input after scroll animation
+    setTimeout(() => {
+      if (newFolderInputRef.value) {
+        newFolderInputRef.value.focus()
+      }
+    }, 150)
+  })
 }
 
 const addSubLink = () => {

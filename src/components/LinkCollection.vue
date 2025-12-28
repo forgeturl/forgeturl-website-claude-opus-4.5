@@ -249,9 +249,9 @@ const handleDragStart = (evt) => {
   emit('link-drag-start', { linkIndex: evt.oldIndex })
 }
 
-const handleDragEnd = () => {
+const handleDragEnd = (evt) => {
   currentDragIndex = -1
-  emit('link-drag-end')
+  emit('link-drag-end', evt)
 }
 
 const handleLinksChange = (evt) => {
