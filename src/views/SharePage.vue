@@ -5,16 +5,52 @@
       <div class="max-w-6xl mx-auto px-6 lg:px-8">
         <div class="flex justify-between items-center h-14">
           <h1 class="text-lg font-bold text-gray-900 tracking-tight">ForgetURL</h1>
-          <span
-            v-if="pageConf"
-            class="px-3 py-1 text-xs font-medium rounded-full"
-            :class="{
-              'bg-blue-50 text-blue-600': pageConf.can_edit,
-              'bg-gray-100 text-gray-600': pageConf.read_only
-            }"
-          >
-            {{ pageConf.read_only ? 'Read-only' : pageConf.can_edit ? 'Editable' : 'View' }}
-          </span>
+          
+          <!-- Save Status -->
+          <div class="flex items-center gap-3">
+            <div 
+              v-if="canEdit && (autoSave.showProgress.value || autoSave.showSavedMessage.value || autoSave.saveError.value)"
+              class="flex items-center gap-3 bg-white rounded-full px-3 py-1"
+            >
+              <!-- Progress bar -->
+              <div v-if="autoSave.showProgress.value" class="flex items-center gap-2">
+                <div class="w-20 h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                  <div 
+                    class="h-full bg-emerald-500 rounded-full transition-all duration-100"
+                    :style="{ width: autoSave.saveProgress.value + '%' }"
+                  ></div>
+                </div>
+                <span class="text-xs text-gray-500">保存中...</span>
+              </div>
+              
+              <!-- Saved message -->
+              <div v-else-if="autoSave.showSavedMessage.value" class="flex items-center gap-1 text-emerald-600">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                </svg>
+                <span class="text-xs font-medium">已保存</span>
+              </div>
+              
+              <!-- Error message -->
+              <div v-else-if="autoSave.saveError.value" class="flex items-center gap-1 text-red-600">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <span class="text-xs font-medium">保存失败</span>
+              </div>
+            </div>
+
+            <span
+              v-if="pageConf"
+              class="px-3 py-1 text-xs font-medium rounded-full"
+              :class="{
+                'bg-blue-50 text-blue-600': pageConf.can_edit,
+                'bg-gray-100 text-gray-600': pageConf.read_only
+              }"
+            >
+              {{ pageConf.read_only ? 'Read-only' : pageConf.can_edit ? 'Editable' : 'View' }}
+            </span>
+          </div>
         </div>
       </div>
     </nav>
@@ -43,98 +79,32 @@
         <!-- Header -->
         <div class="flex items-start justify-between mb-8">
           <div class="flex-1">
-            <!-- Title -->
-            <input
-              v-if="isEditing"
-              v-model="editForm.title"
-              type="text"
-              placeholder="页面标题"
-              class="text-3xl font-bold text-gray-900 mb-2 w-full bg-transparent border-b-2 border-gray-200 focus:border-gray-900 focus:outline-none pb-1 transition-colors"
-            />
-            <h1 v-else class="text-3xl font-bold text-gray-900 mb-2">{{ page.title }}</h1>
-
-            <!-- Brief -->
-            <input
-              v-if="isEditing"
-              v-model="editForm.brief"
-              type="text"
-              placeholder="页面描述"
-              class="text-gray-500 w-full bg-transparent border-b border-gray-100 focus:border-gray-300 focus:outline-none pb-1 transition-colors"
-            />
-            <p v-else-if="page.brief" class="text-gray-500">{{ page.brief }}</p>
-          </div>
-
-          <!-- Action Buttons -->
-          <div v-if="pageConf?.can_edit" class="flex items-center gap-3 ml-6">
-            <template v-if="isEditing">
-              <button @click="handleCancel" class="btn btn-secondary">
-                取消
-              </button>
-              <button @click="handleSave" :disabled="saving" class="btn btn-primary">
-                {{ saving ? '保存中...' : '保存' }}
-              </button>
-            </template>
-            <template v-else>
-              <button @click="startEdit" class="btn btn-primary flex items-center gap-2">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                </svg>
-                Edit
-              </button>
-            </template>
+            <h1 class="text-3xl font-bold text-gray-900 mb-2">{{ page.title }}</h1>
+            <p v-if="page.brief" class="text-gray-500">{{ page.brief }}</p>
           </div>
         </div>
 
-        <!-- Collections Grid (View Mode) -->
-        <div v-if="!isEditing" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <!-- Collections Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           <LinkCollection
-            v-for="(collection, index) in displayCollections"
+            v-for="(collection, index) in localCollections"
             :key="index"
             :collection="collection"
             :collectionIndex="index"
-            :isEditing="false"
+            :canEdit="canEdit"
+            @update-title="(title) => updateCollectionTitle(index, title)"
+            @update-link="(linkIndex, link) => updateLink(index, linkIndex, link)"
+            @links-changed="(links) => updateCollectionLinks(index, links)"
+            @copy-collection="copyCollection(index)"
           />
-        </div>
-
-        <!-- Collections List (Edit Mode) -->
-        <div v-else class="space-y-6">
-          <LinkCollection
-            v-for="(collection, index) in displayCollections"
-            :key="index"
-            :collection="collection"
-            :collectionIndex="index"
-            :isEditing="true"
-            @update="updateCollection"
-            @delete="deleteCollection"
-          />
-
-          <!-- Add Collection Button -->
-          <button
-            @click="addCollection"
-            class="w-full py-8 border-2 border-dashed border-gray-300 rounded-xl text-gray-400 hover:border-gray-400 hover:text-gray-500 transition-colors"
-          >
-            <span class="flex items-center justify-center gap-2">
-              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-              </svg>
-              添加链接集合
-            </span>
-          </button>
         </div>
 
         <!-- Empty State -->
         <div
-          v-if="!isEditing && (!displayCollections.length || displayCollections.every(c => !c.links?.length))"
-          class="text-center py-16 border-2 border-dashed border-gray-200 rounded-xl"
+          v-if="!localCollections.length || localCollections.every(c => !c.links?.length)"
+          class="text-center py-16 border-2 border-dashed border-gray-200 rounded-xl mt-6"
         >
-          <p class="text-gray-400 mb-4">此页面还没有书签</p>
-          <button
-            v-if="pageConf?.can_edit"
-            @click="startEdit"
-            class="text-gray-900 font-medium hover:underline"
-          >
-            添加书签
-          </button>
+          <p class="text-gray-400">此页面还没有书签</p>
         </div>
 
         <!-- Page Info -->
@@ -147,9 +117,10 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { getPage, updatePage } from '@/api/space'
+import { useAutoSave } from '@/composables/useAutoSave'
 import LinkCollection from '@/components/LinkCollection.vue'
 
 const route = useRoute()
@@ -157,26 +128,36 @@ const route = useRoute()
 const page = ref(null)
 const loading = ref(false)
 const error = ref('')
-const isEditing = ref(false)
-const saving = ref(false)
 
 // Page config
 const pageConf = computed(() => page.value?.page_conf)
 
-// Can edit
+// Can edit - directly from page_conf
 const canEdit = computed(() => pageConf.value?.can_edit || false)
 
-// Edit form
-const editForm = ref({
-  title: '',
-  brief: '',
-  collections: []
+// Local collections for editing
+const localCollections = ref([])
+
+// Auto save functionality
+const autoSave = useAutoSave(async () => {
+  if (!page.value || !canEdit.value) return
+  
+  await updatePage({
+    page_id: page.value.page_id,
+    title: page.value.title,
+    brief: page.value.brief,
+    collections: localCollections.value,
+    version: page.value.version,
+    mask: 7
+  })
 })
 
-// Display collections
-const displayCollections = computed(() => {
-  return isEditing.value ? editForm.value.collections : (page.value?.collections || [])
-})
+// Watch for page changes to sync local collections
+watch(() => page.value, (newPage) => {
+  if (newPage) {
+    localCollections.value = JSON.parse(JSON.stringify(newPage.collections || []))
+  }
+}, { immediate: true, deep: true })
 
 // Format date
 const formatDate = (timestamp) => {
@@ -199,7 +180,6 @@ const loadPage = async () => {
   try {
     const data = await getPage(pageId)
     page.value = data.page || data
-    initEditForm()
   } catch (err) {
     console.error('Load page error:', err)
     error.value = err.message || '加载页面失败，可能没有访问权限'
@@ -208,83 +188,37 @@ const loadPage = async () => {
   }
 }
 
-// Initialize edit form
-const initEditForm = () => {
-  if (page.value) {
-    editForm.value = {
-      title: page.value.title || '',
-      brief: page.value.brief || '',
-      collections: JSON.parse(JSON.stringify(page.value.collections || []))
-    }
-  }
+// ==================== Collection Operations ====================
+
+// Update collection title
+const updateCollectionTitle = (index, title) => {
+  localCollections.value[index].title = title
+  autoSave.markDirty()
 }
 
-// Start edit
-const startEdit = () => {
-  if (!canEdit.value) {
-    alert('您没有编辑权限')
-    return
-  }
-  isEditing.value = true
+// Update collection links
+const updateCollectionLinks = (index, links) => {
+  localCollections.value[index].links = links
+  autoSave.markDirty()
 }
 
-// Add collection
-const addCollection = () => {
-  editForm.value.collections.push({
-    title: '',
-    links: []
-  })
+// Update link
+const updateLink = (collectionIndex, linkIndex, link) => {
+  localCollections.value[collectionIndex].links[linkIndex] = link
+  autoSave.markDirty()
 }
 
-// Update collection
-const updateCollection = (index, collection) => {
-  // 使用 splice 确保 Vue 检测到数组变化
-  editForm.value.collections.splice(index, 1, collection)
-}
-
-// Delete collection
-const deleteCollection = (index) => {
-  editForm.value.collections.splice(index, 1)
-}
-
-// Handle save
-const handleSave = async () => {
-  if (!canEdit.value) {
-    alert('您没有编辑权限')
-    return
-  }
-
-  saving.value = true
-
-  try {
-    await updatePage({
-      page_id: page.value.page_id,
-      title: editForm.value.title,
-      brief: editForm.value.brief,
-      collections: editForm.value.collections,
-      version: page.value.version,
-      mask: 7
-    })
-
-    // Reload page
-    await loadPage()
-    isEditing.value = false
-  } catch (err) {
-    console.error('Save error:', err)
-    alert(err.message || '保存失败')
-  } finally {
-    saving.value = false
-  }
-}
-
-// Handle cancel
-const handleCancel = () => {
-  isEditing.value = false
-  initEditForm()
+// Copy collection
+const copyCollection = (index) => {
+  const original = localCollections.value[index]
+  const copy = JSON.parse(JSON.stringify(original))
+  copy.title = original.title ? `${original.title} (Copy)` : 'Copy'
+  
+  localCollections.value.splice(index + 1, 0, copy)
+  autoSave.markDirty()
 }
 
 onMounted(() => {
   loadPage()
 })
 </script>
-

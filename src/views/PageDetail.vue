@@ -8,8 +8,47 @@
     @delete-page="handleDeletePage"
     @logout="handleLogout"
   >
+    <!-- Save Progress Bar (Fixed at top-right) -->
+    <div 
+      v-if="canEdit && (autoSave.showProgress.value || autoSave.showSavedMessage.value || autoSave.saveError.value)"
+      class="fixed top-4 right-4 z-40 flex items-center gap-3 bg-white rounded-full shadow-lg px-4 py-2 border border-gray-100"
+    >
+      <!-- Progress bar -->
+      <div v-if="autoSave.showProgress.value" class="flex items-center gap-3">
+        <div class="w-32 h-1.5 bg-gray-100 rounded-full overflow-hidden">
+          <div 
+            class="h-full bg-emerald-500 rounded-full transition-all duration-100"
+            :style="{ width: autoSave.saveProgress.value + '%' }"
+          ></div>
+        </div>
+        <span class="text-xs text-gray-500 whitespace-nowrap">等待保存...</span>
+      </div>
+      
+      <!-- Saved message -->
+      <div v-else-if="autoSave.showSavedMessage.value" class="flex items-center gap-2 text-emerald-600">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+        </svg>
+        <span class="text-xs font-medium">已保存修改</span>
+      </div>
+      
+      <!-- Error message -->
+      <div v-else-if="autoSave.saveError.value" class="flex items-center gap-2 text-red-600">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+        <span class="text-xs font-medium">{{ autoSave.saveError.value }}</span>
+      </div>
+    </div>
+
     <!-- Main Content Area -->
-    <div class="p-8">
+    <div class="p-8 relative">
+      <!-- Drag Delete Zone -->
+      <DragDeleteZone
+        ref="deleteZoneRef"
+        :visible="isDragging"
+        @delete="handleDragDelete"
+      />
       <!-- Loading -->
       <div v-if="loading" class="flex justify-center py-24">
         <div class="animate-spin rounded-full h-10 w-10 border-2 border-gray-900 border-t-transparent"></div>
@@ -31,111 +70,97 @@
         <!-- Header -->
         <div class="flex items-start justify-between mb-8">
           <div class="flex-1">
-            <!-- Title (Edit Mode) -->
-            <input
-              v-if="isEditing"
-              v-model="editForm.title"
-              type="text"
-              placeholder="页面标题"
-              class="text-3xl font-bold text-gray-900 mb-2 w-full bg-transparent border-b-2 border-gray-200 focus:border-gray-900 focus:outline-none pb-1 transition-colors"
-            />
-            <h1 v-else class="text-3xl font-bold text-gray-900 mb-2">{{ page.title }}</h1>
-
-            <!-- Brief (Edit Mode) -->
-            <input
-              v-if="isEditing"
-              v-model="editForm.brief"
-              type="text"
-              placeholder="页面描述"
-              class="text-gray-500 w-full bg-transparent border-b border-gray-100 focus:border-gray-300 focus:outline-none pb-1 transition-colors"
-            />
-            <p v-else-if="page.brief" class="text-gray-500">{{ page.brief }}</p>
+            <h1 class="text-3xl font-bold text-gray-900 mb-2">{{ page.title }}</h1>
+            <p v-if="page.brief" class="text-gray-500">{{ page.brief }}</p>
           </div>
 
           <!-- Action Buttons -->
           <div class="flex items-center gap-3 ml-6">
-            <template v-if="isEditing">
-              <button @click="handleCancel" class="btn btn-secondary">
-                取消
-              </button>
-              <button @click="handleSave" :disabled="saving" class="btn btn-primary">
-                {{ saving ? '保存中...' : '保存' }}
-              </button>
-            </template>
-            <template v-else>
-              <button
-                v-if="page.is_self"
-                @click="showShareModal = true"
-                class="btn btn-secondary flex items-center gap-2"
-              >
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
-                </svg>
-                Share
-              </button>
-              <button
-                v-if="page.page_conf?.can_edit"
-                @click="isEditing = true"
-                class="btn btn-primary flex items-center gap-2"
-              >
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                </svg>
-                Edit
-              </button>
-            </template>
+            <button
+              v-if="canEdit"
+              @click="showAddLinkModal = true"
+              class="btn btn-secondary flex items-center gap-2"
+            >
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+              </svg>
+              Link
+            </button>
+            <button
+              v-if="canEdit"
+              @click="showAddCollectionModal = true"
+              class="btn btn-secondary flex items-center gap-2"
+            >
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M10 3h4v7h7v4h-7v7h-4v-7H3v-4h7V3z" />
+              </svg>
+              Collection
+            </button>
+            <button
+              v-if="page.is_self"
+              @click="showShareModal = true"
+              class="btn btn-secondary flex items-center gap-2"
+            >
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
+              </svg>
+              Share
+            </button>
           </div>
         </div>
 
-        <!-- Collections Grid (View Mode) -->
-        <div v-if="!isEditing" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <!-- Collections Grid with Draggable -->
+        <draggable
+          v-if="canEdit"
+          v-model="localCollections"
+          :group="{ name: 'collections' }"
+          item-key="__idx"
+          handle=".collection-drag-handle"
+          ghost-class="opacity-50"
+          :animation="200"
+          @start="handleCollectionDragStart"
+          @end="handleCollectionDragEnd"
+          @change="handleCollectionsChange"
+          class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+        >
+          <template #item="{ element: collection, index }">
+            <LinkCollection
+              :collection="collection"
+              :collectionIndex="index"
+              :canEdit="canEdit"
+              @update-title="(title) => updateCollectionTitle(index, title)"
+              @update-link="(linkIndex, link) => updateLink(index, linkIndex, link)"
+              @links-changed="(links) => updateCollectionLinks(index, links)"
+              @link-drag-start="(info) => handleLinkDragStart(index, info)"
+              @link-drag-end="handleLinkDragEnd"
+              @copy-collection="copyCollection(index)"
+            />
+          </template>
+        </draggable>
+
+        <!-- Read-only mode -->
+        <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           <LinkCollection
-            v-for="(collection, index) in displayCollections"
+            v-for="(collection, index) in localCollections"
             :key="index"
             :collection="collection"
             :collectionIndex="index"
-            :isEditing="false"
+            :canEdit="false"
           />
-        </div>
-
-        <!-- Collections List (Edit Mode) -->
-        <div v-else class="space-y-6">
-          <LinkCollection
-            v-for="(collection, index) in displayCollections"
-            :key="index"
-            :collection="collection"
-            :collectionIndex="index"
-            :isEditing="true"
-            @update="updateCollection"
-            @delete="deleteCollection"
-          />
-
-          <!-- Add Collection Button -->
-          <button
-            @click="addCollection"
-            class="w-full py-8 border-2 border-dashed border-gray-300 rounded-xl text-gray-400 hover:border-gray-400 hover:text-gray-500 transition-colors"
-          >
-            <span class="flex items-center justify-center gap-2">
-              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-              </svg>
-              添加链接集合
-            </span>
-          </button>
         </div>
 
         <!-- Empty Collections -->
         <div
-          v-if="!isEditing && (!displayCollections.length || displayCollections.every(c => !c.links?.length))"
-          class="text-center py-16 border-2 border-dashed border-gray-200 rounded-xl"
+          v-if="!localCollections.length || localCollections.every(c => !c.links?.length)"
+          class="text-center py-16 border-2 border-dashed border-gray-200 rounded-xl mt-6"
         >
           <p class="text-gray-400 mb-4">此页面还没有书签</p>
           <button
-            v-if="page.page_conf?.can_edit"
-            @click="isEditing = true"
+            v-if="canEdit"
+            @click="showAddLinkModal = true"
             class="text-gray-900 font-medium hover:underline"
           >
-            添加书签
+            Add your first link
           </button>
         </div>
       </div>
@@ -150,6 +175,19 @@
       v-model:show="showShareModal"
       :page="page"
     />
+
+    <!-- Add Link Modal -->
+    <AddLinkModal
+      v-model:show="showAddLinkModal"
+      :collections="localCollections"
+      @add="handleAddNewLink"
+    />
+
+    <!-- Add Collection Modal -->
+    <AddCollectionModal
+      v-model:show="showAddCollectionModal"
+      @confirm="handleAddCollection"
+    />
   </AppLayout>
 </template>
 
@@ -159,10 +197,15 @@ import { useRoute, useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { usePageStore } from '@/stores/page'
 import { useAuth } from '@/composables/useAuth'
+import { useAutoSave } from '@/composables/useAutoSave'
+import draggable from 'vuedraggable'
 import AppLayout from '@/components/AppLayout.vue'
 import LinkCollection from '@/components/LinkCollection.vue'
 import ShareModal from '@/components/ShareModal.vue'
 import CreatePageModal from '@/components/CreatePageModal.vue'
+import AddLinkModal from '@/components/AddLinkModal.vue'
+import AddCollectionModal from '@/components/AddCollectionModal.vue'
+import DragDeleteZone from '@/components/DragDeleteZone.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -174,22 +217,45 @@ const pageId = computed(() => route.params.pageId)
 const page = computed(() => pageStore.currentPage)
 const loading = ref(false)
 const error = ref('')
-const isEditing = ref(false)
-const saving = ref(false)
 const showShareModal = ref(false)
 const showCreateModal = ref(false)
+const showAddLinkModal = ref(false)
+const showAddCollectionModal = ref(false)
 
-// Edit form
-const editForm = ref({
-  title: '',
-  brief: '',
-  collections: []
+// Drag delete state
+const isDragging = ref(false)
+const deleteZoneRef = ref(null)
+const dragType = ref(null) // 'collection' or 'link'
+const dragCollectionIndex = ref(-1)
+const dragLinkIndex = ref(-1)
+
+// Can edit check
+const canEdit = computed(() => page.value?.page_conf?.can_edit)
+
+// Local collections for editing (reactive copy)
+const localCollections = ref([])
+
+// Auto save functionality
+const autoSave = useAutoSave(async () => {
+  if (!page.value) return
+  
+  await pageStore.updatePage({
+    page_id: page.value.page_id,
+    title: page.value.title,
+    brief: page.value.brief,
+    collections: localCollections.value,
+    version: page.value.version,
+    mask: 7
+  })
 })
 
-// Display collections
-const displayCollections = computed(() => {
-  return isEditing.value ? editForm.value.collections : (page.value?.collections || [])
-})
+
+// Watch for page changes to sync local collections
+watch(() => page.value, (newPage) => {
+  if (newPage) {
+    localCollections.value = JSON.parse(JSON.stringify(newPage.collections || []))
+  }
+}, { immediate: true, deep: true })
 
 // Load page
 const loadPage = async () => {
@@ -204,23 +270,11 @@ const loadPage = async () => {
 
   try {
     await pageStore.fetchPage(id)
-    initEditForm()
   } catch (err) {
     console.error('Load page error:', err)
     error.value = err.message || '加载页面失败'
   } finally {
     loading.value = false
-  }
-}
-
-// Initialize edit form
-const initEditForm = () => {
-  if (page.value) {
-    editForm.value = {
-      title: page.value.title || '',
-      brief: page.value.brief || '',
-      collections: JSON.parse(JSON.stringify(page.value.collections || []))
-    }
   }
 }
 
@@ -259,58 +313,137 @@ const handlePageCreated = (id) => {
   }
 }
 
-// Add collection
-const addCollection = () => {
-  editForm.value.collections.push({
-    title: '',
-    links: []
-  })
+// ==================== Drag Delete Handlers ====================
+
+const handleCollectionDragStart = (evt) => {
+  isDragging.value = true
+  dragType.value = 'collection'
+  dragCollectionIndex.value = evt.oldIndex
 }
 
-// Update collection
-const updateCollection = (index, collection) => {
-  // 使用 splice 确保 Vue 检测到数组变化
-  editForm.value.collections.splice(index, 1, collection)
+const handleCollectionDragEnd = (evt) => {
+  isDragging.value = false
+  dragType.value = null
+  dragCollectionIndex.value = -1
 }
 
-// Delete collection
-const deleteCollection = (index) => {
-  editForm.value.collections.splice(index, 1)
+const handleLinkDragStart = (collectionIndex, { linkIndex }) => {
+  isDragging.value = true
+  dragType.value = 'link'
+  dragCollectionIndex.value = collectionIndex
+  dragLinkIndex.value = linkIndex
 }
 
-// Handle save
-const handleSave = async () => {
-  saving.value = true
+const handleLinkDragEnd = () => {
+  isDragging.value = false
+  dragType.value = null
+  dragCollectionIndex.value = -1
+  dragLinkIndex.value = -1
+}
 
-  try {
-    await pageStore.updatePage({
-      page_id: page.value.page_id,
-      title: editForm.value.title,
-      brief: editForm.value.brief,
-      collections: editForm.value.collections,
-      version: page.value.version,
-      mask: 7
-    })
-    isEditing.value = false
-  } catch (err) {
-    console.error('Save error:', err)
-    alert(err.message || '保存失败')
-  } finally {
-    saving.value = false
+const handleDragDelete = () => {
+  const itemType = dragType.value === 'collection' ? '文件夹' : '链接'
+  
+  if (confirm(`确定要删除此${itemType}吗？`)) {
+    if (dragType.value === 'collection' && dragCollectionIndex.value >= 0) {
+      localCollections.value.splice(dragCollectionIndex.value, 1)
+      autoSave.markDirty()
+    } else if (dragType.value === 'link' && dragCollectionIndex.value >= 0 && dragLinkIndex.value >= 0) {
+      localCollections.value[dragCollectionIndex.value].links.splice(dragLinkIndex.value, 1)
+      autoSave.markDirty()
+    }
   }
+  
+  // Reset drag state
+  isDragging.value = false
+  dragType.value = null
+  dragCollectionIndex.value = -1
+  dragLinkIndex.value = -1
 }
 
-// Handle cancel
-const handleCancel = () => {
-  isEditing.value = false
-  initEditForm()
+// ==================== Collection Operations ====================
+
+// Add collection from modal
+const handleAddCollection = ({ name, position }) => {
+  const newCollection = {
+    title: name,
+    links: []
+  }
+  
+  if (position === 'head') {
+    localCollections.value.unshift(newCollection)
+  } else {
+    localCollections.value.push(newCollection)
+  }
+  
+  autoSave.markDirty()
 }
+
+// Update collection title
+const updateCollectionTitle = (index, title) => {
+  localCollections.value[index].title = title
+  autoSave.markDirty()
+}
+
+// Copy collection
+const copyCollection = (index) => {
+  const original = localCollections.value[index]
+  const copy = JSON.parse(JSON.stringify(original))
+  copy.title = original.title ? `${original.title} (Copy)` : 'Copy'
+  
+  // Insert after the original
+  localCollections.value.splice(index + 1, 0, copy)
+  autoSave.markDirty()
+}
+
+// Update collection links (for drag and drop)
+const updateCollectionLinks = (index, links) => {
+  localCollections.value[index].links = links
+  autoSave.markDirty()
+}
+
+// Handle collections order change (drag)
+const handleCollectionsChange = () => {
+  autoSave.markDirty()
+}
+
+// ==================== Link Operations ====================
+
+// Update link
+const updateLink = (collectionIndex, linkIndex, link) => {
+  localCollections.value[collectionIndex].links[linkIndex] = link
+  autoSave.markDirty()
+}
+
+// Delete link
+const deleteLink = (collectionIndex, linkIndex) => {
+  localCollections.value[collectionIndex].links.splice(linkIndex, 1)
+  autoSave.markDirty()
+}
+
+// Handle add new link from modal
+const handleAddNewLink = ({ link, collectionIndex, newCollectionName }) => {
+  if (collectionIndex === -1 && newCollectionName) {
+    // Create new collection with the link
+    localCollections.value.push({
+      title: newCollectionName,
+      links: [link]
+    })
+  } else if (collectionIndex >= 0) {
+    // Add to existing collection
+    if (!localCollections.value[collectionIndex].links) {
+      localCollections.value[collectionIndex].links = []
+    }
+    localCollections.value[collectionIndex].links.push(link)
+  }
+  autoSave.markDirty()
+}
+
 
 // Watch for route changes
 watch(pageId, (newId) => {
   if (newId) {
     loadPage()
-    isEditing.value = false
   }
 })
 

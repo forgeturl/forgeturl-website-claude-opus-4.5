@@ -1,0 +1,90 @@
+<template>
+  <Transition name="trash">
+    <div
+      v-if="visible"
+      class="absolute top-4 left-0 right-0 z-50 flex justify-center pointer-events-none"
+    >
+      <div
+        ref="dropZone"
+        class="pointer-events-auto flex flex-col items-center gap-1 px-5 py-2.5 rounded-xl transition-all duration-200"
+        :class="isOver 
+          ? 'bg-red-500 scale-110 shadow-xl shadow-red-500/30' 
+          : 'bg-red-100 shadow-md'"
+        @dragover.prevent="handleDragOver"
+        @dragleave="handleDragLeave"
+        @drop.prevent="handleDrop"
+      >
+        <div 
+          class="w-7 h-7 rounded-full flex items-center justify-center transition-all"
+          :class="isOver ? 'bg-red-600' : 'bg-red-200'"
+        >
+          <svg 
+            class="w-3.5 h-3.5 transition-colors"
+            :class="isOver ? 'text-white' : 'text-red-500'"
+            fill="none" 
+            stroke="currentColor" 
+            viewBox="0 0 24 24"
+          >
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+          </svg>
+        </div>
+        <span 
+          class="text-xs font-medium transition-colors"
+          :class="isOver ? 'text-white' : 'text-red-500'"
+        >
+          {{ isOver ? '松开删除' : '拖到这里删除' }}
+        </span>
+      </div>
+    </div>
+  </Transition>
+</template>
+
+<script setup>
+import { ref } from 'vue'
+
+defineProps({
+  visible: {
+    type: Boolean,
+    default: false
+  }
+})
+
+const emit = defineEmits(['delete'])
+
+const isOver = ref(false)
+const dropZone = ref(null)
+
+const handleDragOver = (e) => {
+  isOver.value = true
+}
+
+const handleDragLeave = (e) => {
+  isOver.value = false
+}
+
+const handleDrop = (e) => {
+  isOver.value = false
+  emit('delete')
+}
+</script>
+
+<style scoped>
+.trash-enter-active {
+  transition: all 0.3s ease-out;
+}
+
+.trash-leave-active {
+  transition: all 0.2s ease-in;
+}
+
+.trash-enter-from {
+  opacity: 0;
+  transform: translateY(-20px);
+}
+
+.trash-leave-to {
+  opacity: 0;
+  transform: translateY(-20px);
+}
+</style>
+

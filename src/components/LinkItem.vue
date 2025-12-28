@@ -1,12 +1,45 @@
 <template>
-  <div class="group">
-    <!-- View Mode - Simple Link Text -->
-    <div v-if="!isEditing" class="inline-block relative">
+  <div 
+    class="group inline-flex items-center gap-1 relative"
+    :class="{ 'cursor-grab': canEdit }"
+  >
+    <!-- Drag Handle (visible on hover in edit mode) -->
+    <div 
+      v-if="canEdit"
+      class="link-drag-handle flex-shrink-0 w-4 h-4 flex items-center justify-center cursor-grab opacity-0 group-hover:opacity-100 transition-opacity -ml-5"
+    >
+      <svg class="w-3 h-3 text-gray-300" fill="currentColor" viewBox="0 0 20 20">
+        <path d="M7 2a2 2 0 1 0 .001 4.001A2 2 0 0 0 7 2zm0 6a2 2 0 1 0 .001 4.001A2 2 0 0 0 7 8zm0 6a2 2 0 1 0 .001 4.001A2 2 0 0 0 7 14zm6-8a2 2 0 1 0-.001-4.001A2 2 0 0 0 13 6zm0 2a2 2 0 1 0 .001 4.001A2 2 0 0 0 13 8zm0 6a2 2 0 1 0 .001 4.001A2 2 0 0 0 13 14z"/>
+      </svg>
+    </div>
+
+    <!-- Link Text -->
+    <div class="inline-block relative">
+      <!-- Read-only mode: normal link -->
       <a
+        v-if="!canEdit"
         :href="link.url"
         target="_blank"
         rel="noopener noreferrer"
         class="text-gray-500 hover:text-gray-900 hover:font-semibold transition-all no-underline"
+      >
+        {{ link.title || 'Untitled' }}
+      </a>
+      
+      <!-- Edit mode: click to open, long press to edit -->
+      <a
+        v-else
+        :href="link.url"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="text-gray-500 hover:text-gray-900 hover:font-semibold transition-all no-underline select-none"
+        @click="handleClick"
+        @mousedown="handleMouseDown"
+        @mouseup="handleMouseUp"
+        @mouseleave="handleMouseLeave"
+        @touchstart="handleTouchStart"
+        @touchend="handleTouchEnd"
+        @touchmove="handleTouchMove"
       >
         {{ link.title || 'Untitled' }}
       </a>
@@ -48,117 +81,28 @@
         </div>
       </div>
     </div>
-
-    <!-- Edit Mode -->
-    <div v-else class="bg-white border border-gray-200 rounded-xl p-4 space-y-4">
-      <!-- Title and URL -->
-      <div class="grid grid-cols-2 gap-3">
-        <div>
-          <label class="block text-xs font-medium text-gray-500 mb-1">标题</label>
-          <input
-            v-model="editForm.title"
-            type="text"
-            placeholder="链接标题"
-            class="input text-sm"
-          />
-        </div>
-        <div>
-          <label class="block text-xs font-medium text-gray-500 mb-1">链接</label>
-          <input
-            v-model="editForm.url"
-            type="url"
-            placeholder="https://..."
-            class="input text-sm"
-          />
-        </div>
-      </div>
-
-      <!-- Tags -->
-      <div>
-        <label class="block text-xs font-medium text-gray-500 mb-1">标签 (逗号分隔)</label>
-        <input
-          v-model="tagsInput"
-          type="text"
-          placeholder="工具, 开发, 设计"
-          class="input text-sm"
-        />
-      </div>
-
-      <!-- Sub Links -->
-      <div v-if="editForm.sub_links.length > 0">
-        <label class="block text-xs font-medium text-gray-500 mb-2">子链接</label>
-        <div class="space-y-2">
-          <div
-            v-for="(subLink, index) in editForm.sub_links"
-            :key="index"
-            class="flex gap-2"
-          >
-            <input
-              v-model="subLink.sub_title"
-              type="text"
-              placeholder="子链接标题"
-              class="input flex-1 text-sm"
-            />
-            <input
-              v-model="subLink.sub_url"
-              type="url"
-              placeholder="子链接地址"
-              class="input flex-1 text-sm"
-            />
-            <button
-              @click="removeSubLink(index)"
-              class="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
-            >
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
-          </div>
-          <button
-            @click="addSubLink"
-            class="text-xs text-gray-500 hover:text-gray-700 transition-colors"
-          >
-            + 添加子链接
-          </button>
-        </div>
-      </div>
-
-      <!-- Actions -->
-      <div class="flex items-center justify-between pt-2 border-t border-gray-100">
-        <button
-          v-if="editForm.sub_links.length === 0"
-          @click="addSubLink"
-          class="text-xs text-gray-400 hover:text-gray-600 transition-colors"
-        >
-          + 添加子链接
-        </button>
-        <div v-else></div>
-        <button
-          @click="$emit('delete')"
-          class="text-xs text-red-500 hover:text-red-600 transition-colors"
-        >
-          删除此链接
-        </button>
-      </div>
-    </div>
   </div>
 </template>
 
 <script setup>
-import { ref, watch, computed, nextTick } from 'vue'
+import { ref, computed, nextTick } from 'vue'
 
 const props = defineProps({
   link: {
     type: Object,
     required: true
   },
-  isEditing: {
+  linkIndex: {
+    type: Number,
+    default: 0
+  },
+  canEdit: {
     type: Boolean,
     default: false
   }
 })
 
-const emit = defineEmits(['update', 'delete'])
+const emit = defineEmits(['edit'])
 
 // Sub links dropdown state
 const showSubLinksDropdown = ref(false)
@@ -188,75 +132,73 @@ const handleMouseEnter = () => {
   })
 }
 
-// Edit form
-const editForm = ref({
-  title: '',
-  url: '',
-  tags: [],
-  photo_url: '',
-  sub_links: []
-})
+// Long press detection
+let longPressTimer = null
+const longPressDelay = 500
+let isLongPress = false
 
-// Tags input (comma separated)
-const tagsInput = ref('')
-
-// Watch for editing mode changes
-watch(() => props.isEditing, (newVal) => {
-  if (newVal) {
-    editForm.value = {
-      title: props.link.title || '',
-      url: props.link.url || '',
-      tags: [...(props.link.tags || [])],
-      photo_url: props.link.photo_url || '',
-      sub_links: JSON.parse(JSON.stringify(props.link.sub_links || []))
-    }
-    tagsInput.value = (props.link.tags || []).join(', ')
-  }
-}, { immediate: true })
-
-// Watch for editForm changes and emit updates in real-time
-watch([() => editForm.value.title, () => editForm.value.url, () => tagsInput.value], () => {
-  if (props.isEditing) {
-    emitUpdate()
-  }
-}, { deep: true })
-
-// Watch for sub_links changes
-watch(() => editForm.value.sub_links, () => {
-  if (props.isEditing) {
-    emitUpdate()
-  }
-}, { deep: true })
-
-const addSubLink = () => {
-  editForm.value.sub_links.push({
-    sub_title: '',
-    sub_url: ''
-  })
+// Mouse handlers (desktop)
+const handleMouseDown = (e) => {
+  if (!props.canEdit) return
+  
+  isLongPress = false
+  longPressTimer = setTimeout(() => {
+    isLongPress = true
+    emit('edit')
+  }, longPressDelay)
 }
 
-const removeSubLink = (index) => {
-  editForm.value.sub_links.splice(index, 1)
+const handleMouseUp = () => {
+  if (longPressTimer) {
+    clearTimeout(longPressTimer)
+    longPressTimer = null
+  }
 }
 
-const emitUpdate = () => {
-  // Parse tags
-  const tags = tagsInput.value
-    .split(',')
-    .map(tag => tag.trim())
-    .filter(tag => tag.length > 0)
+const handleMouseLeave = () => {
+  if (longPressTimer) {
+    clearTimeout(longPressTimer)
+    longPressTimer = null
+  }
+}
 
-  // Filter empty sub links
-  const subLinks = editForm.value.sub_links.filter(
-    sl => sl.sub_title && sl.sub_url
-  )
+// Touch handlers (mobile)
+const handleTouchStart = (e) => {
+  if (!props.canEdit) return
+  
+  isLongPress = false
+  longPressTimer = setTimeout(() => {
+    isLongPress = true
+    emit('edit')
+  }, longPressDelay)
+}
 
-  const updatedLink = {
-    ...editForm.value,
-    tags,
-    sub_links: subLinks
+const handleTouchEnd = (e) => {
+  if (longPressTimer) {
+    clearTimeout(longPressTimer)
+    longPressTimer = null
   }
   
-  emit('update', updatedLink)
+  // Prevent navigation if it was a long press
+  if (isLongPress) {
+    e.preventDefault()
+    isLongPress = false
+  }
+}
+
+const handleTouchMove = () => {
+  if (longPressTimer) {
+    clearTimeout(longPressTimer)
+    longPressTimer = null
+  }
+}
+
+// Click handler - prevent navigation if long press triggered
+const handleClick = (e) => {
+  if (isLongPress) {
+    e.preventDefault()
+    isLongPress = false
+  }
+  // Otherwise, let the default <a> behavior happen (navigate to link)
 }
 </script>

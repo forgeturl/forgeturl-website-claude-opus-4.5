@@ -132,8 +132,14 @@ export const usePageStore = defineStore('page', () => {
         try {
             const result = await apiAddPageLink(pageId, pageType)
             // 刷新当前页面以获取最新的链接信息
-            if (currentPage.value?.page_id === pageId) {
-                await fetchPage(pageId)
+            await fetchPage(pageId)
+            
+            // 同步更新 myPages 中对应的页面
+            if (currentPage.value) {
+                const index = myPages.value.findIndex(p => p.page_id === pageId)
+                if (index !== -1) {
+                    myPages.value[index] = { ...myPages.value[index], ...currentPage.value }
+                }
             }
             return result
         } catch (error) {

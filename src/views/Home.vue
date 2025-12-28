@@ -8,8 +8,48 @@
     @delete-page="handleDeletePage"
     @logout="handleLogout"
   >
+    <!-- Save Progress Bar (Fixed at top-right) -->
+    <div 
+      v-if="canEdit && (autoSave.showProgress.value || autoSave.showSavedMessage.value || autoSave.saveError.value)"
+      class="fixed top-4 right-4 z-40 flex items-center gap-3 bg-white rounded-full shadow-lg px-4 py-2 border border-gray-100"
+    >
+      <!-- Progress bar -->
+      <div v-if="autoSave.showProgress.value" class="flex items-center gap-3">
+        <div class="w-32 h-1.5 bg-gray-100 rounded-full overflow-hidden">
+          <div 
+            class="h-full bg-emerald-500 rounded-full transition-all duration-100"
+            :style="{ width: autoSave.saveProgress.value + '%' }"
+          ></div>
+        </div>
+        <span class="text-xs text-gray-500 whitespace-nowrap">等待保存...</span>
+      </div>
+      
+      <!-- Saved message -->
+      <div v-else-if="autoSave.showSavedMessage.value" class="flex items-center gap-2 text-emerald-600">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+        </svg>
+        <span class="text-xs font-medium">已保存修改</span>
+      </div>
+      
+      <!-- Error message -->
+      <div v-else-if="autoSave.saveError.value" class="flex items-center gap-2 text-red-600">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+        <span class="text-xs font-medium">{{ autoSave.saveError.value }}</span>
+      </div>
+    </div>
+
     <!-- Main Content Area -->
-    <div class="p-8">
+    <div class="p-8 relative">
+      <!-- Drag Delete Zone -->
+      <DragDeleteZone
+        ref="deleteZoneRef"
+        :visible="isDragging"
+        @delete="handleDragDelete"
+      />
+      
       <!-- Loading -->
       <div v-if="pageStore.loading && !pageStore.myPages.length" class="flex justify-center py-24">
         <div class="animate-spin rounded-full h-10 w-10 border-2 border-gray-900 border-t-transparent"></div>
@@ -41,6 +81,26 @@
           <!-- Action Buttons -->
           <div class="flex items-center gap-3 ml-6">
             <button
+              v-if="canEdit"
+              @click="showAddLinkModal = true"
+              class="btn btn-secondary flex items-center gap-2"
+            >
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+              </svg>
+              Link
+            </button>
+            <button
+              v-if="canEdit"
+              @click="showAddCollectionModal = true"
+              class="btn btn-secondary flex items-center gap-2"
+            >
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M10 3h4v7h7v4h-7v7h-4v-7H3v-4h7V3z" />
+              </svg>
+              Collection
+            </button>
+            <button
               @click="showShareModal = true"
               class="btn btn-secondary flex items-center gap-2"
             >
@@ -49,34 +109,58 @@
               </svg>
               Share
             </button>
-            <button
-              @click="goToEditPage"
-              class="btn btn-primary flex items-center gap-2"
-            >
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-              </svg>
-              Edit
-            </button>
           </div>
         </div>
 
-        <!-- Collections Grid -->
-        <div v-if="selectedPage.collections && selectedPage.collections.length" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <!-- Collections Grid with Draggable (Edit mode) -->
+        <draggable
+          v-if="canEdit"
+          v-model="localCollections"
+          :group="{ name: 'collections' }"
+          item-key="__idx"
+          handle=".collection-drag-handle"
+          ghost-class="opacity-50"
+          :animation="200"
+          @start="handleCollectionDragStart"
+          @end="handleCollectionDragEnd"
+          @change="handleCollectionsChange"
+          class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+        >
+          <template #item="{ element: collection, index }">
+            <LinkCollection
+              :collection="collection"
+              :collectionIndex="index"
+              :canEdit="canEdit"
+              @update-title="(title) => updateCollectionTitle(index, title)"
+              @update-link="(linkIndex, link) => updateLink(index, linkIndex, link)"
+              @links-changed="(links) => updateCollectionLinks(index, links)"
+              @link-drag-start="(info) => handleLinkDragStart(index, info)"
+              @link-drag-end="handleLinkDragEnd"
+              @copy-collection="copyCollection(index)"
+            />
+          </template>
+        </draggable>
+
+        <!-- Collections Grid (Read-only mode) -->
+        <div v-else-if="selectedPage.collections && selectedPage.collections.length" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           <LinkCollection
             v-for="(collection, index) in selectedPage.collections"
             :key="index"
             :collection="collection"
             :collectionIndex="index"
-            :isEditing="false"
+            :canEdit="false"
           />
         </div>
 
         <!-- Empty Links -->
-        <div v-else class="text-center py-16 border-2 border-dashed border-gray-200 rounded-xl">
+        <div v-if="!localCollections.length || localCollections.every(c => !c.links?.length)" class="text-center py-16 border-2 border-dashed border-gray-200 rounded-xl mt-6">
           <p class="text-gray-400 mb-4">此页面还没有书签</p>
-          <button @click="goToEditPage" class="text-gray-900 font-medium hover:underline">
-            添加书签
+          <button
+            v-if="canEdit"
+            @click="showAddLinkModal = true"
+            class="text-gray-900 font-medium hover:underline"
+          >
+            Add your first link
           </button>
         </div>
       </div>
@@ -99,6 +183,19 @@
       v-model:show="showShareModal"
       :page="selectedPage"
     />
+
+    <!-- Add Link Modal -->
+    <AddLinkModal
+      v-model:show="showAddLinkModal"
+      :collections="localCollections"
+      @add="handleAddNewLink"
+    />
+
+    <!-- Add Collection Modal -->
+    <AddCollectionModal
+      v-model:show="showAddCollectionModal"
+      @confirm="handleAddCollection"
+    />
   </AppLayout>
 </template>
 
@@ -108,10 +205,15 @@ import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { usePageStore } from '@/stores/page'
 import { useAuth } from '@/composables/useAuth'
+import { useAutoSave } from '@/composables/useAutoSave'
+import draggable from 'vuedraggable'
 import AppLayout from '@/components/AppLayout.vue'
 import CreatePageModal from '@/components/CreatePageModal.vue'
 import ShareModal from '@/components/ShareModal.vue'
 import LinkCollection from '@/components/LinkCollection.vue'
+import AddLinkModal from '@/components/AddLinkModal.vue'
+import AddCollectionModal from '@/components/AddCollectionModal.vue'
+import DragDeleteZone from '@/components/DragDeleteZone.vue'
 
 const router = useRouter()
 const authStore = useAuthStore()
@@ -120,13 +222,49 @@ const { handleLogout: logout } = useAuth()
 
 const showCreateModal = ref(false)
 const showShareModal = ref(false)
+const showAddLinkModal = ref(false)
+const showAddCollectionModal = ref(false)
 const selectedPageId = ref('')
+
+// Drag delete state
+const isDragging = ref(false)
+const deleteZoneRef = ref(null)
+const dragType = ref(null) // 'collection' or 'link'
+const dragCollectionIndex = ref(-1)
+const dragLinkIndex = ref(-1)
 
 // 选中的页面
 const selectedPage = computed(() => {
   if (!selectedPageId.value) return null
   return pageStore.myPages.find(p => p.page_id === selectedPageId.value)
 })
+
+// Can edit check
+const canEdit = computed(() => selectedPage.value?.page_conf?.can_edit)
+
+// Local collections for editing (reactive copy)
+const localCollections = ref([])
+
+// Auto save functionality
+const autoSave = useAutoSave(async () => {
+  if (!selectedPage.value) return
+  
+  await pageStore.updatePage({
+    page_id: selectedPage.value.page_id,
+    title: selectedPage.value.title,
+    brief: selectedPage.value.brief,
+    collections: localCollections.value,
+    version: selectedPage.value.version,
+    mask: 7
+  })
+})
+
+// Watch for page changes to sync local collections
+watch(() => selectedPage.value, (newPage) => {
+  if (newPage) {
+    localCollections.value = JSON.parse(JSON.stringify(newPage.collections || []))
+  }
+}, { immediate: true, deep: true })
 
 // 选择页面
 const selectPage = async (pageId) => {
@@ -159,13 +297,6 @@ const handleDeletePage = async (pageId) => {
   }
 }
 
-// 前往编辑页面
-const goToEditPage = () => {
-  if (selectedPageId.value) {
-    router.push(`/page/${selectedPageId.value}`)
-  }
-}
-
 // 处理页面创建
 const handlePageCreated = async (pageId) => {
   showCreateModal.value = false
@@ -178,6 +309,126 @@ const handlePageCreated = async (pageId) => {
 // 处理登出
 const handleLogout = async () => {
   await logout()
+}
+
+// ==================== Drag Delete Handlers ====================
+
+const handleCollectionDragStart = (evt) => {
+  isDragging.value = true
+  dragType.value = 'collection'
+  dragCollectionIndex.value = evt.oldIndex
+}
+
+const handleCollectionDragEnd = (evt) => {
+  isDragging.value = false
+  dragType.value = null
+  dragCollectionIndex.value = -1
+}
+
+const handleLinkDragStart = (collectionIndex, { linkIndex }) => {
+  isDragging.value = true
+  dragType.value = 'link'
+  dragCollectionIndex.value = collectionIndex
+  dragLinkIndex.value = linkIndex
+}
+
+const handleLinkDragEnd = () => {
+  isDragging.value = false
+  dragType.value = null
+  dragCollectionIndex.value = -1
+  dragLinkIndex.value = -1
+}
+
+const handleDragDelete = () => {
+  const itemType = dragType.value === 'collection' ? '文件夹' : '链接'
+  
+  if (confirm(`确定要删除此${itemType}吗？`)) {
+    if (dragType.value === 'collection' && dragCollectionIndex.value >= 0) {
+      localCollections.value.splice(dragCollectionIndex.value, 1)
+      autoSave.markDirty()
+    } else if (dragType.value === 'link' && dragCollectionIndex.value >= 0 && dragLinkIndex.value >= 0) {
+      localCollections.value[dragCollectionIndex.value].links.splice(dragLinkIndex.value, 1)
+      autoSave.markDirty()
+    }
+  }
+  
+  // Reset drag state
+  isDragging.value = false
+  dragType.value = null
+  dragCollectionIndex.value = -1
+  dragLinkIndex.value = -1
+}
+
+// ==================== Collection Operations ====================
+
+// Add collection from modal
+const handleAddCollection = ({ name, position }) => {
+  const newCollection = {
+    title: name,
+    links: []
+  }
+  
+  if (position === 'head') {
+    localCollections.value.unshift(newCollection)
+  } else {
+    localCollections.value.push(newCollection)
+  }
+  
+  autoSave.markDirty()
+}
+
+// Update collection title
+const updateCollectionTitle = (index, title) => {
+  localCollections.value[index].title = title
+  autoSave.markDirty()
+}
+
+// Copy collection
+const copyCollection = (index) => {
+  const original = localCollections.value[index]
+  const copy = JSON.parse(JSON.stringify(original))
+  copy.title = original.title ? `${original.title} (Copy)` : 'Copy'
+  
+  // Insert after the original
+  localCollections.value.splice(index + 1, 0, copy)
+  autoSave.markDirty()
+}
+
+// Update collection links (for drag and drop)
+const updateCollectionLinks = (index, links) => {
+  localCollections.value[index].links = links
+  autoSave.markDirty()
+}
+
+// Handle collections order change (drag)
+const handleCollectionsChange = () => {
+  autoSave.markDirty()
+}
+
+// ==================== Link Operations ====================
+
+// Update link
+const updateLink = (collectionIndex, linkIndex, link) => {
+  localCollections.value[collectionIndex].links[linkIndex] = link
+  autoSave.markDirty()
+}
+
+// Handle add new link from modal
+const handleAddNewLink = ({ link, collectionIndex, newCollectionName }) => {
+  if (collectionIndex === -1 && newCollectionName) {
+    // Create new collection with the link
+    localCollections.value.push({
+      title: newCollectionName,
+      links: [link]
+    })
+  } else if (collectionIndex >= 0) {
+    // Add to existing collection
+    if (!localCollections.value[collectionIndex].links) {
+      localCollections.value[collectionIndex].links = []
+    }
+    localCollections.value[collectionIndex].links.push(link)
+  }
+  autoSave.markDirty()
 }
 
 // 初始化
