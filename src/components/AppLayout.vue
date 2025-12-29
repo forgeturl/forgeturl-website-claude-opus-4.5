@@ -1,7 +1,7 @@
 <template>
   <div class="min-h-screen flex bg-gray-50">
     <!-- Sidebar -->
-    <aside class="w-56 bg-white border-r border-gray-200 flex flex-col fixed h-full">
+    <aside class="w-56 bg-white border-r border-gray-200 flex flex-col fixed h-full z-30">
       <!-- Logo -->
       <div class="px-4 py-5">
         <router-link to="/" class="group flex items-center gap-3 select-none">
@@ -127,7 +127,7 @@
     </aside>
 
     <!-- Main Content -->
-    <main class="flex-1 ml-56">
+    <main class="flex-1 ml-56 overflow-x-hidden">
       <slot></slot>
     </main>
   </div>

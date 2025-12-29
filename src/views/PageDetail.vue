@@ -184,6 +184,7 @@
     <AddLinkModal
       v-model:show="showAddLinkModal"
       :collections="localCollections"
+      :onImportBookmarks="handleImportBookmarks"
       @add="handleAddNewLink"
       @batch-add="handleBatchAddLinks"
     />
@@ -544,6 +545,7 @@ const handleAddNewLink = ({ link, collectionIndex, newCollectionName }) => {
 
 // Handle batch add links from modal
 const handleBatchAddLinks = ({ links, collectionIndex, newCollectionName }) => {
+  console.log('handleBatchAddLinks called with:', { links, collectionIndex, newCollectionName })
   if (collectionIndex === -1 && newCollectionName) {
     // Create new collection with all the links
     localCollections.value.push({
@@ -557,6 +559,39 @@ const handleBatchAddLinks = ({ links, collectionIndex, newCollectionName }) => {
     }
     localCollections.value[collectionIndex].links.push(...links)
   }
+  autoSave.markDirty()
+}
+
+// Handle import bookmarks from modal
+const handleImportBookmarks = ({ folders }) => {
+  console.log('handleImportBookmarks called with folders:', folders)
+  
+  // Add each folder as a new collection
+  // If a collection with the same name exists, add links to it
+  folders.forEach(folder => {
+    const existingIndex = localCollections.value.findIndex(
+      c => c.title?.toLowerCase() === folder.title?.toLowerCase()
+    )
+    
+    if (existingIndex >= 0) {
+      // Add to existing collection
+      if (!localCollections.value[existingIndex].links) {
+        localCollections.value[existingIndex].links = []
+      }
+      localCollections.value[existingIndex].links.push(...folder.links)
+    } else {
+      // Create new collection
+      localCollections.value.push({
+        title: folder.title,
+        links: folder.links
+      })
+    }
+  })
+  
+  console.log('localCollections after import:', localCollections.value)
+  console.log('Calling autoSave.markDirty()')
+  
+  // markDirty will trigger auto-save after 5 seconds (built-in delay in useAutoSave)
   autoSave.markDirty()
 }
 

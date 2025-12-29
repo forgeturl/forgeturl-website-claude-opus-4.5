@@ -23,7 +23,7 @@
               <div class="flex bg-gray-100 rounded-lg p-1">
                 <button
                   @click="activeTab = 'single'"
-                  class="px-4 py-2 text-sm font-medium rounded-md transition-all"
+                  class="px-3 py-2 text-sm font-medium rounded-md transition-all"
                   :class="activeTab === 'single' 
                     ? 'bg-white text-gray-900 shadow-sm' 
                     : 'text-gray-500 hover:text-gray-700'"
@@ -32,12 +32,21 @@
                 </button>
                 <button
                   @click="activeTab = 'batch'"
-                  class="px-4 py-2 text-sm font-medium rounded-md transition-all"
+                  class="px-3 py-2 text-sm font-medium rounded-md transition-all"
                   :class="activeTab === 'batch' 
                     ? 'bg-white text-gray-900 shadow-sm' 
                     : 'text-gray-500 hover:text-gray-700'"
                 >
-                  Batch Add Links
+                  Batch Add
+                </button>
+                <button
+                  @click="activeTab = 'import'"
+                  class="px-3 py-2 text-sm font-medium rounded-md transition-all"
+                  :class="activeTab === 'import' 
+                    ? 'bg-white text-gray-900 shadow-sm' 
+                    : 'text-gray-500 hover:text-gray-700'"
+                >
+                  Import
                 </button>
               </div>
               <button
@@ -52,7 +61,7 @@
           </div>
 
           <!-- Body - Single Link Mode -->
-          <div v-if="activeTab === 'single'" ref="scrollContainerRef" class="px-6 py-5 space-y-5 overflow-y-auto max-h-[60vh]">
+          <div v-show="activeTab === 'single'" ref="scrollContainerRef" class="px-6 py-5 space-y-5 overflow-y-auto max-h-[60vh]">
             <!-- URL -->
             <div class="flex items-center gap-4">
               <label class="text-sm font-medium text-gray-700 w-12 flex-shrink-0">URL</label>
@@ -247,7 +256,7 @@
           </div>
 
           <!-- Body - Batch Add Mode -->
-          <div v-else ref="batchScrollContainerRef" class="px-6 py-5 space-y-5 overflow-y-auto max-h-[60vh]">
+          <div v-show="activeTab === 'batch'" ref="batchScrollContainerRef" class="px-6 py-5 space-y-5 overflow-y-auto max-h-[60vh]">
             <!-- Collection Selection (First) -->
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-2">Add to Collection</label>
@@ -374,6 +383,109 @@
             </div>
           </div>
 
+          <!-- Body - Import Mode -->
+          <div v-show="activeTab === 'import'" ref="importScrollContainerRef" class="px-6 py-5 space-y-5 overflow-y-auto max-h-[60vh]">
+            <!-- File Upload -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Select Chrome Bookmarks File</label>
+              <div 
+                class="border-2 border-dashed border-gray-200 rounded-xl p-6 text-center hover:border-gray-300 transition-colors cursor-pointer"
+                @click="triggerFileInput"
+                @dragover.prevent="handleDragOver"
+                @dragleave.prevent="handleDragLeave"
+                @drop.prevent="handleFileDrop"
+                :class="{ 'border-blue-400 bg-blue-50': isDragOver }"
+              >
+                <input
+                  ref="fileInputRef"
+                  type="file"
+                  accept=".html,.htm"
+                  class="hidden"
+                  @change="handleFileSelect"
+                />
+                <svg class="w-10 h-10 mx-auto text-gray-400 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                </svg>
+                <p class="text-sm text-gray-600 mb-1">
+                  <span class="font-medium text-gray-900">Click to upload</span> or drag and drop
+                </p>
+                <p class="text-xs text-gray-400">Chrome bookmarks HTML file</p>
+              </div>
+              <p v-if="importFileName" class="mt-2 text-sm text-gray-600 flex items-center gap-2">
+                <svg class="w-4 h-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                </svg>
+                {{ importFileName }}
+              </p>
+            </div>
+
+            <!-- Import Preview -->
+            <div v-if="importFolders.length > 0">
+              <div class="flex items-center justify-between mb-2">
+                <label class="block text-sm font-medium text-gray-700">
+                  Preview
+                  <span class="text-gray-400 font-normal">({{ totalImportLinks }} links in {{ importFolders.length }} folders)</span>
+                </label>
+                <button
+                  @click="clearImport"
+                  class="px-2 py-1 text-xs text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded transition-colors"
+                >
+                  Clear
+                </button>
+              </div>
+              <div class="space-y-3 max-h-64 overflow-y-auto">
+                <div
+                  v-for="(folder, folderIndex) in importFolders"
+                  :key="folderIndex"
+                  class="border border-gray-200 rounded-lg overflow-hidden"
+                >
+                  <div 
+                    class="flex items-center justify-between px-3 py-2 bg-gray-50 cursor-pointer"
+                    @click="toggleFolderExpand(folderIndex)"
+                  >
+                    <div class="flex items-center gap-2">
+                      <svg 
+                        class="w-4 h-4 text-gray-400 transition-transform"
+                        :class="{ 'rotate-90': expandedFolders.includes(folderIndex) }"
+                        fill="none" 
+                        stroke="currentColor" 
+                        viewBox="0 0 24 24"
+                      >
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                      </svg>
+                      <svg class="w-4 h-4 text-yellow-500" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M2 6a2 2 0 012-2h5l2 2h5a2 2 0 012 2v6a2 2 0 01-2 2H4a2 2 0 01-2-2V6z" />
+                      </svg>
+                      <span class="text-sm font-medium text-gray-700">{{ folder.title }}</span>
+                    </div>
+                    <span class="text-xs text-gray-400">{{ folder.links.length }} links</span>
+                  </div>
+                  <div v-show="expandedFolders.includes(folderIndex)" class="px-3 py-2 space-y-1">
+                    <div
+                      v-for="(link, linkIndex) in folder.links.slice(0, 10)"
+                      :key="linkIndex"
+                      class="flex items-center gap-2 text-xs text-gray-600 py-1"
+                    >
+                      <svg class="w-3 h-3 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+                      </svg>
+                      <span class="truncate">{{ link.title }}</span>
+                    </div>
+                    <div v-if="folder.links.length > 10" class="text-xs text-gray-400 py-1 pl-5">
+                      ... and {{ folder.links.length - 10 }} more links
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Import Info -->
+            <div v-if="importFolders.length === 0" class="text-center py-4 text-gray-400 text-sm">
+              <p>Export your Chrome bookmarks:</p>
+              <p class="text-xs mt-1">Chrome → Bookmarks → Bookmark Manager → ⋮ → Export bookmarks</p>
+            </div>
+          </div>
+
           <!-- Footer -->
           <div class="px-6 py-4 bg-gray-50 border-t border-gray-100 flex justify-end gap-3">
             <button
@@ -391,12 +503,20 @@
               Add
             </button>
             <button
-              v-else
+              v-else-if="activeTab === 'batch'"
               @click="handleBatchSave"
               :disabled="!canBatchSave"
               class="px-5 py-2.5 bg-gray-900 text-white rounded-xl hover:bg-gray-800 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
             >
               Add {{ parsedLinks.length }} Links
+            </button>
+            <button
+              v-else-if="activeTab === 'import'"
+              @click="handleImport"
+              :disabled="!canImport"
+              class="px-5 py-2.5 bg-gray-900 text-white rounded-xl hover:bg-gray-800 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Import {{ totalImportLinks }} Links
             </button>
           </div>
         </div>
@@ -416,10 +536,14 @@ const props = defineProps({
   collections: {
     type: Array,
     default: () => []
+  },
+  onImportBookmarks: {
+    type: Function,
+    default: null
   }
 })
 
-const emit = defineEmits(['update:show', 'add', 'batch-add'])
+const emit = defineEmits(['update:show', 'add', 'batch-add', 'import-bookmarks'])
 
 // Tab state
 const activeTab = ref('single')
@@ -444,6 +568,14 @@ const parsedLinks = ref([])
 const batchSelectedCollectionIndex = ref(0)
 const isBatchCreateNew = ref(false)
 const batchNewCollectionName = ref('')
+
+// Import state
+const importFolders = ref([])
+const importFileName = ref('')
+const expandedFolders = ref([])
+const fileInputRef = ref(null)
+const importScrollContainerRef = ref(null)
+const isDragOver = ref(false)
 
 // Optional fields visibility
 const showTags = ref(false)
@@ -483,6 +615,12 @@ watch(() => props.show, (newShow) => {
     batchSelectedCollectionIndex.value = props.collections.length > 0 ? 0 : -1
     isBatchCreateNew.value = props.collections.length === 0
     batchNewCollectionName.value = ''
+    
+    // Reset import form
+    importFolders.value = []
+    importFileName.value = ''
+    expandedFolders.value = []
+    isDragOver.value = false
     
     // Reset tab to single
     activeTab.value = 'single'
@@ -530,6 +668,16 @@ const canBatchSave = computed(() => {
   const hasLinks = parsedLinks.value.length > 0
   const hasValidTarget = !isBatchCreateNew.value || batchNewCollectionName.value.trim().length > 0
   return hasLinks && hasValidTarget
+})
+
+// Can import check
+const canImport = computed(() => {
+  return importFolders.value.length > 0 && totalImportLinks.value > 0
+})
+
+// Total import links count
+const totalImportLinks = computed(() => {
+  return importFolders.value.reduce((sum, folder) => sum + folder.links.length, 0)
 })
 
 // Handle title input - mark as user edited
@@ -681,10 +829,10 @@ const handleSave = () => {
 
 // Handle batch save
 const handleBatchSave = () => {
+  console.log('handleBatchSave called, canBatchSave:', canBatchSave.value)
   if (!canBatchSave.value) return
 
-  // Emit batch-add event with all parsed links
-  emit('batch-add', {
+  const payload = {
     links: parsedLinks.value.map(link => ({
       title: link.title || link.url,
       url: link.url,
@@ -694,7 +842,223 @@ const handleBatchSave = () => {
     })),
     collectionIndex: isBatchCreateNew.value ? -1 : batchSelectedCollectionIndex.value,
     newCollectionName: isBatchCreateNew.value ? (batchNewCollectionName.value || 'New Folder') : null
+  }
+  
+  console.log('Emitting batch-add with payload:', payload)
+  
+  // Emit batch-add event with all parsed links
+  emit('batch-add', payload)
+  
+  console.log('batch-add event emitted')
+
+  handleClose()
+}
+
+// ==================== Import Functions ====================
+
+// Trigger file input click
+const triggerFileInput = () => {
+  fileInputRef.value?.click()
+}
+
+// Handle file selection
+const handleFileSelect = (event) => {
+  const file = event.target.files?.[0]
+  if (file) {
+    processBookmarkFile(file)
+  }
+}
+
+// Handle drag over
+const handleDragOver = () => {
+  isDragOver.value = true
+}
+
+// Handle drag leave
+const handleDragLeave = () => {
+  isDragOver.value = false
+}
+
+// Handle file drop
+const handleFileDrop = (event) => {
+  isDragOver.value = false
+  const file = event.dataTransfer?.files?.[0]
+  if (file && (file.name.endsWith('.html') || file.name.endsWith('.htm'))) {
+    processBookmarkFile(file)
+  }
+}
+
+// Process bookmark file
+const processBookmarkFile = (file) => {
+  importFileName.value = file.name
+  const reader = new FileReader()
+  reader.onload = (e) => {
+    const content = e.target?.result
+    if (content) {
+      parseBookmarksHtml(content)
+    }
+  }
+  reader.readAsText(file)
+}
+
+// Parse Chrome bookmarks HTML
+const parseBookmarksHtml = (html) => {
+  const parser = new DOMParser()
+  const doc = parser.parseFromString(html, 'text/html')
+  
+  // Find all DL elements (bookmark lists)
+  const folders = new Map()
+  const noFolderLinks = []
+  
+  // Get the main bookmarks list (usually the first DL after H1)
+  const mainDL = doc.querySelector('DL')
+  if (!mainDL) {
+    importFolders.value = []
+    return
+  }
+  
+  // Process the bookmarks structure
+  // We need to find the top-level folders (like "书签栏" children)
+  const processFolder = (dlElement, parentFolderName = null) => {
+    const items = dlElement.children
+    
+    for (let i = 0; i < items.length; i++) {
+      const item = items[i]
+      
+      if (item.tagName === 'DT') {
+        // Check if it's a folder (has H3) or a link (has A)
+        const h3 = item.querySelector(':scope > H3')
+        const anchor = item.querySelector(':scope > A')
+        const nestedDL = item.querySelector(':scope > DL')
+        
+        if (h3 && nestedDL) {
+          // This is a folder
+          const folderName = h3.textContent?.trim() || 'Unnamed Folder'
+          
+          // If we're at the top level (no parent folder), this folder becomes the key
+          // If we're inside a folder, we use the parent folder name as the key
+          const topLevelFolderName = parentFolderName || folderName
+          
+          if (!parentFolderName) {
+            // This is a top-level folder, process its contents with this folder name
+            processFolder(nestedDL, topLevelFolderName)
+          } else {
+            // This is a nested folder, keep using the parent folder name
+            processFolder(nestedDL, parentFolderName)
+          }
+        } else if (anchor) {
+          // This is a link
+          const url = anchor.getAttribute('href')
+          const title = anchor.textContent?.trim() || url
+          
+          // Skip chrome:// URLs and other internal URLs
+          if (url && (url.startsWith('http://') || url.startsWith('https://'))) {
+            const link = {
+              title: title,
+              url: url,
+              tags: [],
+              photo_url: '',
+              sub_links: []
+            }
+            
+            if (parentFolderName) {
+              // Add to the parent folder
+              if (!folders.has(parentFolderName)) {
+                folders.set(parentFolderName, [])
+              }
+              folders.get(parentFolderName).push(link)
+            } else {
+              // No folder, add to default folder
+              noFolderLinks.push(link)
+            }
+          }
+        }
+      }
+    }
+  }
+  
+  processFolder(mainDL)
+  
+  // Convert to array format
+  const result = []
+  
+  // Add folders with their links
+  folders.forEach((links, folderName) => {
+    if (links.length > 0) {
+      result.push({
+        title: folderName,
+        links: links
+      })
+    }
   })
+  
+  // Add links without folder to "Import Links" folder
+  if (noFolderLinks.length > 0) {
+    result.push({
+      title: 'Import Links',
+      links: noFolderLinks
+    })
+  }
+  
+  importFolders.value = result
+  
+  // Expand first folder by default
+  if (result.length > 0) {
+    expandedFolders.value = [0]
+  }
+}
+
+// Toggle folder expand/collapse
+const toggleFolderExpand = (index) => {
+  const idx = expandedFolders.value.indexOf(index)
+  if (idx >= 0) {
+    expandedFolders.value.splice(idx, 1)
+  } else {
+    expandedFolders.value.push(index)
+  }
+}
+
+// Clear import
+const clearImport = () => {
+  importFolders.value = []
+  importFileName.value = ''
+  expandedFolders.value = []
+  if (fileInputRef.value) {
+    fileInputRef.value.value = ''
+  }
+}
+
+// Handle import
+const handleImport = () => {
+  console.log('handleImport called, canImport:', canImport.value)
+  console.log('props:', props)
+  console.log('props.onImportBookmarks:', props.onImportBookmarks)
+  console.log('typeof props.onImportBookmarks:', typeof props.onImportBookmarks)
+  
+  if (!canImport.value) return
+
+  const payload = {
+    folders: importFolders.value.map(folder => ({
+      title: folder.title,
+      links: folder.links.map(link => ({
+        title: link.title || link.url,
+        url: link.url,
+        tags: [],
+        photo_url: '',
+        sub_links: []
+      }))
+    }))
+  }
+  
+  console.log('Import payload:', payload)
+  
+  // Use callback prop instead of event (more reliable)
+  if (props.onImportBookmarks) {
+    console.log('Calling onImportBookmarks callback')
+    props.onImportBookmarks(payload)
+  } else {
+    console.log('No onImportBookmarks callback provided')
+  }
 
   handleClose()
 }
