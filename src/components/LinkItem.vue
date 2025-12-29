@@ -14,14 +14,15 @@
     </div>
 
     <!-- Link Text -->
-    <div class="inline-block relative">
+    <div class="inline-block relative max-w-[180px]">
       <!-- Read-only mode: normal link -->
       <a
         v-if="!canEdit"
         :href="link.url"
         target="_blank"
         rel="noopener noreferrer"
-        class="text-gray-500 hover:text-gray-900 hover:font-semibold transition-all no-underline"
+        class="text-gray-500 hover:text-gray-900 hover:font-semibold transition-all no-underline block truncate"
+        :title="link.title || 'Untitled'"
       >
         {{ link.title || 'Untitled' }}
       </a>
@@ -32,7 +33,8 @@
         :href="link.url"
         target="_blank"
         rel="noopener noreferrer"
-        class="text-gray-500 hover:text-gray-900 hover:font-semibold transition-all no-underline select-none"
+        class="text-gray-500 hover:text-gray-900 hover:font-semibold transition-all no-underline select-none block truncate"
+        :title="link.title || 'Untitled'"
         @click="handleClick"
         @mousedown="handleMouseDown"
         @mouseup="handleMouseUp"
