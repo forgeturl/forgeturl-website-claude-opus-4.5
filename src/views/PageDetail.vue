@@ -83,7 +83,7 @@
               ref="searchInputRef"
               v-model="searchQuery"
               type="text"
-              placeholder="Search title, tags, sub links..."
+              placeholder="Search title, URL, tags, sub links..."
               class="w-full pl-12 pr-10 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent transition-all text-gray-900 placeholder-gray-400"
             />
             <button
@@ -350,10 +350,15 @@ const filteredCollectionsCount = computed(() => {
     return links.some(link => {
       // Check title
       if (link.title?.toLowerCase().includes(query)) return true
+      // Check URL
+      if (link.url?.toLowerCase().includes(query)) return true
       // Check tags
       if (link.tags?.some(tag => tag.toLowerCase().includes(query))) return true
-      // Check sub_links
-      if (link.sub_links?.some(subLink => subLink.sub_title?.toLowerCase().includes(query))) return true
+      // Check sub_links title and url
+      if (link.sub_links?.some(subLink => 
+        subLink.sub_title?.toLowerCase().includes(query) ||
+        subLink.sub_url?.toLowerCase().includes(query)
+      )) return true
       return false
     })
   }).length

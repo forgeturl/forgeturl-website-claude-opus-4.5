@@ -180,10 +180,15 @@ const linkMatchesQuery = (link, query) => {
   
   // Check title
   if (link.title?.toLowerCase().includes(lowerQuery)) return true
+  // Check URL
+  if (link.url?.toLowerCase().includes(lowerQuery)) return true
   // Check tags
   if (link.tags?.some(tag => tag.toLowerCase().includes(lowerQuery))) return true
-  // Check sub_links
-  if (link.sub_links?.some(subLink => subLink.sub_title?.toLowerCase().includes(lowerQuery))) return true
+  // Check sub_links title and url
+  if (link.sub_links?.some(subLink => 
+    subLink.sub_title?.toLowerCase().includes(lowerQuery) ||
+    subLink.sub_url?.toLowerCase().includes(lowerQuery)
+  )) return true
   
   return false
 }
