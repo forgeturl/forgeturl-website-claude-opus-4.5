@@ -11,17 +11,17 @@
     <!-- Save Progress Bar (Fixed at top-right) -->
     <div 
       v-if="canEdit && (autoSave.showProgress.value || autoSave.showSavedMessage.value || autoSave.saveError.value)"
-      class="fixed top-4 right-4 z-40 flex items-center gap-3 bg-white rounded-full shadow-lg px-4 py-2 border border-gray-100"
+      class="fixed top-4 right-4 z-40 flex items-center gap-3 bg-white dark:bg-slate-800 rounded-full shadow-lg px-4 py-2 border border-gray-100 dark:border-slate-700 transition-colors duration-300"
     >
       <!-- Progress bar -->
       <div v-if="autoSave.showProgress.value" class="flex items-center gap-3">
-        <div class="w-32 h-1.5 bg-gray-100 rounded-full overflow-hidden">
+        <div class="w-32 h-1.5 bg-gray-100 dark:bg-slate-700 rounded-full overflow-hidden">
           <div 
-            class="h-full bg-emerald-500 rounded-full transition-all duration-100"
+            class="h-full bg-emerald-500 dark:bg-emerald-400 rounded-full transition-all duration-100"
             :style="{ width: autoSave.saveProgress.value + '%' }"
           ></div>
         </div>
-        <span class="text-xs text-gray-500 whitespace-nowrap">Saving...</span>
+        <span class="text-xs text-gray-500 dark:text-slate-400 whitespace-nowrap">Saving...</span>
       </div>
       
       <!-- Saved message -->
@@ -42,7 +42,7 @@
     </div>
 
     <!-- Main Content Area -->
-    <div class="p-4 relative">
+    <div class="p-4 relative transition-colors duration-300">
       <!-- Drag Delete Zone -->
       <DragDeleteZone
         ref="deleteZoneRef"
@@ -52,18 +52,18 @@
       
       <!-- Loading -->
       <div v-if="pageStore.loading && !pageStore.myPages.length" class="flex justify-center py-24">
-        <div class="animate-spin rounded-full h-10 w-10 border-2 border-gray-900 border-t-transparent"></div>
+        <div class="animate-spin rounded-full h-10 w-10 border-2 border-gray-900 dark:border-violet-400 border-t-transparent"></div>
       </div>
 
       <!-- Empty State - No Pages -->
       <div v-else-if="!pageStore.myPages.length" class="flex flex-col items-center justify-center py-24">
-        <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-6">
-          <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div class="w-16 h-16 bg-gray-100 dark:bg-slate-800 rounded-full flex items-center justify-center mb-6">
+          <svg class="w-8 h-8 text-gray-400 dark:text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
           </svg>
         </div>
-        <h3 class="text-lg font-medium text-gray-900 mb-2">No Pages Yet</h3>
-        <p class="text-gray-500 mb-6">Create your first bookmark page to get started</p>
+        <h3 class="text-lg font-medium text-gray-900 dark:text-slate-100 mb-2">No Pages Yet</h3>
+        <p class="text-gray-500 dark:text-slate-400 mb-6">Create your first bookmark page to get started</p>
         <button @click="showCreateModal = true" class="btn btn-primary">
           Create Page
         </button>
@@ -79,7 +79,7 @@
         >
           <div class="relative max-w-2xl mx-auto">
             <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-              <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg class="w-5 h-5 text-gray-400 dark:text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
               </svg>
             </div>
@@ -88,19 +88,19 @@
               v-model="searchQuery"
               type="text"
               placeholder="Search title, URL, tags, sub links..."
-              class="w-full pl-12 pr-10 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent transition-all text-gray-900 placeholder-gray-400"
+              class="w-full pl-12 pr-10 py-3 border border-gray-200 dark:border-slate-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-gray-900 dark:focus:ring-violet-500 focus:border-transparent transition-all text-gray-900 dark:text-slate-100 placeholder-gray-400 dark:placeholder-slate-500 bg-white dark:bg-slate-800"
             />
             <button
               v-if="searchQuery"
               @click="clearSearch"
-              class="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-400 hover:text-gray-600 transition-colors"
+              class="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-400 dark:text-slate-500 hover:text-gray-600 dark:hover:text-slate-300 transition-colors"
             >
               <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
               </svg>
             </button>
           </div>
-          <p v-if="searchQuery && filteredCollectionsCount === 0" class="text-center text-gray-500 mt-4">
+          <p v-if="searchQuery && filteredCollectionsCount === 0" class="text-center text-gray-500 dark:text-slate-400 mt-4">
             No matching links found
           </p>
         </div>
@@ -109,8 +109,8 @@
         <div class="flex items-start justify-between mb-4">
           <div class="flex-1">
             <h1 
-              class="text-3xl font-bold text-gray-900 mb-2 select-none"
-              :class="{ 'cursor-pointer hover:text-blue-600 transition-colors': canEdit }"
+              class="text-3xl font-bold text-gray-900 dark:text-slate-100 mb-2 select-none"
+              :class="{ 'cursor-pointer hover:text-blue-600 dark:hover:text-violet-400 transition-colors': canEdit }"
               @mousedown="handlePageTitleMouseDown"
               @mouseup="handlePageTitleMouseUp"
               @mouseleave="handlePageTitleMouseLeave"
@@ -122,8 +122,8 @@
             </h1>
             <p 
               v-if="selectedPage.brief" 
-              class="text-gray-500 select-none"
-              :class="{ 'cursor-pointer hover:text-gray-700 transition-colors': canEdit }"
+              class="text-gray-500 dark:text-slate-400 select-none"
+              :class="{ 'cursor-pointer hover:text-gray-700 dark:hover:text-slate-300 transition-colors': canEdit }"
               @mousedown="handlePageTitleMouseDown"
               @mouseup="handlePageTitleMouseUp"
               @mouseleave="handlePageTitleMouseLeave"
@@ -135,7 +135,7 @@
             </p>
             <p 
               v-else-if="canEdit" 
-              class="text-gray-400 select-none cursor-pointer hover:text-gray-500 transition-colors"
+              class="text-gray-400 dark:text-slate-500 select-none cursor-pointer hover:text-gray-500 dark:hover:text-slate-400 transition-colors"
               @mousedown="handlePageTitleMouseDown"
               @mouseup="handlePageTitleMouseUp"
               @mouseleave="handlePageTitleMouseLeave"
@@ -154,7 +154,7 @@
               @click="toggleSearch"
               data-search-button
               class="btn-compact btn-secondary flex items-center justify-center w-8 h-8 focus:ring-0 focus:ring-offset-0"
-              :class="{ 'bg-gray-900 text-white hover:bg-gray-800': showSearchBar }"
+              :class="{ 'bg-gray-900 dark:bg-violet-600 text-white hover:bg-gray-800 dark:hover:bg-violet-500': showSearchBar }"
             >
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
@@ -235,12 +235,12 @@
         </div>
 
         <!-- Empty Links -->
-        <div v-if="!localCollections.length || localCollections.every(c => !c.links?.length)" class="text-center py-16 border-2 border-dashed border-gray-200 rounded-xl mt-6">
-          <p class="text-gray-400 mb-4">No bookmarks on this page yet</p>
+        <div v-if="!localCollections.length || localCollections.every(c => !c.links?.length)" class="text-center py-16 border-2 border-dashed border-gray-200 dark:border-slate-700 rounded-xl mt-6">
+          <p class="text-gray-400 dark:text-slate-500 mb-4">No bookmarks on this page yet</p>
           <button
             v-if="canEdit"
             @click="showAddLinkModal = true"
-            class="text-gray-900 font-medium hover:underline"
+            class="text-gray-900 dark:text-violet-400 font-medium hover:underline"
           >
             Add your first link
           </button>
@@ -248,7 +248,7 @@
       </div>
 
       <!-- Select Page Hint -->
-      <div v-else class="flex flex-col items-center justify-center py-24 text-gray-400">
+      <div v-else class="flex flex-col items-center justify-center py-24 text-gray-400 dark:text-slate-500">
         <svg class="w-12 h-12 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5M7.188 2.239l.777 2.897M5.136 7.965l-2.898-.777M13.95 4.05l-2.122 2.122m-5.657 5.656l-2.12 2.122" />
         </svg>

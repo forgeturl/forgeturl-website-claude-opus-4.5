@@ -7,20 +7,20 @@
         @click.self="close"
       >
         <!-- Backdrop -->
-        <div class="fixed inset-0 bg-black/40 transition-opacity"></div>
+        <div class="fixed inset-0 bg-black/40 dark:bg-black/60 transition-opacity"></div>
 
         <!-- Modal -->
         <div class="flex min-h-full items-center justify-center p-4">
           <div
-            class="relative bg-white rounded-2xl shadow-xl max-w-lg w-full animate-slide-up"
+            class="relative bg-white dark:bg-slate-800 rounded-2xl shadow-xl dark:shadow-2xl dark:shadow-black/30 max-w-lg w-full animate-slide-up transition-colors duration-300"
             @click.stop
           >
             <!-- Header -->
-            <div class="flex items-center justify-between px-6 py-5 border-b border-gray-100">
-              <h3 class="text-xl font-semibold text-gray-900">Create Page</h3>
+            <div class="flex items-center justify-between px-6 py-5 border-b border-gray-100 dark:border-slate-700">
+              <h3 class="text-xl font-semibold text-gray-900 dark:text-slate-100">Create Page</h3>
               <button
                 @click="close"
-                class="p-1.5 hover:bg-gray-100 rounded-lg transition-colors text-gray-400 hover:text-gray-600"
+                class="p-1.5 hover:bg-gray-100 dark:hover:bg-slate-700 rounded-lg transition-colors text-gray-400 dark:text-slate-500 hover:text-gray-600 dark:hover:text-slate-300"
               >
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
@@ -32,7 +32,7 @@
             <form @submit.prevent="handleSubmit" class="p-6 space-y-5">
               <!-- Title -->
               <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1.5">
+                <label class="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1.5">
                   Title <span class="text-red-500">*</span>
                 </label>
                 <input
@@ -46,7 +46,7 @@
 
               <!-- Brief -->
               <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1.5">
+                <label class="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1.5">
                   Description
                 </label>
                 <textarea
@@ -58,8 +58,8 @@
               </div>
 
               <!-- Initial Link (Optional) -->
-              <div class="pt-4 border-t border-gray-100">
-                <h4 class="text-sm font-medium text-gray-700 mb-3">Add first link (optional)</h4>
+              <div class="pt-4 border-t border-gray-100 dark:border-slate-700">
+                <h4 class="text-sm font-medium text-gray-700 dark:text-slate-300 mb-3">Add first link (optional)</h4>
                 <div class="space-y-3">
                   <input
                     v-model="form.link.title"
@@ -77,13 +77,13 @@
               </div>
 
               <!-- Error Message -->
-              <div v-if="error" class="p-3 bg-red-50 border border-red-200 rounded-lg text-red-600 text-sm">
+              <div v-if="error" class="p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg text-red-600 dark:text-red-400 text-sm">
                 {{ error }}
               </div>
             </form>
 
             <!-- Footer -->
-            <div class="px-6 py-4 border-t border-gray-100 flex justify-end gap-3">
+            <div class="px-6 py-4 border-t border-gray-100 dark:border-slate-700 flex justify-end gap-3">
               <button
                 type="button"
                 @click="close"

@@ -7,17 +7,17 @@
         @click.self="handleClose"
       >
         <!-- Backdrop -->
-        <div class="absolute inset-0 bg-black/40 backdrop-blur-sm" @click="handleClose"></div>
+        <div class="absolute inset-0 bg-black/40 dark:bg-black/60 backdrop-blur-sm" @click="handleClose"></div>
         
         <!-- Modal Content -->
-        <div class="relative bg-white w-full sm:w-[400px] sm:rounded-2xl rounded-t-2xl shadow-2xl overflow-hidden animate-slide-up">
+        <div class="relative bg-white dark:bg-slate-800 w-full sm:w-[400px] sm:rounded-2xl rounded-t-2xl shadow-2xl dark:shadow-black/30 overflow-hidden animate-slide-up transition-colors duration-300">
           <!-- Handle bar for mobile -->
           <div class="sm:hidden flex justify-center pt-3 pb-2">
-            <div class="w-10 h-1 bg-gray-300 rounded-full"></div>
+            <div class="w-10 h-1 bg-gray-300 dark:bg-slate-600 rounded-full"></div>
           </div>
 
           <!-- Header with icon -->
-          <div class="flex items-center gap-3 px-6 py-4 border-b border-gray-100">
+          <div class="flex items-center gap-3 px-6 py-4 border-b border-gray-100 dark:border-slate-700">
             <!-- Icon based on type -->
             <div 
               class="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0"
@@ -40,19 +40,19 @@
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
             </div>
-            <h3 class="text-lg font-semibold text-gray-900">{{ title }}</h3>
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-slate-100">{{ title }}</h3>
           </div>
 
           <!-- Body -->
           <div class="px-6 py-5">
-            <p class="text-gray-600 leading-relaxed">{{ message }}</p>
+            <p class="text-gray-600 dark:text-slate-400 leading-relaxed">{{ message }}</p>
           </div>
 
           <!-- Footer -->
-          <div class="px-6 py-4 bg-gray-50 border-t border-gray-100 flex justify-end">
+          <div class="px-6 py-4 bg-gray-50 dark:bg-slate-900/50 border-t border-gray-100 dark:border-slate-700 flex justify-end">
             <button
               @click="handleClose"
-              class="px-6 py-2.5 bg-gray-900 text-white rounded-xl hover:bg-gray-800 transition-colors font-medium"
+              class="px-6 py-2.5 bg-gray-900 dark:bg-violet-600 text-white rounded-xl hover:bg-gray-800 dark:hover:bg-violet-500 transition-colors font-medium"
             >
               {{ confirmText }}
             </button>
@@ -95,13 +95,13 @@ const emit = defineEmits(['update:show', 'close'])
 const iconContainerClass = computed(() => {
   switch (props.type) {
     case 'error':
-      return 'bg-red-50 text-red-500'
+      return 'bg-red-50 dark:bg-red-900/30 text-red-500'
     case 'success':
-      return 'bg-emerald-50 text-emerald-500'
+      return 'bg-emerald-50 dark:bg-emerald-900/30 text-emerald-500'
     case 'warning':
-      return 'bg-amber-50 text-amber-500'
+      return 'bg-amber-50 dark:bg-amber-900/30 text-amber-500'
     default:
-      return 'bg-blue-50 text-blue-500'
+      return 'bg-blue-50 dark:bg-blue-900/30 text-blue-500'
   }
 })
 
@@ -164,4 +164,3 @@ const handleClose = () => {
   }
 }
 </style>
-

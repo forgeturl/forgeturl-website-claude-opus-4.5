@@ -8,7 +8,7 @@
       v-if="canEdit"
       class="link-drag-handle flex-shrink-0 w-4 h-4 flex items-center justify-center cursor-grab opacity-0 group-hover:opacity-100 transition-opacity -ml-5"
     >
-      <svg class="w-3 h-3 text-gray-300" fill="currentColor" viewBox="0 0 20 20">
+      <svg class="w-3 h-3 text-gray-300 dark:text-slate-500" fill="currentColor" viewBox="0 0 20 20">
         <path d="M7 2a2 2 0 1 0 .001 4.001A2 2 0 0 0 7 2zm0 6a2 2 0 1 0 .001 4.001A2 2 0 0 0 7 8zm0 6a2 2 0 1 0 .001 4.001A2 2 0 0 0 7 14zm6-8a2 2 0 1 0-.001-4.001A2 2 0 0 0 13 6zm0 2a2 2 0 1 0 .001 4.001A2 2 0 0 0 13 8zm0 6a2 2 0 1 0 .001 4.001A2 2 0 0 0 13 14z"/>
       </svg>
     </div>
@@ -21,7 +21,7 @@
         :href="link.url"
         target="_blank"
         rel="noopener noreferrer"
-        class="text-gray-500 hover:text-gray-900 hover:font-semibold transition-all no-underline block truncate"
+        class="text-gray-500 dark:text-slate-400 hover:text-gray-900 dark:hover:text-slate-100 hover:font-semibold transition-all no-underline block truncate"
         :title="link.title || 'Untitled'"
       >
         <span v-if="titleMatchesQuery" v-html="highlightedTitle"></span>
@@ -34,7 +34,7 @@
         :href="link.url"
         target="_blank"
         rel="noopener noreferrer"
-        class="text-gray-500 hover:text-gray-900 hover:font-semibold transition-all no-underline select-none block truncate"
+        class="text-gray-500 dark:text-slate-400 hover:text-gray-900 dark:hover:text-slate-100 hover:font-semibold transition-all no-underline select-none block truncate"
         :title="link.title || 'Untitled'"
         @click="handleClick"
         @mousedown="handleMouseDown"
@@ -70,14 +70,14 @@
           class="sub-links-dropdown absolute top-0 pt-5 z-50"
           :class="dropdownOnLeft ? 'right-0' : 'left-0'"
         >
-          <div class="bg-white border border-gray-200 rounded-lg shadow-lg py-1 min-w-[180px] max-w-[300px]">
+          <div class="bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg shadow-lg dark:shadow-xl dark:shadow-black/30 py-1 min-w-[180px] max-w-[300px]">
             <a
               v-for="(subLink, index) in link.sub_links"
               :key="index"
               :href="subLink.sub_url"
               target="_blank"
               rel="noopener noreferrer"
-              class="block px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-blue-600 transition-colors truncate"
+              class="block px-3 py-2 text-sm text-gray-700 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-700 hover:text-blue-600 dark:hover:text-violet-400 transition-colors truncate"
               :title="subLink.sub_title"
             >
               {{ subLink.sub_title || 'Unnamed sub link' }}

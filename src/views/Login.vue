@@ -1,10 +1,38 @@
 <template>
-  <div class="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 via-purple-50/30 to-fuchsia-50/40 px-4 relative overflow-hidden">
+  <div class="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 via-purple-50/30 to-fuchsia-50/40 dark:from-slate-900 dark:via-slate-900 dark:to-slate-800 px-4 relative overflow-hidden transition-colors duration-300">
     <!-- Background decoration -->
     <div class="absolute inset-0 overflow-hidden pointer-events-none">
-      <div class="absolute -top-24 -right-24 w-96 h-96 bg-gradient-to-br from-violet-200/40 to-fuchsia-200/40 rounded-full blur-3xl"></div>
-      <div class="absolute -bottom-24 -left-24 w-80 h-80 bg-gradient-to-tr from-purple-200/30 to-violet-200/30 rounded-full blur-3xl"></div>
+      <div class="absolute -top-24 -right-24 w-96 h-96 bg-gradient-to-br from-violet-200/40 to-fuchsia-200/40 dark:from-violet-500/20 dark:to-fuchsia-500/20 rounded-full blur-3xl"></div>
+      <div class="absolute -bottom-24 -left-24 w-80 h-80 bg-gradient-to-tr from-purple-200/30 to-violet-200/30 dark:from-purple-500/15 dark:to-violet-500/15 rounded-full blur-3xl"></div>
     </div>
+    
+    <!-- Theme Toggle Button (top-right) -->
+    <button
+      @click="toggleTheme"
+      class="absolute top-6 right-6 p-3 rounded-full bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm border border-gray-200 dark:border-slate-700 text-gray-600 dark:text-slate-300 hover:bg-white dark:hover:bg-slate-700 hover:text-gray-900 dark:hover:text-slate-100 transition-all duration-300 shadow-lg z-20"
+      :title="isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode'"
+    >
+      <!-- Sun icon (shown in dark mode) -->
+      <svg 
+        v-if="isDark" 
+        class="w-5 h-5" 
+        fill="none" 
+        stroke="currentColor" 
+        viewBox="0 0 24 24"
+      >
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+      </svg>
+      <!-- Moon icon (shown in light mode) -->
+      <svg 
+        v-else 
+        class="w-5 h-5" 
+        fill="none" 
+        stroke="currentColor" 
+        viewBox="0 0 24 24"
+      >
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+      </svg>
+    </button>
     
     <div class="max-w-md w-full animate-fade-in relative z-10">
       <!-- Logo and Title -->
@@ -47,19 +75,19 @@
         </div>
         
         <h1 class="text-4xl font-bold mb-2">
-          <span class="bg-gradient-to-r from-violet-600 via-purple-600 to-fuchsia-600 bg-clip-text text-transparent">Forget</span><span class="text-gray-800">URL</span>
+          <span class="bg-gradient-to-r from-violet-600 via-purple-600 to-fuchsia-600 bg-clip-text text-transparent">Forget</span><span class="text-gray-800 dark:text-slate-200">URL</span>
         </h1>
-        <p class="text-gray-500 font-medium">Save links, free your mind</p>
+        <p class="text-gray-500 dark:text-slate-400 font-medium">Save links, free your mind</p>
       </div>
 
       <!-- Login Card -->
-      <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-8">
-        <h2 class="text-2xl font-semibold text-gray-900 mb-6 text-center">
+      <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-sm dark:shadow-lg dark:shadow-black/20 border border-gray-100 dark:border-slate-700 p-8 transition-colors duration-300">
+        <h2 class="text-2xl font-semibold text-gray-900 dark:text-slate-100 mb-6 text-center">
           Choose Login Method
         </h2>
 
         <!-- Error Message -->
-        <div v-if="error" class="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg text-red-600 text-sm">
+        <div v-if="error" class="mb-6 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg text-red-600 dark:text-red-400 text-sm">
           {{ error }}
         </div>
 
@@ -69,7 +97,7 @@
           <button
             @click="handleLogin('google')"
             :disabled="loading"
-            class="w-full flex items-center justify-center gap-3 px-6 py-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+            class="w-full flex items-center justify-center gap-3 px-6 py-3 border border-gray-200 dark:border-slate-600 rounded-lg hover:bg-gray-50 dark:hover:bg-slate-700 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed bg-white dark:bg-slate-800"
           >
             <svg class="w-5 h-5" viewBox="0 0 24 24">
               <path
@@ -89,14 +117,14 @@
                 d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
               />
             </svg>
-            <span class="font-medium text-gray-700">Sign in with Google</span>
+            <span class="font-medium text-gray-700 dark:text-slate-200">Sign in with Google</span>
           </button>
 
           <!-- GitHub Login -->
           <button
             @click="handleLogin('github')"
             :disabled="loading"
-            class="w-full flex items-center justify-center gap-3 px-6 py-3 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+            class="w-full flex items-center justify-center gap-3 px-6 py-3 bg-gray-900 dark:bg-slate-700 text-white rounded-lg hover:bg-gray-800 dark:hover:bg-slate-600 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
               <path
@@ -112,7 +140,7 @@
           <button
             disabled
             title="微信登录暂不支持"
-            class="w-full flex items-center justify-center gap-3 px-6 py-3 bg-gray-300 text-gray-500 rounded-lg cursor-not-allowed relative"
+            class="w-full flex items-center justify-center gap-3 px-6 py-3 bg-gray-300 dark:bg-slate-600 text-gray-500 dark:text-slate-400 rounded-lg cursor-not-allowed relative"
           >
             <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
               <path d="M8.691 2.188C3.891 2.188 0 5.476 0 9.53c0 2.212 1.17 4.203 3.002 5.55a.59.59 0 0 1 .213.665l-.39 1.48c-.019.07-.048.141-.048.213 0 .163.13.295.29.295a.326.326 0 0 0 .167-.054l1.903-1.114a.864.864 0 0 1 .717-.098 10.16 10.16 0 0 0 2.837.403c.276 0 .543-.027.811-.05-.857-2.578.157-4.972 1.932-6.446 1.703-1.415 3.882-1.98 5.853-1.838-.576-3.583-4.196-6.348-8.596-6.348zM5.785 5.991c.642 0 1.162.529 1.162 1.18a1.17 1.17 0 0 1-1.162 1.178A1.17 1.17 0 0 1 4.623 7.17c0-.651.52-1.18 1.162-1.18zm5.813 0c.642 0 1.162.529 1.162 1.18a1.17 1.17 0 0 1-1.162 1.178 1.17 1.17 0 0 1-1.162-1.178c0-.651.52-1.18 1.162-1.18zm5.34 2.867c-1.797-.052-3.746.512-5.28 1.786-1.72 1.428-2.687 3.72-1.78 6.22.942 2.453 3.666 4.229 6.884 4.229.826 0 1.622-.12 2.361-.336a.722.722 0 0 1 .598.082l1.584.926a.272.272 0 0 0 .14.047c.134 0 .24-.111.24-.247 0-.06-.023-.12-.038-.177l-.327-1.233a.582.582 0 0 1-.023-.156.49.49 0 0 1 .201-.398C23.024 18.48 24 16.82 24 14.98c0-3.21-2.931-5.837-6.656-6.088V8.89c-.135-.01-.27-.027-.407-.03zm-2.53 3.274c.535 0 .969.44.969.982a.976.976 0 0 1-.969.983.976.976 0 0 1-.969-.983c0-.542.434-.982.969-.982zm4.844 0c.535 0 .969.44.969.982a.976.976 0 0 1-.969.983.976.976 0 0 1-.969-.983c0-.542.434-.982.969-.982z" />
@@ -124,13 +152,13 @@
 
         <!-- Loading Indicator -->
         <div v-if="loading" class="mt-6 text-center">
-          <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
-          <p class="mt-2 text-sm text-gray-600">Redirecting...</p>
+          <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 dark:border-violet-400"></div>
+          <p class="mt-2 text-sm text-gray-600 dark:text-slate-400">Redirecting...</p>
         </div>
       </div>
 
       <!-- Footer -->
-      <p class="mt-8 text-center text-sm text-gray-500">
+      <p class="mt-8 text-center text-sm text-gray-500 dark:text-slate-500">
         By signing in, you agree to our Terms of Service and Privacy Policy
       </p>
     </div>
@@ -140,8 +168,10 @@
 <script setup>
 import { ref } from 'vue'
 import { useAuth } from '@/composables/useAuth'
+import { useTheme } from '@/composables/useTheme'
 
 const { startAuth } = useAuth()
+const { isDark, toggleTheme } = useTheme()
 const loading = ref(false)
 const error = ref('')
 
@@ -158,4 +188,3 @@ const handleLogin = async (provider) => {
   }
 }
 </script>
-

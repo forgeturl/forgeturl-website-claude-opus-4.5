@@ -1,16 +1,16 @@
 <template>
   <div 
     v-show="!shouldHide"
-    class="border border-gray-200 rounded-xl p-4 hover:border-gray-900 transition-colors relative group"
+    class="border border-gray-200 dark:border-slate-700 rounded-xl p-4 hover:border-gray-900 dark:hover:border-violet-500 transition-colors relative group bg-white dark:bg-slate-800"
   >
     <!-- Drag Handle for Collection (top-left, only in edit mode) -->
     <div 
       v-if="canEdit"
-      class="collection-drag-handle absolute -top-2 -left-2 w-6 h-6 bg-white border border-gray-300 rounded-full flex items-center justify-center cursor-move opacity-0 group-hover:opacity-100 transition-opacity"
+      class="collection-drag-handle absolute -top-2 -left-2 w-6 h-6 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 rounded-full flex items-center justify-center cursor-move opacity-0 group-hover:opacity-100 transition-opacity"
       @mousedown.stop
       @touchstart.stop
     >
-      <svg class="w-3 h-3 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+      <svg class="w-3 h-3 text-gray-400 dark:text-slate-400" fill="currentColor" viewBox="0 0 20 20">
         <path d="M7 2a2 2 0 1 0 .001 4.001A2 2 0 0 0 7 2zm0 6a2 2 0 1 0 .001 4.001A2 2 0 0 0 7 8zm0 6a2 2 0 1 0 .001 4.001A2 2 0 0 0 7 14zm6-8a2 2 0 1 0-.001-4.001A2 2 0 0 0 13 6zm0 2a2 2 0 1 0 .001 4.001A2 2 0 0 0 13 8zm0 6a2 2 0 1 0 .001 4.001A2 2 0 0 0 13 14z"/>
       </svg>
     </div>
@@ -19,10 +19,10 @@
     <button
       v-if="canEdit"
       @click="handleCopyCollection"
-      class="absolute -top-2 left-6 w-6 h-6 bg-white border border-gray-300 hover:bg-blue-50 hover:border-blue-300 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all hover:scale-110"
+      class="absolute -top-2 left-6 w-6 h-6 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 hover:bg-blue-50 dark:hover:bg-blue-900/30 hover:border-blue-300 dark:hover:border-blue-500 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all hover:scale-110"
       title="Duplicate this collection"
     >
-      <svg class="w-3 h-3 text-gray-400 hover:text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <svg class="w-3 h-3 text-gray-400 dark:text-slate-400 hover:text-blue-500 dark:hover:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
       </svg>
     </button>
@@ -31,8 +31,8 @@
     <div class="mb-2">
       <h3 
         v-if="collection.title"
-        class="text-base font-semibold text-gray-900 text-center select-none"
-        :class="{ 'cursor-pointer hover:text-blue-600 transition-colors': canEdit }"
+        class="text-base font-semibold text-gray-900 dark:text-slate-100 text-center select-none"
+        :class="{ 'cursor-pointer hover:text-blue-600 dark:hover:text-violet-400 transition-colors': canEdit }"
         @mousedown="handleTitleMouseDown"
         @mouseup="handleTitleMouseUp"
         @mouseleave="handleTitleMouseLeave"
@@ -44,8 +44,8 @@
       </h3>
       <h3 
         v-else
-        class="text-base font-semibold text-gray-400 text-center select-none"
-        :class="{ 'cursor-pointer hover:text-gray-600 transition-colors': canEdit }"
+        class="text-base font-semibold text-gray-400 dark:text-slate-500 text-center select-none"
+        :class="{ 'cursor-pointer hover:text-gray-600 dark:hover:text-slate-300 transition-colors': canEdit }"
         @mousedown="handleTitleMouseDown"
         @mouseup="handleTitleMouseUp"
         @mouseleave="handleTitleMouseLeave"
@@ -90,7 +90,7 @@
       <template #footer>
         <div 
           v-if="localLinks.length === 0" 
-          class="empty-state-hint w-full text-center py-4 text-gray-400 text-sm"
+          class="empty-state-hint w-full text-center py-4 text-gray-400 dark:text-slate-500 text-sm"
         >
           Drag links here
         </div>
@@ -108,7 +108,7 @@
         :searchQuery="searchQuery"
       />
       <!-- Empty State for read-only -->
-      <div v-if="!filteredLinks.length" class="w-full text-center py-4 text-gray-400 text-sm">
+      <div v-if="!filteredLinks.length" class="w-full text-center py-4 text-gray-400 dark:text-slate-500 text-sm">
         No links yet
       </div>
     </div>
@@ -353,6 +353,11 @@ const handleLinksChange = (evt) => {
   vertical-align: middle !important;
   flex: none !important;
   align-self: center !important;
+}
+
+.dark .link-drop-indicator {
+  background: #8b5cf6 !important;
+  box-shadow: 0 0 10px rgba(139, 92, 246, 0.6);
 }
 
 .link-drop-indicator,
