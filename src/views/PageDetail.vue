@@ -42,7 +42,7 @@
     </div>
 
     <!-- Main Content Area -->
-    <div class="p-8 relative">
+    <div class="p-4 relative">
       <!-- Drag Delete Zone -->
       <DragDeleteZone
         ref="deleteZoneRef"
@@ -68,7 +68,7 @@
       <!-- Page Content -->
       <div v-else-if="page" class="animate-fade-in">
         <!-- Header -->
-        <div class="flex items-start justify-between mb-8">
+        <div class="flex items-start justify-between mb-4">
           <div class="flex-1">
             <h1 class="text-3xl font-bold text-gray-900 mb-2">{{ page.title }}</h1>
             <p v-if="page.brief" class="text-gray-500">{{ page.brief }}</p>
@@ -122,10 +122,14 @@
           :force-fallback="true"
           :fallback-class="'collection-drag-fallback'"
           :animation="0"
+          :scroll="true"
+          :scrollSensitivity="100"
+          :scrollSpeed="80"
+          :bubbleScroll="true"
           @start="handleCollectionDragStart"
           @end="handleCollectionDragEnd"
           @change="handleCollectionsChange"
-          class="collections-grid grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+          class="collections-grid grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"
         >
           <template #item="{ element: collection, index }">
             <LinkCollection
@@ -143,7 +147,7 @@
         </draggable>
 
         <!-- Read-only mode -->
-        <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           <LinkCollection
             v-for="(collection, index) in localCollections"
             :key="index"

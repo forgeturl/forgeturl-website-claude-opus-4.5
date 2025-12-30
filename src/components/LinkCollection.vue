@@ -1,6 +1,6 @@
 <template>
   <div 
-    class="border border-gray-200 rounded-xl p-5 hover:border-gray-900 transition-colors relative group"
+    class="border border-gray-200 rounded-xl p-4 hover:border-gray-900 transition-colors relative group"
   >
     <!-- Drag Handle for Collection (top-left, only in edit mode) -->
     <div 
@@ -27,10 +27,10 @@
     </button>
 
     <!-- Collection Title -->
-    <div class="mb-4">
+    <div class="mb-2">
       <h3 
         v-if="collection.title"
-        class="text-lg font-semibold text-gray-900 text-center select-none"
+        class="text-base font-semibold text-gray-900 text-center select-none"
         :class="{ 'cursor-pointer hover:text-blue-600 transition-colors': canEdit }"
         @mousedown="handleTitleMouseDown"
         @mouseup="handleTitleMouseUp"
@@ -43,7 +43,7 @@
       </h3>
       <h3 
         v-else
-        class="text-lg font-semibold text-gray-400 text-center select-none"
+        class="text-base font-semibold text-gray-400 text-center select-none"
         :class="{ 'cursor-pointer hover:text-gray-600 transition-colors': canEdit }"
         @mousedown="handleTitleMouseDown"
         @mouseup="handleTitleMouseUp"
@@ -66,6 +66,10 @@
       ghost-class="link-drop-indicator"
       chosen-class="link-dragging-source"
       :animation="0"
+      :scroll="true"
+      :scrollSensitivity="100"
+      :scrollSpeed="80"
+      :bubbleScroll="true"
       class="links-draggable flex flex-wrap gap-x-10 gap-y-2 min-h-[60px] relative"
       @change="handleLinksChange"
       @start="handleDragStart"

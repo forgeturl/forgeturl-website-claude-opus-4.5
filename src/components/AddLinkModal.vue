@@ -590,6 +590,37 @@ const batchNewFolderInputRef = ref(null)
 // Track if user has manually edited the title
 const userEditedTitle = ref(false)
 
+// Check if a string is a valid URL
+const isValidUrl = (str) => {
+  try {
+    const url = new URL(str)
+    return url.protocol === 'http:' || url.protocol === 'https:'
+  } catch {
+    return false
+  }
+}
+
+// Check clipboard for URL and auto-fill
+const checkClipboardForUrl = async () => {
+  try {
+    // Check if clipboard API is available
+    if (!navigator.clipboard || !navigator.clipboard.readText) {
+      return
+    }
+    
+    const clipboardText = await navigator.clipboard.readText()
+    const trimmedText = clipboardText?.trim()
+    
+    // If clipboard contains a valid URL, auto-fill it
+    if (trimmedText && isValidUrl(trimmedText)) {
+      form.value.url = trimmedText
+    }
+  } catch {
+    // Silently fail if clipboard access is denied or not available
+    // This is expected behavior when user denies permission
+  }
+}
+
 // Reset form when modal opens
 watch(() => props.show, (newShow) => {
   if (newShow) {
@@ -624,6 +655,9 @@ watch(() => props.show, (newShow) => {
     
     // Reset tab to single
     activeTab.value = 'single'
+    
+    // Check clipboard for URL after form reset
+    checkClipboardForUrl()
   }
 })
 
@@ -917,9 +951,12 @@ const parseBookmarksHtml = (html) => {
     return
   }
   
-  // Process the bookmarks structure
-  // We need to find the top-level folders (like "书签栏" children)
-  const processFolder = (dlElement, parentFolderName = null) => {
+  // Special folder names that should be skipped (their contents will be processed as top-level)
+  const rootFolderNames = ['书签栏', 'Bookmarks Bar', 'Bookmarks bar', '其他书签', 'Other Bookmarks', 'Other bookmarks']
+  
+  // Process the bookmarks structure recursively
+  // Returns true if this is a root-level folder (like "书签栏")
+  const processFolder = (dlElement, currentFolderName = null, isUnderRoot = false) => {
     const items = dlElement.children
     
     for (let i = 0; i < items.length; i++) {
@@ -935,16 +972,22 @@ const parseBookmarksHtml = (html) => {
           // This is a folder
           const folderName = h3.textContent?.trim() || 'Unnamed Folder'
           
-          // If we're at the top level (no parent folder), this folder becomes the key
-          // If we're inside a folder, we use the parent folder name as the key
-          const topLevelFolderName = parentFolderName || folderName
-          
-          if (!parentFolderName) {
-            // This is a top-level folder, process its contents with this folder name
-            processFolder(nestedDL, topLevelFolderName)
+          // Check if this is a root folder (like "书签栏")
+          if (rootFolderNames.includes(folderName)) {
+            // This is a root folder, process its contents as top-level
+            // Links directly under this folder will go to "New Folder"
+            processFolder(nestedDL, null, true)
+          } else if (isUnderRoot || currentFolderName === null) {
+            // This is a direct child folder under the root (like "文件夹1", "文件夹2", etc.)
+            // Create a new folder entry and process its contents
+            if (!folders.has(folderName)) {
+              folders.set(folderName, [])
+            }
+            processFolder(nestedDL, folderName, false)
           } else {
-            // This is a nested folder, keep using the parent folder name
-            processFolder(nestedDL, parentFolderName)
+            // This is a nested folder inside another folder
+            // Continue using the parent folder name (flatten nested structure)
+            processFolder(nestedDL, currentFolderName, false)
           }
         } else if (anchor) {
           // This is a link
@@ -961,14 +1004,17 @@ const parseBookmarksHtml = (html) => {
               sub_links: []
             }
             
-            if (parentFolderName) {
-              // Add to the parent folder
-              if (!folders.has(parentFolderName)) {
-                folders.set(parentFolderName, [])
+            if (currentFolderName) {
+              // Add to the current folder
+              if (!folders.has(currentFolderName)) {
+                folders.set(currentFolderName, [])
               }
-              folders.get(parentFolderName).push(link)
+              folders.get(currentFolderName).push(link)
+            } else if (isUnderRoot) {
+              // Link directly under root folder (like "书签栏"), add to "New Folder"
+              noFolderLinks.push(link)
             } else {
-              // No folder, add to default folder
+              // No folder at all, add to default folder
               noFolderLinks.push(link)
             }
           }
@@ -977,7 +1023,7 @@ const parseBookmarksHtml = (html) => {
     }
   }
   
-  processFolder(mainDL)
+  processFolder(mainDL, null, false)
   
   // Convert to array format
   const result = []
@@ -992,10 +1038,10 @@ const parseBookmarksHtml = (html) => {
     }
   })
   
-  // Add links without folder to "Import Links" folder
+  // Add links without folder to "New Folder"
   if (noFolderLinks.length > 0) {
     result.push({
-      title: 'Import Links',
+      title: 'New Folder',
       links: noFolderLinks
     })
   }
@@ -1034,7 +1080,7 @@ const handleImport = () => {
   console.log('props:', props)
   console.log('props.onImportBookmarks:', props.onImportBookmarks)
   console.log('typeof props.onImportBookmarks:', typeof props.onImportBookmarks)
-  
+
   if (!canImport.value) return
 
   const payload = {
@@ -1051,6 +1097,7 @@ const handleImport = () => {
   }
   
   console.log('Import payload:', payload)
+  // 实现和 handleBatchSave 类似的结构
   
   // Use callback prop instead of event (more reliable)
   if (props.onImportBookmarks) {

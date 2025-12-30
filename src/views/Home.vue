@@ -42,7 +42,7 @@
     </div>
 
     <!-- Main Content Area -->
-    <div class="p-8 relative">
+    <div class="p-4 relative">
       <!-- Drag Delete Zone -->
       <DragDeleteZone
         ref="deleteZoneRef"
@@ -72,7 +72,7 @@
       <!-- Page Detail View -->
       <div v-else-if="selectedPage" class="animate-fade-in">
         <!-- Header -->
-        <div class="flex items-start justify-between mb-8">
+        <div class="flex items-start justify-between mb-4">
           <div class="flex-1">
             <h1 
               class="text-3xl font-bold text-gray-900 mb-2 select-none"
@@ -159,7 +159,7 @@
           @start="handleCollectionDragStart"
           @end="handleCollectionDragEnd"
           @change="handleCollectionsChange"
-          class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+          class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"
         >
           <template #item="{ element: collection, index }">
             <LinkCollection
@@ -177,7 +177,7 @@
         </draggable>
 
         <!-- Collections Grid (Read-only mode) -->
-        <div v-else-if="selectedPage.collections && selectedPage.collections.length" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div v-else-if="selectedPage.collections && selectedPage.collections.length" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           <LinkCollection
             v-for="(collection, index) in selectedPage.collections"
             :key="index"
@@ -225,6 +225,7 @@
       :collections="localCollections"
       @add="handleAddNewLink"
       @batch-add="handleBatchAddLinks"
+      :onImportBookmarks="handleImportBookmarks"
     />
 
     <!-- Add Collection Modal -->
@@ -659,6 +660,30 @@ const handleBatchAddLinks = ({ links, collectionIndex, newCollectionName }) => {
     localCollections.value[collectionIndex].links.push(...links)
   }
   autoSave.markDirty()
+}
+
+// Handle import bookmarks from modal
+const handleImportBookmarks = ({ folders }) => {
+  console.log('handleImportBookmarks called with:', folders)
+  
+  if (!folders || folders.length === 0) {
+    console.log('No folders to import')
+    return
+  }
+  
+  // Add each folder as a new collection
+  folders.forEach(folder => {
+    if (folder.links && folder.links.length > 0) {
+      localCollections.value.push({
+        title: folder.title || 'Imported Folder',
+        links: folder.links
+      })
+    }
+  })
+  
+  // Mark as dirty to trigger auto save (5s delay)
+  autoSave.markDirty()
+  console.log('Import complete, marked dirty for auto save')
 }
 
 onMounted(async () => {
