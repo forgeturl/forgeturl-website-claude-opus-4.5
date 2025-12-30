@@ -106,11 +106,59 @@
 
       <!-- Page Content -->
       <div v-else-if="page" class="animate-fade-in">
+        <!-- Search Bar -->
+        <div 
+          v-if="showSearchBar"
+          ref="searchContainerRef"
+          class="mb-6 animate-fade-in"
+        >
+          <div class="relative max-w-2xl mx-auto">
+            <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+              <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+            </div>
+            <input
+              ref="searchInputRef"
+              v-model="searchQuery"
+              type="text"
+              placeholder="Search title, tags, sub links..."
+              class="w-full pl-12 pr-10 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent transition-all text-gray-900 placeholder-gray-400"
+            />
+            <button
+              v-if="searchQuery"
+              @click="clearSearch"
+              class="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-400 hover:text-gray-600 transition-colors"
+            >
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+          <p v-if="searchQuery && filteredCollectionsCount === 0" class="text-center text-gray-500 mt-4">
+            No matching links found
+          </p>
+        </div>
+
         <!-- Header -->
         <div class="flex items-start justify-between mb-8">
           <div class="flex-1">
             <h1 class="text-3xl font-bold text-gray-900 mb-2">{{ page.title }}</h1>
             <p v-if="page.brief" class="text-gray-500">{{ page.brief }}</p>
+          </div>
+          
+          <!-- Search Button -->
+          <div class="flex items-center gap-1.5 ml-6">
+            <button
+              @click="toggleSearch"
+              data-search-button
+              class="btn-compact btn-secondary flex items-center justify-center w-8 h-8 focus:ring-0 focus:ring-offset-0"
+              :class="{ 'bg-gray-900 text-white hover:bg-gray-800': showSearchBar }"
+            >
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+            </button>
           </div>
         </div>
 
@@ -122,6 +170,7 @@
             :collection="collection"
             :collectionIndex="index"
             :canEdit="canEdit"
+            :searchQuery="searchQuery"
             @update-title="(title) => updateCollectionTitle(index, title)"
             @update-link="(linkIndex, link) => updateLink(index, linkIndex, link)"
             @links-changed="(links) => updateCollectionLinks(index, links)"
@@ -147,7 +196,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, watch } from 'vue'
+import { ref, computed, onMounted, onUnmounted, watch, nextTick } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { getPage, updatePage } from '@/api/space'
 import { useAutoSave } from '@/composables/useAutoSave'
@@ -160,6 +209,62 @@ const page = ref(null)
 const loading = ref(false)
 const error = ref('')
 const needLogin = ref(false)
+
+// Search state
+const showSearchBar = ref(false)
+const searchQuery = ref('')
+const searchInputRef = ref(null)
+const searchContainerRef = ref(null)
+
+// Handle click outside to close search bar
+const handleClickOutside = (event) => {
+  if (!showSearchBar.value) return
+  
+  // Check if click is outside search container and search button
+  const isOutsideContainer = searchContainerRef.value && !searchContainerRef.value.contains(event.target)
+  const isOutsideButton = !event.target.closest('[data-search-button]')
+  
+  if (isOutsideContainer && isOutsideButton) {
+    showSearchBar.value = false
+    searchQuery.value = ''
+  }
+}
+
+// Toggle search bar
+const toggleSearch = () => {
+  showSearchBar.value = !showSearchBar.value
+  if (showSearchBar.value) {
+    nextTick(() => {
+      searchInputRef.value?.focus()
+      document.addEventListener('click', handleClickOutside)
+    })
+  } else {
+    searchQuery.value = ''
+    document.removeEventListener('click', handleClickOutside)
+  }
+}
+
+// Clear search
+const clearSearch = () => {
+  searchQuery.value = ''
+  searchInputRef.value?.focus()
+}
+
+// Count filtered collections (for showing "no results" message)
+const filteredCollectionsCount = computed(() => {
+  if (!searchQuery.value) return localCollections.value.length
+  
+  const query = searchQuery.value.toLowerCase()
+  return localCollections.value.filter(collection => {
+    const links = collection.links || []
+    return links.some(link => {
+      if (link.title?.toLowerCase().includes(query)) return true
+      if (link.tags?.some(tag => tag.toLowerCase().includes(query))) return true
+      if (link.sub_links?.some(subLink => subLink.sub_title?.toLowerCase().includes(query))) return true
+      return false
+    })
+  }).length
+})
 
 // Page config
 const pageConf = computed(() => page.value?.page_conf)
@@ -265,5 +370,10 @@ const copyCollection = (index) => {
 
 onMounted(() => {
   loadPage()
+})
+
+// Cleanup event listener on unmount
+onUnmounted(() => {
+  document.removeEventListener('click', handleClickOutside)
 })
 </script>

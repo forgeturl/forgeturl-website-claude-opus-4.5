@@ -67,6 +67,40 @@
 
       <!-- Page Content -->
       <div v-else-if="page" class="animate-fade-in">
+        <!-- Search Bar -->
+        <div 
+          v-if="showSearchBar"
+          ref="searchContainerRef"
+          class="mb-6 animate-fade-in"
+        >
+          <div class="relative max-w-2xl mx-auto">
+            <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+              <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+            </div>
+            <input
+              ref="searchInputRef"
+              v-model="searchQuery"
+              type="text"
+              placeholder="Search title, tags, sub links..."
+              class="w-full pl-12 pr-10 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent transition-all text-gray-900 placeholder-gray-400"
+            />
+            <button
+              v-if="searchQuery"
+              @click="clearSearch"
+              class="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-400 hover:text-gray-600 transition-colors"
+            >
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+          <p v-if="searchQuery && filteredCollectionsCount === 0" class="text-center text-gray-500 mt-4">
+            No matching links found
+          </p>
+        </div>
+
         <!-- Header -->
         <div class="flex items-start justify-between mb-4">
           <div class="flex-1">
@@ -75,11 +109,21 @@
           </div>
 
           <!-- Action Buttons -->
-          <div class="flex items-center gap-3 ml-6">
+          <div class="flex items-center gap-1.5 ml-6">
+            <button
+              @click="toggleSearch"
+              data-search-button
+              class="btn-compact btn-secondary flex items-center justify-center w-8 h-8 focus:ring-0 focus:ring-offset-0"
+              :class="{ 'bg-gray-900 text-white hover:bg-gray-800': showSearchBar }"
+            >
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+            </button>
             <button
               v-if="canEdit"
               @click="showAddLinkModal = true"
-              class="btn btn-secondary flex items-center gap-2"
+              class="btn-compact btn-secondary flex items-center gap-1.5 h-8"
             >
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
@@ -89,7 +133,7 @@
             <button
               v-if="canEdit"
               @click="showAddCollectionModal = true"
-              class="btn btn-secondary flex items-center gap-2"
+              class="btn-compact btn-secondary flex items-center gap-1.5 h-8"
             >
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M10 3h4v7h7v4h-7v7h-4v-7H3v-4h7V3z" />
@@ -99,7 +143,7 @@
             <button
               v-if="page.is_self"
               @click="showShareModal = true"
-              class="btn btn-secondary flex items-center gap-2"
+              class="btn-compact btn-secondary flex items-center gap-1.5 h-8"
             >
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
@@ -136,6 +180,7 @@
               :collection="collection"
               :collectionIndex="index"
               :canEdit="canEdit"
+              :searchQuery="searchQuery"
               @update-title="(title) => updateCollectionTitle(index, title)"
               @update-link="(linkIndex, link) => updateLink(index, linkIndex, link)"
               @links-changed="(links) => updateCollectionLinks(index, links)"
@@ -154,6 +199,7 @@
             :collection="collection"
             :collectionIndex="index"
             :canEdit="false"
+            :searchQuery="searchQuery"
           />
         </div>
 
@@ -221,7 +267,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, watch } from 'vue'
+import { ref, computed, onMounted, onUnmounted, watch, nextTick } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { usePageStore } from '@/stores/page'
@@ -252,6 +298,66 @@ const showShareModal = ref(false)
 const showCreateModal = ref(false)
 const showAddLinkModal = ref(false)
 const showAddCollectionModal = ref(false)
+
+// Search state
+const showSearchBar = ref(false)
+const searchQuery = ref('')
+const searchInputRef = ref(null)
+const searchContainerRef = ref(null)
+
+// Handle click outside to close search bar
+const handleClickOutside = (event) => {
+  if (!showSearchBar.value) return
+  
+  // Check if click is outside search container and search button
+  const isOutsideContainer = searchContainerRef.value && !searchContainerRef.value.contains(event.target)
+  const isOutsideButton = !event.target.closest('[data-search-button]')
+  
+  if (isOutsideContainer && isOutsideButton) {
+    showSearchBar.value = false
+    searchQuery.value = ''
+  }
+}
+
+// Toggle search bar
+const toggleSearch = () => {
+  showSearchBar.value = !showSearchBar.value
+  if (showSearchBar.value) {
+    nextTick(() => {
+      searchInputRef.value?.focus()
+      // Add click outside listener
+      document.addEventListener('click', handleClickOutside)
+    })
+  } else {
+    searchQuery.value = ''
+    document.removeEventListener('click', handleClickOutside)
+  }
+}
+
+// Clear search
+const clearSearch = () => {
+  searchQuery.value = ''
+  searchInputRef.value?.focus()
+}
+
+// Count filtered collections (for showing "no results" message)
+const filteredCollectionsCount = computed(() => {
+  if (!searchQuery.value) return localCollections.value.length
+  
+  const query = searchQuery.value.toLowerCase()
+  return localCollections.value.filter(collection => {
+    const links = collection.links || []
+    return links.some(link => {
+      // Check title
+      if (link.title?.toLowerCase().includes(query)) return true
+      // Check tags
+      if (link.tags?.some(tag => tag.toLowerCase().includes(query))) return true
+      // Check sub_links
+      if (link.sub_links?.some(subLink => subLink.sub_title?.toLowerCase().includes(query))) return true
+      return false
+    })
+  }).length
+})
 
 // Alert modal state
 const alertModal = ref({
@@ -615,6 +721,11 @@ onMounted(async () => {
     console.error('Failed to fetch space:', err)
   }
   loadPage()
+})
+
+// Cleanup event listener on unmount
+onUnmounted(() => {
+  document.removeEventListener('click', handleClickOutside)
 })
 </script>
 

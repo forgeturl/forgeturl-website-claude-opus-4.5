@@ -24,7 +24,8 @@
         class="text-gray-500 hover:text-gray-900 hover:font-semibold transition-all no-underline block truncate"
         :title="link.title || 'Untitled'"
       >
-        {{ link.title || 'Untitled' }}
+        <span v-if="titleMatchesQuery" v-html="highlightedTitle"></span>
+        <span v-else>{{ link.title || 'Untitled' }}</span>
       </a>
       
       <!-- Edit mode: click to open, long press to edit -->
@@ -43,7 +44,8 @@
         @touchend="handleTouchEnd"
         @touchmove="handleTouchMove"
       >
-        {{ link.title || 'Untitled' }}
+        <span v-if="titleMatchesQuery" v-html="highlightedTitle"></span>
+        <span v-else>{{ link.title || 'Untitled' }}</span>
       </a>
       
       <!-- Sub Links Star Icon with Dropdown -->
@@ -55,7 +57,8 @@
         @mouseleave="showSubLinksDropdown = false"
       >
         <span 
-          class="sub-links-trigger cursor-pointer text-amber-500 hover:text-amber-600 transition-colors text-xs"
+          class="sub-links-trigger cursor-pointer transition-colors text-xs"
+          :class="subLinksMatchQuery ? 'text-red-500 hover:text-red-600' : 'text-amber-500 hover:text-amber-600'"
         >
           ✦
         </span>
@@ -101,6 +104,10 @@ const props = defineProps({
   canEdit: {
     type: Boolean,
     default: false
+  },
+  searchQuery: {
+    type: String,
+    default: ''
   }
 })
 
@@ -115,6 +122,41 @@ const dropdownRef = ref(null)
 // Check if link has sub_links
 const hasSubLinks = computed(() => {
   return props.link.sub_links && props.link.sub_links.length > 0
+})
+
+// Highlight matching text in title
+const highlightedTitle = computed(() => {
+  const title = props.link.title || 'Untitled'
+  if (!props.searchQuery) return title
+  
+  const query = props.searchQuery.toLowerCase()
+  const lowerTitle = title.toLowerCase()
+  const index = lowerTitle.indexOf(query)
+  
+  if (index === -1) return title
+  
+  // Return highlighted HTML
+  const before = title.slice(0, index)
+  const match = title.slice(index, index + props.searchQuery.length)
+  const after = title.slice(index + props.searchQuery.length)
+  
+  return `${before}<span class="text-red-500 font-semibold">${match}</span>${after}`
+})
+
+// Check if title matches search query (for determining if we should use v-html)
+const titleMatchesQuery = computed(() => {
+  if (!props.searchQuery) return false
+  const title = props.link.title || 'Untitled'
+  return title.toLowerCase().includes(props.searchQuery.toLowerCase())
+})
+
+// Check if sub_links match search query (for highlighting the star icon)
+const subLinksMatchQuery = computed(() => {
+  if (!props.searchQuery) return false
+  const query = props.searchQuery.toLowerCase()
+  return props.link.sub_links?.some(subLink => 
+    subLink.sub_title?.toLowerCase().includes(query)
+  ) || false
 })
 
 // Handle mouse enter - check position and show dropdown

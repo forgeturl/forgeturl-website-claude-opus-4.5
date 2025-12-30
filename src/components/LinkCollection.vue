@@ -1,5 +1,6 @@
 <template>
   <div 
+    v-show="!shouldHide"
     class="border border-gray-200 rounded-xl p-4 hover:border-gray-900 transition-colors relative group"
   >
     <!-- Drag Handle for Collection (top-left, only in edit mode) -->
@@ -77,9 +78,11 @@
     >
       <template #item="{ element: link, index }">
         <LinkItem
+          v-show="linkMatchesQuery(link, searchQuery)"
           :link="link"
           :linkIndex="index"
           :canEdit="true"
+          :searchQuery="searchQuery"
           @edit="handleEditLink(index, link)"
         />
       </template>
@@ -97,14 +100,15 @@
     <!-- Links (Read-only) -->
     <div v-else class="flex flex-wrap gap-x-10 gap-y-2">
       <LinkItem
-        v-for="(link, linkIndex) in collection.links"
+        v-for="(link, linkIndex) in filteredLinks"
         :key="linkIndex"
         :link="link"
         :linkIndex="linkIndex"
         :canEdit="false"
+        :searchQuery="searchQuery"
       />
       <!-- Empty State for read-only -->
-      <div v-if="!collection.links || collection.links.length === 0" class="w-full text-center py-4 text-gray-400 text-sm">
+      <div v-if="!filteredLinks.length" class="w-full text-center py-4 text-gray-400 text-sm">
         No links yet
       </div>
     </div>
@@ -126,7 +130,7 @@
 </template>
 
 <script setup>
-import { ref, watch } from 'vue'
+import { ref, watch, computed } from 'vue'
 import draggable from 'vuedraggable'
 import LinkItem from './LinkItem.vue'
 import CollectionTitleModal from './CollectionTitleModal.vue'
@@ -144,6 +148,10 @@ const props = defineProps({
   canEdit: {
     type: Boolean,
     default: false
+  },
+  searchQuery: {
+    type: String,
+    default: ''
   }
 })
 
@@ -164,6 +172,33 @@ const localLinks = ref([])
 watch(() => props.collection.links, (newLinks) => {
   localLinks.value = JSON.parse(JSON.stringify(newLinks || []))
 }, { immediate: true, deep: true })
+
+// Check if a link matches the search query
+const linkMatchesQuery = (link, query) => {
+  if (!query) return true
+  const lowerQuery = query.toLowerCase()
+  
+  // Check title
+  if (link.title?.toLowerCase().includes(lowerQuery)) return true
+  // Check tags
+  if (link.tags?.some(tag => tag.toLowerCase().includes(lowerQuery))) return true
+  // Check sub_links
+  if (link.sub_links?.some(subLink => subLink.sub_title?.toLowerCase().includes(lowerQuery))) return true
+  
+  return false
+}
+
+// Filtered links based on search query
+const filteredLinks = computed(() => {
+  if (!props.searchQuery) return localLinks.value
+  return localLinks.value.filter(link => linkMatchesQuery(link, props.searchQuery))
+})
+
+// Should hide collection if no links match
+const shouldHide = computed(() => {
+  if (!props.searchQuery) return false
+  return filteredLinks.value.length === 0
+})
 
 // Title modal
 const showTitleModal = ref(false)
