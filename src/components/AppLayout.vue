@@ -17,6 +17,7 @@
         <span class="text-base font-bold tracking-tight">
           <span class="bg-gradient-to-r from-violet-600 via-purple-600 to-fuchsia-600 bg-clip-text text-transparent">Forget</span><span class="text-gray-800 dark:text-slate-200">URL</span>
         </span>
+        <span class="px-1.5 py-0.5 text-[10px] font-bold tracking-wider uppercase bg-gradient-to-r from-amber-400 to-orange-500 text-white rounded shadow-sm">Beta</span>
       </router-link>
       
       <!-- Mobile Menu Button -->
@@ -182,9 +183,12 @@
           
           <!-- Brand text -->
           <div class="flex flex-col">
-            <span class="text-lg font-bold tracking-tight leading-none">
-              <span class="bg-gradient-to-r from-violet-600 via-purple-600 to-fuchsia-600 bg-clip-text text-transparent">Forget</span><span class="text-gray-800 dark:text-slate-200">URL</span>
-            </span>
+            <div class="flex items-center gap-2">
+              <span class="text-lg font-bold tracking-tight leading-none">
+                <span class="bg-gradient-to-r from-violet-600 via-purple-600 to-fuchsia-600 bg-clip-text text-transparent">Forget</span><span class="text-gray-800 dark:text-slate-200">URL</span>
+              </span>
+              <span class="px-1.5 py-0.5 text-[9px] font-bold tracking-wider uppercase bg-gradient-to-r from-amber-400 to-orange-500 text-white rounded shadow-sm leading-none">Beta</span>
+            </div>
             <span class="text-[10px] text-gray-400 dark:text-slate-500 font-medium tracking-wider uppercase mt-0.5">Bookmark Manager</span>
           </div>
         </router-link>

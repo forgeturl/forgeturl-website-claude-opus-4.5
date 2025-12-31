@@ -21,6 +21,7 @@
           <span class="font-bold text-lg text-gray-800 dark:text-slate-200">
             <span class="bg-gradient-to-r from-violet-600 to-fuchsia-600 bg-clip-text text-transparent">Forget</span>URL
           </span>
+          <span class="px-1.5 py-0.5 text-[10px] font-bold tracking-wider uppercase bg-gradient-to-r from-amber-400 to-orange-500 text-white rounded shadow-sm">Beta</span>
         </div>
 
         <!-- Right side buttons -->
@@ -144,8 +145,11 @@
               </div>
             </div>
             
-            <h1 class="text-5xl lg:text-6xl font-bold mb-4">
-              <span class="bg-gradient-to-r from-violet-600 via-purple-600 to-fuchsia-600 bg-clip-text text-transparent">Forget</span><span class="text-gray-800 dark:text-slate-200">URL</span>
+            <h1 class="text-5xl lg:text-6xl font-bold mb-4 flex items-center justify-center lg:justify-start gap-3 flex-wrap">
+              <span>
+                <span class="bg-gradient-to-r from-violet-600 via-purple-600 to-fuchsia-600 bg-clip-text text-transparent">Forget</span><span class="text-gray-800 dark:text-slate-200">URL</span>
+              </span>
+              <span class="px-2.5 py-1 text-sm font-bold tracking-wider uppercase bg-gradient-to-r from-amber-400 to-orange-500 text-white rounded-lg shadow-lg shadow-orange-500/25">Beta</span>
             </h1>
             
             <p class="text-xl lg:text-2xl text-gray-600 dark:text-slate-300 font-medium mb-4">
