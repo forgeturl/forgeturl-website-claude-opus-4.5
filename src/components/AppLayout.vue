@@ -1,7 +1,145 @@
 <template>
-  <div class="min-h-screen flex bg-gray-50 dark:bg-slate-900 transition-colors duration-300">
-    <!-- Sidebar -->
-    <aside class="w-56 bg-white dark:bg-slate-800 border-r border-gray-200 dark:border-slate-700 flex flex-col fixed h-full z-30 transition-colors duration-300">
+  <div class="min-h-screen bg-gray-50 dark:bg-slate-900 transition-colors duration-300">
+    <!-- Mobile Responsive Layout -->
+    <header class="md:hidden fixed top-0 left-0 right-0 z-40 bg-white dark:bg-slate-800 border-b border-gray-200 dark:border-slate-700 px-4 py-3 flex items-center justify-between transition-colors duration-300">
+      <!-- Logo -->
+      <router-link to="/" class="group flex items-center gap-2 select-none">
+        <div class="logo-icon relative w-8 h-8 flex-shrink-0">
+          <div class="relative w-full h-full bg-gradient-to-br from-violet-500 via-purple-500 to-fuchsia-500 rounded-lg shadow-lg shadow-purple-500/25 flex items-center justify-center overflow-hidden">
+            <svg class="w-4 h-4 text-white relative z-10" viewBox="0 0 24 24" fill="none">
+              <circle cx="17" cy="7" r="4" fill="currentColor" opacity="0.3"/>
+              <circle cx="19" cy="9" r="2.5" fill="currentColor" opacity="0.25"/>
+              <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+        </div>
+        <span class="text-base font-bold tracking-tight">
+          <span class="bg-gradient-to-r from-violet-600 via-purple-600 to-fuchsia-600 bg-clip-text text-transparent">Forget</span><span class="text-gray-800 dark:text-slate-200">URL</span>
+        </span>
+      </router-link>
+      
+      <!-- Mobile Menu Button -->
+      <button
+        @click="mobileMenuOpen = !mobileMenuOpen"
+        class="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-700 text-gray-600 dark:text-slate-400 transition-colors"
+      >
+        <svg v-if="!mobileMenuOpen" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+        </svg>
+        <svg v-else class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
+    </header>
+
+    <!-- Mobile Menu Overlay -->
+    <div 
+      v-if="mobileMenuOpen" 
+      class="md:hidden fixed inset-0 bg-black/50 z-40 transition-opacity"
+      @click="mobileMenuOpen = false"
+    ></div>
+
+    <!-- Mobile Slide-down Menu -->
+    <div
+      class="md:hidden fixed top-14 left-0 right-0 z-50 bg-white dark:bg-slate-800 border-b border-gray-200 dark:border-slate-700 shadow-lg transition-all duration-300 overflow-hidden"
+      :class="mobileMenuOpen ? 'max-h-[70vh] opacity-100' : 'max-h-0 opacity-0 pointer-events-none'"
+    >
+      <div class="overflow-y-auto max-h-[calc(70vh-120px)]">
+        <!-- Pages Section -->
+        <div class="px-4 py-3">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-xs font-semibold text-gray-500 dark:text-slate-400 uppercase tracking-wider">Pages</span>
+            <button
+              @click="$emit('create-page'); mobileMenuOpen = false"
+              class="p-1.5 hover:bg-gray-100 dark:hover:bg-slate-700 rounded text-gray-500 dark:text-slate-400 hover:text-gray-700 dark:hover:text-slate-200 transition-colors"
+              title="Create new page"
+            >
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+              </svg>
+            </button>
+          </div>
+
+          <!-- Page List -->
+          <nav class="space-y-1">
+            <div
+              v-for="page in pages"
+              :key="page.page_id"
+              @click="$emit('select-page', page.page_id); mobileMenuOpen = false"
+              class="group flex items-center justify-between px-3 py-2.5 rounded-lg cursor-pointer transition-colors"
+              :class="[
+                currentPageId === page.page_id 
+                  ? 'bg-gray-100 dark:bg-slate-700 text-gray-900 dark:text-slate-100' 
+                  : 'text-gray-600 dark:text-slate-400 hover:bg-gray-50 dark:hover:bg-slate-700/50 hover:text-gray-900 dark:hover:text-slate-200'
+              ]"
+            >
+              <span class="truncate text-sm">{{ page.title || 'Unnamed Page' }}</span>
+              <button
+                v-if="page.is_self"
+                @click.stop="$emit('delete-page', page.page_id)"
+                class="p-1 rounded hover:bg-gray-200 dark:hover:bg-slate-600 text-gray-400 dark:text-slate-500 hover:text-red-500 dark:hover:text-red-400 transition-all"
+                title="Delete page"
+              >
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                </svg>
+              </button>
+            </div>
+          </nav>
+
+          <!-- Empty State -->
+          <div v-if="!pages || pages.length === 0" class="py-6 text-center">
+            <p class="text-sm text-gray-400 dark:text-slate-500">No pages yet</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- User Section (Mobile) -->
+      <div class="border-t border-gray-200 dark:border-slate-700 p-4 bg-gray-50 dark:bg-slate-800/50">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-3">
+            <img
+              v-if="user?.avatar"
+              :src="user.avatar"
+              :alt="user.displayName"
+              class="w-8 h-8 rounded-full object-cover"
+            />
+            <div v-else class="w-8 h-8 rounded-full bg-gray-200 dark:bg-slate-600 flex items-center justify-center text-gray-600 dark:text-slate-300 text-sm font-medium">
+              {{ getInitial(user?.displayName) }}
+            </div>
+            <span class="text-sm text-gray-600 dark:text-slate-400 truncate max-w-[140px]">{{ user?.email }}</span>
+          </div>
+          
+          <div class="flex items-center gap-1">
+            <!-- Theme Toggle -->
+            <button
+              @click="toggleTheme"
+              class="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-700 text-gray-500 dark:text-slate-400 hover:text-gray-700 dark:hover:text-slate-200 transition-all duration-300"
+            >
+              <svg v-if="isDark" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+              </svg>
+              <svg v-else class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+              </svg>
+            </button>
+            <!-- Logout -->
+            <button
+              @click="$emit('logout'); mobileMenuOpen = false"
+              class="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-700 text-gray-500 dark:text-slate-400 hover:text-red-500 dark:hover:text-red-400 transition-colors"
+            >
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+              </svg>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Desktop Sidebar -->
+    <aside class="hidden md:flex w-56 bg-white dark:bg-slate-800 border-r border-gray-200 dark:border-slate-700 flex-col fixed h-full z-30 transition-colors duration-300">
       <!-- Logo -->
       <div class="px-4 py-5">
         <router-link to="/" class="group flex items-center gap-3 select-none">
@@ -159,13 +297,14 @@
     </aside>
 
     <!-- Main Content -->
-    <main class="flex-1 ml-56 overflow-x-hidden">
+    <main class="md:ml-56 pt-14 md:pt-0 overflow-x-hidden min-h-screen">
       <slot></slot>
     </main>
   </div>
 </template>
 
 <script setup>
+import { ref } from 'vue'
 import { useTheme } from '@/composables/useTheme'
 
 defineProps({
@@ -186,6 +325,9 @@ defineProps({
 defineEmits(['create-page', 'select-page', 'delete-page', 'logout'])
 
 const { isDark, toggleTheme } = useTheme()
+
+// Mobile menu state
+const mobileMenuOpen = ref(false)
 
 const getInitial = (name) => {
   return name ? name.charAt(0).toUpperCase() : 'U'

@@ -31,29 +31,33 @@
     <div class="mb-2">
       <h3 
         v-if="collection.title"
-        class="text-base font-semibold text-gray-900 dark:text-slate-100 text-center select-none"
-        :class="{ 'cursor-pointer hover:text-blue-600 dark:hover:text-violet-400 transition-colors': canEdit }"
-        @mousedown="handleTitleMouseDown"
-        @mouseup="handleTitleMouseUp"
-        @mouseleave="handleTitleMouseLeave"
-        @touchstart="handleTitleTouchStart"
-        @touchend="handleTitleTouchEnd"
-        @touchmove="handleTitleTouchMove"
+        class="text-base font-semibold text-gray-900 dark:text-slate-100 text-center"
       >
-        {{ collection.title }}
+        <span
+          class="select-none"
+          :class="{ 'cursor-pointer hover:text-blue-600 dark:hover:text-violet-400 transition-colors': canEdit }"
+          @mousedown="handleTitleMouseDown"
+          @mouseup="handleTitleMouseUp"
+          @mouseleave="handleTitleMouseLeave"
+          @touchstart="handleTitleTouchStart"
+          @touchend="handleTitleTouchEnd"
+          @touchmove="handleTitleTouchMove"
+        >{{ collection.title }}</span>
       </h3>
       <h3 
         v-else
-        class="text-base font-semibold text-gray-400 dark:text-slate-500 text-center select-none"
-        :class="{ 'cursor-pointer hover:text-gray-600 dark:hover:text-slate-300 transition-colors': canEdit }"
-        @mousedown="handleTitleMouseDown"
-        @mouseup="handleTitleMouseUp"
-        @mouseleave="handleTitleMouseLeave"
-        @touchstart="handleTitleTouchStart"
-        @touchend="handleTitleTouchEnd"
-        @touchmove="handleTitleTouchMove"
+        class="text-base font-semibold text-gray-400 dark:text-slate-500 text-center"
       >
-        Unnamed Collection
+        <span
+          class="select-none"
+          :class="{ 'cursor-pointer hover:text-gray-600 dark:hover:text-slate-300 transition-colors': canEdit }"
+          @mousedown="handleTitleMouseDown"
+          @mouseup="handleTitleMouseUp"
+          @mouseleave="handleTitleMouseLeave"
+          @touchstart="handleTitleTouchStart"
+          @touchend="handleTitleTouchEnd"
+          @touchmove="handleTitleTouchMove"
+        >Unnamed Collection</span>
       </h3>
     </div>
 
