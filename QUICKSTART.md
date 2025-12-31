@@ -20,7 +20,7 @@ npm run dev
 ### 3. 开始使用
 
 #### 登录
-1. 点击"使用 Google/GitHub/微信 登录"
+1. 点击"使用 Google/GitHub 登录"
 2. 完成第三方授权
 3. 自动跳转到首页
 

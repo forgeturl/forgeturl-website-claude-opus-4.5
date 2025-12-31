@@ -10,7 +10,6 @@
 
 - ✅ Google 登录
 - ✅ GitHub 登录
-- ✅ 微信登录
 - ✅ 登录回调处理
 - ✅ X-Forget-Cookie 流程
 - ✅ X-Token 自动管理

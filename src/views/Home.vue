@@ -234,17 +234,6 @@
           />
         </div>
 
-        <!-- Empty Links -->
-        <div v-if="!localCollections.length || localCollections.every(c => !c.links?.length)" class="text-center py-16 border-2 border-dashed border-gray-200 dark:border-slate-700 rounded-xl mt-6">
-          <p class="text-gray-400 dark:text-slate-500 mb-4">No bookmarks on this page yet</p>
-          <button
-            v-if="canEdit"
-            @click="showAddLinkModal = true"
-            class="text-gray-900 dark:text-violet-400 font-medium hover:underline"
-          >
-            Add your first link
-          </button>
-        </div>
       </div>
 
       <!-- Select Page Hint -->

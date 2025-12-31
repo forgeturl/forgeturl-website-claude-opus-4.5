@@ -4,7 +4,7 @@
 
 ## ✨ 功能特性
 
-- 🔐 **第三方登录** - 支持 Google、GitHub、微信登录
+- 🔐 **第三方登录** - 支持 Google、GitHub 登录
 - 📖 **书签管理** - 创建、编辑、删除书签页面
 - 🔗 **权限分享** - 支持只读、编辑、超级权限链接分享
 - 🌍 **多环境支持** - 自动切换 local、test、onl 环境
@@ -88,7 +88,7 @@ src/
 
 ### 登录流程
 
-1. 用户选择第三方登录方式（Google/GitHub/微信）
+1. 用户选择第三方登录方式（Google/GitHub）
 2. 调用 `/login/connector/auth` 获取授权 URL
 3. 跳转到第三方授权页面
 4. 授权成功后回调到 `/auth/callback/:provider`

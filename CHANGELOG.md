@@ -7,7 +7,7 @@
 ### 新增
 
 - ✨ 完整的用户认证系统
-  - Google、GitHub、微信第三方登录
+  - Google、GitHub 第三方登录
   - 登录状态持久化
   - 自动token刷新
   

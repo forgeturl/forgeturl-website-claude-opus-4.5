@@ -178,14 +178,6 @@
           />
         </div>
 
-        <!-- Empty State -->
-        <div
-          v-if="!localCollections.length || localCollections.every(c => !c.links?.length)"
-          class="text-center py-16 border-2 border-dashed border-gray-200 rounded-xl mt-6"
-        >
-          <p class="text-gray-400">No bookmarks on this page yet</p>
-        </div>
-
         <!-- Page Info -->
         <div class="mt-8 pt-6 border-t border-gray-200 text-sm text-gray-400">
           <p>Updated: {{ formatDate(page.update_time) }}</p>

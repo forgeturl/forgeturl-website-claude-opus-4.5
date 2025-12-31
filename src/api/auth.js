@@ -5,7 +5,7 @@ import request from '@/utils/request'
 
 /**
  * 获取第三方登录授权URL
- * @param {string} provider - 登录提供商 (google/github/weixin)
+ * @param {string} provider - 登录提供商 (google/github)
  * @returns {Promise} 返回授权URL
  */
 export function getAuthUrl(provider) {
