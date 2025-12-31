@@ -25,7 +25,8 @@ export const API_BASE_URL = getApiBaseUrl()
 // 第三方登录提供商
 export const AUTH_PROVIDERS = {
     GOOGLE: 'google',
-    GITHUB: 'github'
+    GITHUB: 'github',
+    WEIXIN: 'weixin'
 }
 
 // 页面权限类型

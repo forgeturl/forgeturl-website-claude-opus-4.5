@@ -27,7 +27,7 @@ export const usePageStore = defineStore('page', () => {
         try {
             const data = await getMySpace()
             myPages.value = data.page_briefs || []
-            spaceName.value = data.space_name || '我的空间'
+            spaceName.value = data.space_name || 'My Space'
             return data
         } catch (error) {
             console.error('Fetch my space error:', error)

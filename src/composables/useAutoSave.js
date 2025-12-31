@@ -70,7 +70,7 @@ export function useAutoSave(saveFn, delay = 5000) {
 
     } catch (err) {
       console.error('Auto save error:', err)
-      saveError.value = err.message || '保存失败'
+      saveError.value = err.message || 'Save failed'
     } finally {
       isSaving.value = false
       // 延迟隐藏进度条
@@ -125,9 +125,9 @@ export function useAutoSave(saveFn, delay = 5000) {
   // 保存状态文本
   const saveStatusText = computed(() => {
     if (saveError.value) return saveError.value
-    if (isSaving.value) return '正在保存...'
-    if (showSavedMessage.value) return '已保存修改'
-    if (isDirty.value) return '等待保存...'
+    if (isSaving.value) return 'Saving...'
+    if (showSavedMessage.value) return 'Changes saved'
+    if (isDirty.value) return 'Waiting to save...'
     return ''
   })
 

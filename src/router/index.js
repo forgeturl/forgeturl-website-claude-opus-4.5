@@ -10,31 +10,31 @@ const routes = [
         path: '/',
         name: 'Home',
         component: () => import('@/views/Home.vue'),
-        meta: { requiresAuth: true, title: '我的空间' }
+        meta: { requiresAuth: true, title: 'My Space' }
     },
     {
         path: '/login',
         name: 'Login',
         component: () => import('@/views/Login.vue'),
-        meta: { title: '登录' }
+        meta: { title: 'Sign In' }
     },
     {
         path: '/auth/callback/:provider',
         name: 'AuthCallback',
         component: () => import('@/views/AuthCallback.vue'),
-        meta: { title: '登录中...' }
+        meta: { title: 'Signing In...' }
     },
     {
         path: '/page/:pageId',
         name: 'PageDetail',
         component: () => import('@/views/PageDetail.vue'),
-        meta: { requiresAuth: true, title: '页面详情' }
+        meta: { requiresAuth: true, title: 'Page Detail' }
     },
     {
         path: '/share/:pageId',
         name: 'SharePage',
         component: () => import('@/views/SharePage.vue'),
-        meta: { title: '分享页面' }
+        meta: { title: 'Shared Page' }
     },
     {
         path: '/:pathMatch(.*)*',
@@ -54,7 +54,7 @@ router.beforeEach((to, from, next) => {
     // 设置页面标题
     document.title = to.meta.title
         ? `${to.meta.title} - ForgetURL`
-        : 'ForgetURL - 极简书签管理'
+        : 'ForgetURL - Save links, free your mind'
 
     // 检查是否需要登录
     if (to.meta.requiresAuth) {

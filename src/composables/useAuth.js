@@ -22,7 +22,7 @@ export function useAuth() {
                 // 跳转到第三方授权页面
                 window.location.href = data.auth_url
             } else {
-                throw new Error('获取授权URL失败')
+                throw new Error('Failed to get authorization URL')
             }
         } catch (error) {
             console.error('Start auth error:', error)

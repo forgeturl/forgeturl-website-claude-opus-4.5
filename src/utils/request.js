@@ -62,7 +62,7 @@ request.interceptors.response.use(
                 return data.data || data
             } else {
                 // 业务错误
-                const error = new Error(data.msg || data.message || '请求失败')
+                const error = new Error(data.msg || data.message || 'Request failed')
                 error.code = data.code
                 error.data = data
                 return Promise.reject(error)
@@ -106,7 +106,7 @@ request.interceptors.response.use(
                 error.message = data.msg
             }
         } else if (error.request) {
-            error.message = '网络错误，请检查您的网络连接'
+            error.message = 'Network error. Please check your connection.'
         }
 
         return Promise.reject(error)
