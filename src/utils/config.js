@@ -26,7 +26,7 @@ export const API_BASE_URL = getApiBaseUrl()
 export const AUTH_PROVIDERS = {
     GOOGLE: 'google',
     GITHUB: 'github',
-    WEIXIN: 'weixin'
+    WECHAT: 'wechat'
 }
 
 // 页面权限类型
