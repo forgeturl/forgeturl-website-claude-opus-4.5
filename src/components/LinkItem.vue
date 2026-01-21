@@ -14,7 +14,7 @@
     </div>
 
     <!-- Link Text -->
-    <div class="min-w-0 relative flex-1 overflow-hidden">
+    <div class="min-w-0 relative flex-1">
       <!-- Read-only mode: normal link -->
       <a
         v-if="!canEdit"
