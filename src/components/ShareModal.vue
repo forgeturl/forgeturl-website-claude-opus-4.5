@@ -7,7 +7,7 @@
         @click.self="close"
       >
         <!-- Backdrop -->
-        <div class="fixed inset-0 bg-black/40 dark:bg-black/60 transition-opacity"></div>
+        <div class="fixed inset-0 bg-black/40 dark:bg-black/60 transition-opacity" @click="close"></div>
 
         <!-- Modal -->
         <div class="flex min-h-full items-center justify-center p-4">

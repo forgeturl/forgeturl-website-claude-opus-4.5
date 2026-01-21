@@ -1,6 +1,6 @@
 <template>
   <div 
-    class="group inline-flex items-center gap-1 relative"
+    class="group flex items-center gap-1 relative max-w-full"
     :class="{ 'cursor-grab': canEdit }"
   >
     <!-- Drag Handle (visible on hover in edit mode) -->
@@ -14,7 +14,7 @@
     </div>
 
     <!-- Link Text -->
-    <div class="inline-block relative max-w-[180px]">
+    <div class="min-w-0 relative flex-1 overflow-hidden">
       <!-- Read-only mode: normal link -->
       <a
         v-if="!canEdit"

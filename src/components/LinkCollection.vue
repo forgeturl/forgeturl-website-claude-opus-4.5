@@ -75,7 +75,7 @@
       :scrollSensitivity="100"
       :scrollSpeed="80"
       :bubbleScroll="true"
-      class="links-draggable flex flex-wrap gap-x-10 gap-y-2 min-h-[60px] relative"
+      class="links-draggable flex flex-wrap gap-x-10 gap-y-2 min-h-[60px] relative pl-5"
       @change="handleLinksChange"
       @start="handleDragStart"
       @end="handleDragEnd"

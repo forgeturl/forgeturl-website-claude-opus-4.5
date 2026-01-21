@@ -102,14 +102,14 @@
         </div>
 
         <!-- Header -->
-        <div class="flex items-start justify-between mb-4">
+        <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between mb-4 gap-3">
           <div class="flex-1">
             <h1 class="text-3xl font-bold text-gray-900 mb-2">{{ page.title }}</h1>
             <p v-if="page.brief" class="text-gray-500">{{ page.brief }}</p>
           </div>
 
           <!-- Action Buttons -->
-          <div class="flex items-center gap-1.5 ml-6">
+          <div class="flex items-center gap-1.5 sm:ml-6 flex-shrink-0">
             <button
               @click="toggleSearch"
               data-search-button
@@ -123,32 +123,32 @@
             <button
               v-if="canEdit"
               @click="showAddLinkModal = true"
-              class="btn-compact btn-secondary flex items-center gap-1.5 h-8"
+              class="btn-compact btn-secondary flex items-center justify-center gap-1.5 h-8 w-8 sm:w-auto"
             >
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
               </svg>
-              Link
+              <span class="hidden sm:inline">Link</span>
             </button>
             <button
               v-if="canEdit"
               @click="showAddCollectionModal = true"
-              class="btn-compact btn-secondary flex items-center gap-1.5 h-8"
+              class="btn-compact btn-secondary flex items-center justify-center gap-1.5 h-8 w-8 sm:w-auto"
             >
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M10 3h4v7h7v4h-7v7h-4v-7H3v-4h7V3z" />
               </svg>
-              Collection
+              <span class="hidden sm:inline">Collection</span>
             </button>
             <button
               v-if="page.is_self"
               @click="showShareModal = true"
-              class="btn-compact btn-secondary flex items-center gap-1.5 h-8"
+              class="btn-compact btn-secondary flex items-center justify-center gap-1.5 h-8 w-8 sm:w-auto"
             >
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
               </svg>
-              Share
+              <span class="hidden sm:inline">Share</span>
             </button>
           </div>
         </div>
