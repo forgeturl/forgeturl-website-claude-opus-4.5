@@ -10,13 +10,18 @@ const routes = [
         path: '/',
         name: 'Home',
         component: () => import('@/views/Home.vue'),
+        meta: { title: 'ForgetURL - Save links, free your mind' }
+    },
+    {
+        path: '/my',
+        name: 'MySpace',
+        component: () => import('@/views/MySpace.vue'),
         meta: { requiresAuth: true, title: 'My Space' }
     },
     {
         path: '/login',
         name: 'Login',
-        component: () => import('@/views/Login.vue'),
-        meta: { title: 'Sign In' }
+        redirect: '/'
     },
     {
         path: '/auth/callback/:provider',
@@ -49,6 +54,12 @@ const routes = [
         meta: { title: 'Terms of Service' }
     },
     {
+        path: '/changelog',
+        name: 'Changelog',
+        component: () => import('@/views/Changelog.vue'),
+        meta: { title: 'Changelog' }
+    },
+    {
         path: '/:pathMatch(.*)*',
         name: 'NotFound',
         redirect: '/'
@@ -64,29 +75,27 @@ const router = createRouter({
 // 路由守卫
 router.beforeEach((to, from, next) => {
     // 设置页面标题
-    document.title = to.meta.title
-        ? `${to.meta.title} - ForgetURL`
-        : 'ForgetURL - Save links, free your mind'
+    if (to.meta.title) {
+        // 如果标题已经包含品牌名，直接使用
+        if (to.meta.title.includes('ForgetURL')) {
+            document.title = to.meta.title
+        } else {
+            document.title = `${to.meta.title} - ForgetURL`
+        }
+    } else {
+        document.title = 'ForgetURL - Save links, free your mind'
+    }
 
     // 检查是否需要登录
     if (to.meta.requiresAuth) {
         const authStore = useAuthStore()
 
         if (!authStore.isLoggedIn) {
-            // 未登录，跳转到登录页
+            // 未登录，跳转到首页（首页包含登录功能）
             next({
-                path: '/login',
+                path: '/',
                 query: { redirect: to.fullPath }
             })
-            return
-        }
-    }
-
-    // 如果已登录，不允许访问登录页
-    if (to.path === '/login') {
-        const authStore = useAuthStore()
-        if (authStore.isLoggedIn) {
-            next('/')
             return
         }
     }

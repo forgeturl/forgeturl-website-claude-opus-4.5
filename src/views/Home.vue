@@ -1,812 +1,791 @@
 <template>
-  <AppLayout
-    :pages="pageStore.myPages"
-    :currentPageId="selectedPageId"
-    :user="authStore.user"
-    @create-page="showCreateModal = true"
-    @select-page="selectPage"
-    @delete-page="handleDeletePage"
-    @logout="handleLogout"
-  >
-    <!-- Save Progress Bar (Fixed at top-right) -->
-    <div 
-      v-if="canEdit && (autoSave.showProgress.value || autoSave.showSavedMessage.value || autoSave.saveError.value)"
-      class="fixed top-4 right-4 z-40 flex items-center gap-3 bg-white dark:bg-slate-800 rounded-full shadow-lg px-4 py-2 border border-gray-100 dark:border-slate-700 transition-colors duration-300"
-    >
-      <!-- Progress bar -->
-      <div v-if="autoSave.showProgress.value" class="flex items-center gap-3">
-        <div class="w-32 h-1.5 bg-gray-100 dark:bg-slate-700 rounded-full overflow-hidden">
-          <div 
-            class="h-full bg-emerald-500 dark:bg-emerald-400 rounded-full transition-all duration-100"
-            :style="{ width: autoSave.saveProgress.value + '%' }"
-          ></div>
-        </div>
-        <span class="text-xs text-gray-500 dark:text-slate-400 whitespace-nowrap">Saving...</span>
-      </div>
-      
-      <!-- Saved message -->
-      <div v-else-if="autoSave.showSavedMessage.value" class="flex items-center gap-2 text-emerald-600">
-        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-        </svg>
-        <span class="text-xs font-medium">Saved</span>
-      </div>
-      
-      <!-- Error message -->
-      <div v-else-if="autoSave.saveError.value" class="flex items-center gap-2 text-red-600">
-        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-        </svg>
-        <span class="text-xs font-medium">{{ autoSave.saveError.value }}</span>
-      </div>
+  <div class="min-h-screen bg-gradient-to-br from-slate-50 via-purple-50/30 to-fuchsia-50/40 dark:from-slate-900 dark:via-slate-900 dark:to-slate-800 relative overflow-hidden transition-colors duration-300">
+    <!-- Background decoration -->
+    <div class="absolute inset-0 overflow-hidden pointer-events-none">
+      <div class="absolute -top-24 -right-24 w-96 h-96 bg-gradient-to-br from-violet-200/40 to-fuchsia-200/40 dark:from-violet-500/20 dark:to-fuchsia-500/20 rounded-full blur-3xl"></div>
+      <div class="absolute -bottom-24 -left-24 w-80 h-80 bg-gradient-to-tr from-purple-200/30 to-violet-200/30 dark:from-purple-500/15 dark:to-violet-500/15 rounded-full blur-3xl"></div>
+      <div class="absolute top-1/3 left-1/4 w-64 h-64 bg-gradient-to-br from-fuchsia-200/20 to-pink-200/20 dark:from-fuchsia-500/10 dark:to-pink-500/10 rounded-full blur-3xl"></div>
     </div>
+    
+    <!-- Top Navigation Bar -->
+    <nav class="fixed top-0 left-0 right-0 z-30 px-4 py-2.5 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-gray-200/50 dark:border-slate-700/50">
+      <div class="max-w-6xl mx-auto flex items-center justify-between">
+        <!-- Logo (left) -->
+        <router-link to="/" class="flex items-center gap-2">
+          <div class="w-8 h-8 bg-gradient-to-br from-violet-500 to-fuchsia-500 rounded-lg flex items-center justify-center shadow-lg shadow-purple-500/20">
+            <svg class="w-4 h-4 text-white" viewBox="0 0 24 24" fill="none">
+              <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <span class="font-bold text-base text-gray-800 dark:text-slate-200">
+            <span class="bg-gradient-to-r from-violet-600 to-fuchsia-600 bg-clip-text text-transparent">Forget</span>URL
+          </span>
+          <span class="px-1.5 py-0.5 text-[9px] font-bold tracking-wider uppercase bg-gradient-to-r from-amber-400 to-orange-500 text-white rounded shadow-sm">Beta</span>
+        </router-link>
 
-    <!-- Main Content Area -->
-    <div class="p-4 relative transition-colors duration-300">
-      <!-- Drag Delete Zone -->
-      <DragDeleteZone
-        ref="deleteZoneRef"
-        :visible="isDragging"
-        @delete="handleDragDelete"
-      />
-      
-      <!-- Loading -->
-      <div v-if="pageStore.loading && !pageStore.myPages.length" class="flex justify-center py-24">
-        <div class="animate-spin rounded-full h-10 w-10 border-2 border-gray-900 dark:border-violet-400 border-t-transparent"></div>
-      </div>
-
-      <!-- Empty State - No Pages -->
-      <div v-else-if="!pageStore.myPages.length" class="flex flex-col items-center justify-center py-24">
-        <div class="w-16 h-16 bg-gray-100 dark:bg-slate-800 rounded-full flex items-center justify-center mb-6">
-          <svg class="w-8 h-8 text-gray-400 dark:text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-          </svg>
-        </div>
-        <h3 class="text-lg font-medium text-gray-900 dark:text-slate-100 mb-2">No Pages Yet</h3>
-        <p class="text-gray-500 dark:text-slate-400 mb-6">Create your first bookmark page to get started</p>
-        <button @click="showCreateModal = true" class="btn btn-primary">
-          Create Page
-        </button>
-      </div>
-
-      <!-- Page Detail View -->
-      <div v-else-if="selectedPage" class="animate-fade-in">
-        <!-- Search Bar -->
-        <div 
-          v-if="showSearchBar"
-          ref="searchContainerRef"
-          class="mb-6 animate-fade-in"
-        >
-          <div class="relative max-w-2xl mx-auto">
-            <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-              <svg class="w-5 h-5 text-gray-400 dark:text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-              </svg>
-            </div>
-            <input
-              ref="searchInputRef"
-              v-model="searchQuery"
-              type="text"
-              placeholder="Search title, URL, tags, sub links..."
-              class="w-full pl-12 pr-10 py-3 border border-gray-200 dark:border-slate-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-gray-900 dark:focus:ring-violet-500 focus:border-transparent transition-all text-gray-900 dark:text-slate-100 placeholder-gray-400 dark:placeholder-slate-500 bg-white dark:bg-slate-800"
-            />
+        <!-- Center Navigation -->
+        <div class="hidden md:flex items-center gap-1">
+          <router-link
+            to="/"
+            class="px-3 py-1.5 text-sm font-medium rounded-lg transition-all duration-200"
+            :class="$route.path === '/' ? 'text-violet-600 dark:text-violet-400 bg-violet-50 dark:bg-violet-900/30' : 'text-gray-600 dark:text-slate-300 hover:text-gray-900 dark:hover:text-slate-100 hover:bg-gray-100 dark:hover:bg-slate-800'"
+          >
+            Home
+          </router-link>
+          <router-link
+            to="/changelog"
+            class="px-3 py-1.5 text-sm font-medium rounded-lg transition-all duration-200"
+            :class="$route.path === '/changelog' ? 'text-violet-600 dark:text-violet-400 bg-violet-50 dark:bg-violet-900/30' : 'text-gray-600 dark:text-slate-300 hover:text-gray-900 dark:hover:text-slate-100 hover:bg-gray-100 dark:hover:bg-slate-800'"
+          >
+            Changelog
+          </router-link>
+          <a
+            href="https://github.com/forgeturl/forgeturl-server/issues"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="px-3 py-1.5 text-sm font-medium text-gray-600 dark:text-slate-300 hover:text-gray-900 dark:hover:text-slate-100 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-lg transition-all duration-200"
+          >
+            Feedback
+          </a>
+          <!-- GitHub Dropdown -->
+          <div class="relative" ref="githubDropdownRef">
             <button
-              v-if="searchQuery"
-              @click="clearSearch"
-              class="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-400 dark:text-slate-500 hover:text-gray-600 dark:hover:text-slate-300 transition-colors"
+              @click="showGithubDropdown = !showGithubDropdown"
+              @mouseenter="showGithubDropdown = true"
+              class="p-1.5 text-gray-600 dark:text-slate-300 hover:text-gray-900 dark:hover:text-slate-100 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-lg transition-all duration-200"
+              title="Open Source"
             >
-              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+              <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                <path fill-rule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z" clip-rule="evenodd"/>
               </svg>
             </button>
+            <!-- GitHub Dropdown Menu -->
+            <Transition
+              enter-active-class="transition ease-out duration-200"
+              enter-from-class="opacity-0 translate-y-1"
+              enter-to-class="opacity-100 translate-y-0"
+              leave-active-class="transition ease-in duration-150"
+              leave-from-class="opacity-100 translate-y-0"
+              leave-to-class="opacity-0 translate-y-1"
+            >
+              <div
+                v-if="showGithubDropdown"
+                @mouseenter="showGithubDropdown = true"
+                @mouseleave="showGithubDropdown = false"
+                class="absolute right-0 mt-2 w-72 bg-white dark:bg-slate-800 rounded-xl shadow-2xl dark:shadow-black/40 border border-gray-100 dark:border-slate-700 overflow-hidden"
+              >
+                <div class="p-2">
+                  <a
+                    href="https://github.com/forgeturl/forgeturl-server"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="flex items-center gap-3 px-4 py-3 text-gray-700 dark:text-slate-200 hover:bg-gray-50 dark:hover:bg-slate-700 rounded-lg transition-colors duration-200"
+                  >
+                    <div class="w-8 h-8 bg-gray-900 dark:bg-slate-600 rounded-lg flex items-center justify-center">
+                      <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24">
+                        <path fill-rule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z" clip-rule="evenodd"/>
+                      </svg>
+                    </div>
+                    <div class="text-left">
+                      <div class="font-medium">Backend</div>
+                      <div class="text-xs text-gray-500 dark:text-slate-400">forgeturl/forgeturl-server</div>
+                    </div>
+                  </a>
+                  <a
+                    href="https://github.com/forgeturl/forgeturl-website"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="flex items-center gap-3 px-4 py-3 text-gray-700 dark:text-slate-200 hover:bg-gray-50 dark:hover:bg-slate-700 rounded-lg transition-colors duration-200"
+                  >
+                    <div class="w-8 h-8 bg-gray-900 dark:bg-slate-600 rounded-lg flex items-center justify-center">
+                      <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24">
+                        <path fill-rule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z" clip-rule="evenodd"/>
+                      </svg>
+                    </div>
+                    <div class="text-left">
+                      <div class="font-medium">Frontend</div>
+                      <div class="text-xs text-gray-500 dark:text-slate-400">forgeturl/forgeturl-website</div>
+                    </div>
+                  </a>
+                </div>
+              </div>
+            </Transition>
           </div>
-          <p v-if="searchQuery && filteredCollectionsCount === 0" class="text-center text-gray-500 dark:text-slate-400 mt-4">
-            No matching links found
+        </div>
+
+        <!-- Right side buttons -->
+        <div class="flex items-center gap-2">
+          <!-- Theme Toggle Button -->
+          <button
+            @click="toggleTheme"
+            class="p-2 rounded-full bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm border border-gray-200 dark:border-slate-700 text-gray-600 dark:text-slate-300 hover:bg-white dark:hover:bg-slate-700 hover:text-gray-900 dark:hover:text-slate-100 transition-all duration-300 shadow-sm"
+            :title="isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode'"
+          >
+            <svg v-if="isDark" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+            </svg>
+            <svg v-else class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+            </svg>
+          </button>
+
+          <!-- If logged in: Show My Space button -->
+          <router-link
+            v-if="isLoggedIn"
+            to="/my"
+            class="px-4 py-1.5 text-sm bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white font-medium rounded-lg hover:from-violet-500 hover:to-fuchsia-500 transition-all duration-300 shadow-md shadow-purple-500/25 hover:shadow-lg hover:shadow-purple-500/30 flex items-center gap-1.5"
+          >
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+            </svg>
+            My Space
+          </router-link>
+
+          <!-- If not logged in: Login Button with Dropdown -->
+          <div v-else class="relative" ref="loginDropdownRef">
+            <button
+              @click="showLoginDropdown = !showLoginDropdown"
+              @mouseenter="showLoginDropdown = true"
+              class="px-4 py-1.5 text-sm bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white font-medium rounded-lg hover:from-violet-500 hover:to-fuchsia-500 transition-all duration-300 shadow-md shadow-purple-500/25 hover:shadow-lg hover:shadow-purple-500/30 flex items-center gap-1.5"
+            >
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
+              </svg>
+              Sign In
+            </button>
+
+            <!-- Dropdown Menu -->
+            <Transition
+              enter-active-class="transition ease-out duration-200"
+              enter-from-class="opacity-0 translate-y-1"
+              enter-to-class="opacity-100 translate-y-0"
+              leave-active-class="transition ease-in duration-150"
+              leave-from-class="opacity-100 translate-y-0"
+              leave-to-class="opacity-0 translate-y-1"
+            >
+              <div
+                v-if="showLoginDropdown"
+                @mouseenter="showLoginDropdown = true"
+                @mouseleave="showLoginDropdown = false"
+                class="absolute right-0 mt-2 w-64 bg-white dark:bg-slate-800 rounded-xl shadow-2xl dark:shadow-black/40 border border-gray-100 dark:border-slate-700 overflow-hidden"
+              >
+                <div class="p-2">
+                  <!-- Google Login -->
+                  <button
+                    @click="handleLogin('google')"
+                    :disabled="loading"
+                    class="w-full flex items-center gap-3 px-4 py-3 text-gray-700 dark:text-slate-200 hover:bg-gray-50 dark:hover:bg-slate-700 rounded-lg transition-colors duration-200 disabled:opacity-50"
+                  >
+                    <div class="w-8 h-8 bg-white dark:bg-slate-600 rounded-lg flex items-center justify-center border border-gray-200 dark:border-slate-500">
+                      <svg class="w-5 h-5" viewBox="0 0 24 24">
+                        <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                        <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                        <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                        <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                      </svg>
+                    </div>
+                    <div class="text-left">
+                      <div class="font-medium">Sign in with Google</div>
+                      <div class="text-xs text-gray-500 dark:text-slate-400">Recommended</div>
+                    </div>
+                  </button>
+
+                  <div class="my-1 border-t border-gray-100 dark:border-slate-700"></div>
+
+                  <!-- GitHub Login -->
+                  <button
+                    @click="handleLogin('github')"
+                    :disabled="loading"
+                    class="w-full flex items-center gap-3 px-4 py-3 text-gray-700 dark:text-slate-200 hover:bg-gray-50 dark:hover:bg-slate-700 rounded-lg transition-colors duration-200 disabled:opacity-50"
+                  >
+                    <div class="w-8 h-8 bg-gray-900 dark:bg-slate-600 rounded-lg flex items-center justify-center">
+                      <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24">
+                        <path fill-rule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z" clip-rule="evenodd"/>
+                      </svg>
+                    </div>
+                    <div class="text-left">
+                      <div class="font-medium">Sign in with GitHub</div>
+                      <div class="text-xs text-gray-500 dark:text-slate-400">GitHub Account</div>
+                    </div>
+                  </button>
+
+                  <div class="my-1 border-t border-gray-100 dark:border-slate-700"></div>
+
+                  <!-- WeChat Login (Coming Soon) -->
+                  <button
+                    disabled
+                    class="w-full flex items-center gap-3 px-4 py-3 text-gray-400 dark:text-slate-500 rounded-lg cursor-not-allowed opacity-60"
+                  >
+                    <div class="w-8 h-8 bg-gray-300 dark:bg-slate-600 rounded-lg flex items-center justify-center">
+                      <svg class="w-5 h-5 text-gray-400 dark:text-slate-500" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M8.691 2.188C3.891 2.188 0 5.476 0 9.53c0 2.212 1.17 4.203 3.002 5.55a.59.59 0 0 1 .213.665l-.39 1.48c-.019.07-.048.141-.048.213 0 .163.13.295.29.295a.326.326 0 0 0 .167-.054l1.903-1.114a.864.864 0 0 1 .717-.098 10.16 10.16 0 0 0 2.837.403c.276 0 .543-.027.811-.05-.857-2.578.157-4.972 1.932-6.446 1.703-1.415 3.882-1.98 5.853-1.838-.576-3.583-4.196-6.348-8.596-6.348zM5.785 5.991c.642 0 1.162.529 1.162 1.18a1.17 1.17 0 0 1-1.162 1.178A1.17 1.17 0 0 1 4.623 7.17c0-.651.52-1.18 1.162-1.18zm5.813 0c.642 0 1.162.529 1.162 1.18a1.17 1.17 0 0 1-1.162 1.178 1.17 1.17 0 0 1-1.162-1.178c0-.651.52-1.18 1.162-1.18zm5.34 2.867c-1.797-.052-3.746.512-5.28 1.786-1.72 1.428-2.687 3.72-1.78 6.22.942 2.453 3.666 4.229 6.884 4.229.826 0 1.622-.12 2.361-.336a.722.722 0 0 1 .598.082l1.584.926a.272.272 0 0 0 .14.047c.134 0 .24-.111.24-.247 0-.06-.023-.12-.038-.177l-.327-1.233a.582.582 0 0 1-.023-.156.49.49 0 0 1 .201-.398C23.024 18.48 24 16.82 24 14.98c0-3.21-2.931-5.837-6.656-6.088V8.89c-.135-.01-.27-.027-.407-.032zm-2.53 3.274c.535 0 .969.44.969.982a.976.976 0 0 1-.969.983.976.976 0 0 1-.969-.983c0-.542.434-.982.97-.982zm4.844 0c.535 0 .969.44.969.982a.976.976 0 0 1-.969.983.976.976 0 0 1-.969-.983c0-.542.434-.982.969-.982z"/>
+                      </svg>
+                    </div>
+                    <div class="text-left">
+                      <div class="font-medium">Sign in with WeChat</div>
+                      <div class="text-xs text-gray-400 dark:text-slate-500">Coming Soon</div>
+                    </div>
+                  </button>
+                </div>
+
+                <!-- Loading indicator -->
+                <div v-if="loading" class="px-4 py-3 bg-gray-50 dark:bg-slate-900/50 border-t border-gray-100 dark:border-slate-700">
+                  <div class="flex items-center gap-2 text-sm text-gray-500 dark:text-slate-400">
+                    <div class="animate-spin rounded-full h-4 w-4 border-2 border-violet-500 border-t-transparent"></div>
+                    Redirecting...
+                  </div>
+                </div>
+              </div>
+            </Transition>
+          </div>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="relative z-10 pt-20 pb-12 px-4">
+      <div class="max-w-6xl mx-auto">
+        <div class="flex flex-col lg:flex-row items-center gap-12 lg:gap-16">
+          
+          <!-- Left: Content -->
+          <div class="flex-1 text-center lg:text-left animate-fade-in">
+            <!-- Logo -->
+            <div class="flex justify-center lg:justify-start mb-6">
+              <div class="logo-icon-large relative w-20 h-20 group">
+                <div class="absolute inset-0 bg-gradient-to-br from-violet-500/30 to-fuchsia-500/30 rounded-2xl blur-xl animate-pulse-slow"></div>
+                <div class="relative w-full h-full bg-gradient-to-br from-violet-500 via-purple-500 to-fuchsia-500 rounded-2xl shadow-2xl shadow-purple-500/30 flex items-center justify-center overflow-hidden">
+                  <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/25 to-transparent -translate-x-full animate-shimmer"></div>
+                  <svg class="w-10 h-10 text-white relative z-10" viewBox="0 0 24 24" fill="none">
+                    <circle cx="17" cy="7" r="4" fill="currentColor" opacity="0.3" class="animate-pulse-slow"/>
+                    <circle cx="19" cy="9" r="2.5" fill="currentColor" opacity="0.25" class="animate-pulse-slow" style="animation-delay: 0.5s"/>
+                    <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                </div>
+              </div>
+            </div>
+            
+            <h1 class="text-5xl lg:text-6xl font-bold mb-4 flex items-center justify-center lg:justify-start gap-3 flex-wrap">
+              <span>
+                <span class="bg-gradient-to-r from-violet-600 via-purple-600 to-fuchsia-600 bg-clip-text text-transparent">Forget</span><span class="text-gray-800 dark:text-slate-200">URL</span>
+              </span>
+              <span class="px-2.5 py-1 text-sm font-bold tracking-wider uppercase bg-gradient-to-r from-amber-400 to-orange-500 text-white rounded-lg shadow-lg shadow-orange-500/25">Beta</span>
+            </h1>
+            
+            <p class="text-xl lg:text-2xl text-gray-600 dark:text-slate-300 font-medium mb-4">
+              Save links, free your mind
+            </p>
+            
+            <p class="text-gray-500 dark:text-slate-400 text-lg mb-8 max-w-xl mx-auto lg:mx-0">
+              A clean and elegant bookmark manager. Say goodbye to cluttered browser favorites — organize with smart collections and find anything in seconds.
+            </p>
+
+            <!-- CTA Buttons -->
+            <div class="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
+              <!-- If logged in: Go to My Space -->
+              <router-link
+                v-if="isLoggedIn"
+                to="/my"
+                class="px-8 py-4 bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white font-semibold rounded-xl hover:from-violet-500 hover:to-fuchsia-500 transition-all duration-300 shadow-lg shadow-purple-500/25 hover:shadow-xl hover:shadow-purple-500/30 hover:-translate-y-0.5 text-center"
+              >
+                Go to My Space
+              </router-link>
+              <!-- If not logged in: Get Started -->
+              <button
+                v-else
+                @click="scrollToLogin"
+                class="px-8 py-4 bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white font-semibold rounded-xl hover:from-violet-500 hover:to-fuchsia-500 transition-all duration-300 shadow-lg shadow-purple-500/25 hover:shadow-xl hover:shadow-purple-500/30 hover:-translate-y-0.5"
+              >
+                Get Started Free
+              </button>
+              <a
+                href="#features"
+                class="px-8 py-4 bg-white dark:bg-slate-800 text-gray-700 dark:text-slate-200 font-semibold rounded-xl border border-gray-200 dark:border-slate-700 hover:bg-gray-50 dark:hover:bg-slate-700 transition-all duration-300 text-center"
+              >
+                Learn More
+              </a>
+            </div>
+          </div>
+
+          <!-- Right: Hero Illustration -->
+          <div class="flex-1 relative animate-fade-in" style="animation-delay: 0.2s">
+            <div class="relative">
+              <!-- Browser mockup -->
+              <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl dark:shadow-black/40 border border-gray-200 dark:border-slate-700 overflow-hidden">
+                <!-- Browser header -->
+                <div class="bg-gray-100 dark:bg-slate-900 px-4 py-3 flex items-center gap-2 border-b border-gray-200 dark:border-slate-700">
+                  <div class="flex gap-1.5">
+                    <div class="w-3 h-3 rounded-full bg-red-400"></div>
+                    <div class="w-3 h-3 rounded-full bg-yellow-400"></div>
+                    <div class="w-3 h-3 rounded-full bg-green-400"></div>
+                  </div>
+                  <div class="flex-1 mx-4">
+                    <div class="bg-white dark:bg-slate-800 rounded-lg px-4 py-1.5 text-sm text-gray-500 dark:text-slate-400 flex items-center gap-2">
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                      </svg>
+                      forgeturl.com
+                    </div>
+                  </div>
+                </div>
+                
+                <!-- Content mockup -->
+                <div class="p-6">
+                  <!-- Header -->
+                  <div class="flex items-center justify-between mb-6">
+                    <div>
+                      <div class="h-6 w-40 bg-gradient-to-r from-violet-200 to-fuchsia-200 dark:from-violet-800 dark:to-fuchsia-800 rounded-lg mb-2"></div>
+                      <div class="h-4 w-24 bg-gray-200 dark:bg-slate-700 rounded"></div>
+                    </div>
+                    <div class="flex gap-2">
+                      <div class="h-8 w-8 bg-gray-100 dark:bg-slate-700 rounded-lg"></div>
+                      <div class="h-8 w-20 bg-violet-100 dark:bg-violet-900/50 rounded-lg"></div>
+                    </div>
+                  </div>
+                  
+                  <!-- Collections Grid -->
+                  <div class="grid grid-cols-2 gap-4">
+                    <!-- Collection 1 -->
+                    <div class="bg-gray-50 dark:bg-slate-700/50 rounded-xl p-4 border border-gray-100 dark:border-slate-600">
+                      <div class="flex items-center gap-2 mb-3">
+                        <div class="w-6 h-6 bg-blue-100 dark:bg-blue-900/50 rounded flex items-center justify-center">
+                          <svg class="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                          </svg>
+                        </div>
+                        <span class="text-sm font-medium text-gray-700 dark:text-slate-200">Dev Tools</span>
+                      </div>
+                      <div class="space-y-2">
+                        <div class="flex items-center gap-2 p-2 bg-white dark:bg-slate-800 rounded-lg">
+                          <div class="w-4 h-4 bg-gray-200 dark:bg-slate-600 rounded"></div>
+                          <div class="h-3 w-16 bg-gray-200 dark:bg-slate-600 rounded"></div>
+                        </div>
+                        <div class="flex items-center gap-2 p-2 bg-white dark:bg-slate-800 rounded-lg">
+                          <div class="w-4 h-4 bg-orange-200 dark:bg-orange-900/50 rounded"></div>
+                          <div class="h-3 w-12 bg-gray-200 dark:bg-slate-600 rounded"></div>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <!-- Collection 2 -->
+                    <div class="bg-gray-50 dark:bg-slate-700/50 rounded-xl p-4 border border-gray-100 dark:border-slate-600">
+                      <div class="flex items-center gap-2 mb-3">
+                        <div class="w-6 h-6 bg-purple-100 dark:bg-purple-900/50 rounded flex items-center justify-center">
+                          <svg class="w-4 h-4 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                          </svg>
+                        </div>
+                        <span class="text-sm font-medium text-gray-700 dark:text-slate-200">Learning</span>
+                      </div>
+                      <div class="space-y-2">
+                        <div class="flex items-center gap-2 p-2 bg-white dark:bg-slate-800 rounded-lg">
+                          <div class="w-4 h-4 bg-green-200 dark:bg-green-900/50 rounded"></div>
+                          <div class="h-3 w-14 bg-gray-200 dark:bg-slate-600 rounded"></div>
+                        </div>
+                        <div class="flex items-center gap-2 p-2 bg-white dark:bg-slate-800 rounded-lg">
+                          <div class="w-4 h-4 bg-blue-200 dark:bg-blue-900/50 rounded"></div>
+                          <div class="h-3 w-20 bg-gray-200 dark:bg-slate-600 rounded"></div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- Floating elements -->
+              <div class="absolute -top-4 -right-4 bg-white dark:bg-slate-800 rounded-xl shadow-xl dark:shadow-black/30 p-3 border border-gray-100 dark:border-slate-700 animate-bounce-slow">
+                <div class="flex items-center gap-2">
+                  <div class="w-8 h-8 bg-gradient-to-br from-green-400 to-emerald-500 rounded-lg flex items-center justify-center">
+                    <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                    </svg>
+                  </div>
+                  <span class="text-sm font-medium text-gray-700 dark:text-slate-200">Saved!</span>
+                </div>
+              </div>
+              
+              <div class="absolute -bottom-4 -left-4 bg-white dark:bg-slate-800 rounded-xl shadow-xl dark:shadow-black/30 p-3 border border-gray-100 dark:border-slate-700" style="animation: float 3s ease-in-out infinite; animation-delay: 1s;">
+                <div class="flex items-center gap-2">
+                  <svg class="w-5 h-5 text-violet-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                  </svg>
+                  <span class="text-sm text-gray-500 dark:text-slate-400">Quick search...</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Features Section -->
+    <section id="features" class="relative z-10 py-20 px-4">
+      <div class="max-w-6xl mx-auto">
+        <div class="text-center mb-16 animate-fade-in">
+          <h2 class="text-3xl lg:text-4xl font-bold text-gray-900 dark:text-slate-100 mb-4">
+            Why choose <span class="bg-gradient-to-r from-violet-600 to-fuchsia-600 bg-clip-text text-transparent">ForgetURL</span>
+          </h2>
+          <p class="text-gray-500 dark:text-slate-400 text-lg max-w-2xl mx-auto">
+            Built for productivity. Keep your bookmarks simple and organized.
           </p>
         </div>
 
-        <!-- Header -->
-        <div class="flex items-start justify-between mb-4">
-          <div class="flex-1">
-            <h1 
-              class="text-3xl font-bold text-gray-900 dark:text-slate-100 mb-2 select-none"
-              :class="{ 'cursor-pointer hover:text-blue-600 dark:hover:text-violet-400 transition-colors': canEdit }"
-              @mousedown="handlePageTitleMouseDown"
-              @mouseup="handlePageTitleMouseUp"
-              @mouseleave="handlePageTitleMouseLeave"
-              @touchstart="handlePageTitleTouchStart"
-              @touchend="handlePageTitleTouchEnd"
-              @touchmove="handlePageTitleTouchMove"
-            >
-              {{ selectedPage.title }}
-            </h1>
-            <p 
-              v-if="selectedPage.brief" 
-              class="text-gray-500 dark:text-slate-400 select-none"
-              :class="{ 'cursor-pointer hover:text-gray-700 dark:hover:text-slate-300 transition-colors': canEdit }"
-              @mousedown="handlePageTitleMouseDown"
-              @mouseup="handlePageTitleMouseUp"
-              @mouseleave="handlePageTitleMouseLeave"
-              @touchstart="handlePageTitleTouchStart"
-              @touchend="handlePageTitleTouchEnd"
-              @touchmove="handlePageTitleTouchMove"
-            >
-              {{ selectedPage.brief }}
-            </p>
-            <p 
-              v-else-if="canEdit" 
-              class="text-gray-400 dark:text-slate-500 select-none cursor-pointer hover:text-gray-500 dark:hover:text-slate-400 transition-colors"
-              @mousedown="handlePageTitleMouseDown"
-              @mouseup="handlePageTitleMouseUp"
-              @mouseleave="handlePageTitleMouseLeave"
-              @touchstart="handlePageTitleTouchStart"
-              @touchend="handlePageTitleTouchEnd"
-              @touchmove="handlePageTitleTouchMove"
-            >
-              Add description
+        <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <!-- Feature 1 -->
+          <div class="feature-card group bg-white dark:bg-slate-800 rounded-2xl p-8 border border-gray-100 dark:border-slate-700 hover:border-violet-200 dark:hover:border-violet-800 transition-all duration-300 hover:shadow-xl dark:hover:shadow-black/30 hover:-translate-y-1">
+            <div class="w-14 h-14 bg-gradient-to-br from-violet-100 to-purple-100 dark:from-violet-900/50 dark:to-purple-900/50 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
+              <svg class="w-7 h-7 text-violet-600 dark:text-violet-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+              </svg>
+            </div>
+            <h3 class="text-xl font-semibold text-gray-900 dark:text-slate-100 mb-3">Smart Collections</h3>
+            <p class="text-gray-500 dark:text-slate-400 leading-relaxed">
+              Organize links with folders and tags. Drag and drop to reorder — keep everything tidy.
             </p>
           </div>
-          
-          <!-- Action Buttons -->
-          <div class="flex items-center gap-1.5 ml-6">
-            <button
-              ref="searchButtonRef"
-              @click="toggleSearch"
-              data-search-button
-              class="btn-compact btn-secondary flex items-center justify-center w-8 h-8 focus:ring-0 focus:ring-offset-0"
-              :class="{ 'bg-gray-900 dark:bg-violet-600 text-white hover:bg-gray-800 dark:hover:bg-violet-500': showSearchBar }"
-            >
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+
+          <!-- Feature 2 -->
+          <div class="feature-card group bg-white dark:bg-slate-800 rounded-2xl p-8 border border-gray-100 dark:border-slate-700 hover:border-fuchsia-200 dark:hover:border-fuchsia-800 transition-all duration-300 hover:shadow-xl dark:hover:shadow-black/30 hover:-translate-y-1">
+            <div class="w-14 h-14 bg-gradient-to-br from-fuchsia-100 to-pink-100 dark:from-fuchsia-900/50 dark:to-pink-900/50 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
+              <svg class="w-7 h-7 text-fuchsia-600 dark:text-fuchsia-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
               </svg>
-            </button>
-            <button
-              v-if="canEdit"
-              @click="showAddLinkModal = true"
-              class="btn-compact btn-secondary flex items-center gap-1.5"
-            >
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-              </svg>
-              Link
-            </button>
-            <button
-              v-if="canEdit"
-              @click="showAddCollectionModal = true"
-              class="btn-compact btn-secondary flex items-center gap-1.5"
-            >
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M10 3h4v7h7v4h-7v7h-4v-7H3v-4h7V3z" />
-              </svg>
-              Collection
-            </button>
-            <button
-              @click="showShareModal = true"
-              class="btn-compact btn-secondary flex items-center gap-1.5"
-            >
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            </div>
+            <h3 class="text-xl font-semibold text-gray-900 dark:text-slate-100 mb-3">Instant Search</h3>
+            <p class="text-gray-500 dark:text-slate-400 leading-relaxed">
+              Full-text search across titles, URLs, and tags. Find any link in milliseconds.
+            </p>
+          </div>
+
+          <!-- Feature 3 -->
+          <div class="feature-card group bg-white dark:bg-slate-800 rounded-2xl p-8 border border-gray-100 dark:border-slate-700 hover:border-blue-200 dark:hover:border-blue-800 transition-all duration-300 hover:shadow-xl dark:hover:shadow-black/30 hover:-translate-y-1">
+            <div class="w-14 h-14 bg-gradient-to-br from-blue-100 to-cyan-100 dark:from-blue-900/50 dark:to-cyan-900/50 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
+              <svg class="w-7 h-7 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
               </svg>
-              Share
-            </button>
+            </div>
+            <h3 class="text-xl font-semibold text-gray-900 dark:text-slate-100 mb-3">One-Click Sharing</h3>
+            <p class="text-gray-500 dark:text-slate-400 leading-relaxed">
+              Generate beautiful share pages. Share your curated collections with friends or your team.
+            </p>
+          </div>
+
+          <!-- Feature 4 -->
+          <div class="feature-card group bg-white dark:bg-slate-800 rounded-2xl p-8 border border-gray-100 dark:border-slate-700 hover:border-emerald-200 dark:hover:border-emerald-800 transition-all duration-300 hover:shadow-xl dark:hover:shadow-black/30 hover:-translate-y-1">
+            <div class="w-14 h-14 bg-gradient-to-br from-emerald-100 to-green-100 dark:from-emerald-900/50 dark:to-green-900/50 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
+              <svg class="w-7 h-7 text-emerald-600 dark:text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+              </svg>
+            </div>
+            <h3 class="text-xl font-semibold text-gray-900 dark:text-slate-100 mb-3">Browser Import</h3>
+            <p class="text-gray-500 dark:text-slate-400 leading-relaxed">
+              Import existing bookmarks from Chrome, Firefox, Safari, and more with one click.
+            </p>
+          </div>
+
+          <!-- Feature 5 -->
+          <div class="feature-card group bg-white dark:bg-slate-800 rounded-2xl p-8 border border-gray-100 dark:border-slate-700 hover:border-amber-200 dark:hover:border-amber-800 transition-all duration-300 hover:shadow-xl dark:hover:shadow-black/30 hover:-translate-y-1">
+            <div class="w-14 h-14 bg-gradient-to-br from-amber-100 to-orange-100 dark:from-amber-900/50 dark:to-orange-900/50 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
+              <svg class="w-7 h-7 text-amber-600 dark:text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
+              </svg>
+            </div>
+            <h3 class="text-xl font-semibold text-gray-900 dark:text-slate-100 mb-3">Cross-Device Sync</h3>
+            <p class="text-gray-500 dark:text-slate-400 leading-relaxed">
+              Cloud-based storage. Access all your bookmarks from any device, anywhere.
+            </p>
+          </div>
+
+          <!-- Feature 6 -->
+          <div class="feature-card group bg-white dark:bg-slate-800 rounded-2xl p-8 border border-gray-100 dark:border-slate-700 hover:border-rose-200 dark:hover:border-rose-800 transition-all duration-300 hover:shadow-xl dark:hover:shadow-black/30 hover:-translate-y-1">
+            <div class="w-14 h-14 bg-gradient-to-br from-rose-100 to-red-100 dark:from-rose-900/50 dark:to-red-900/50 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
+              <svg class="w-7 h-7 text-rose-600 dark:text-rose-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+              </svg>
+            </div>
+            <h3 class="text-xl font-semibold text-gray-900 dark:text-slate-100 mb-3">Dark Mode</h3>
+            <p class="text-gray-500 dark:text-slate-400 leading-relaxed">
+              Beautifully crafted dark theme. Easy on the eyes for late-night browsing.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- How It Works Section -->
+    <section class="relative z-10 py-20 px-4 bg-white/50 dark:bg-slate-800/30">
+      <div class="max-w-6xl mx-auto">
+        <div class="text-center mb-16">
+          <h2 class="text-3xl lg:text-4xl font-bold text-gray-900 dark:text-slate-100 mb-4">
+            Get started in 3 simple steps
+          </h2>
+          <p class="text-gray-500 dark:text-slate-400 text-lg">
+            No complicated setup. Just start saving.
+          </p>
+        </div>
+
+        <div class="grid md:grid-cols-3 gap-8 lg:gap-12">
+          <!-- Step 1 -->
+          <div class="text-center">
+            <div class="relative inline-flex items-center justify-center w-20 h-20 mb-6">
+              <div class="absolute inset-0 bg-gradient-to-br from-violet-500 to-fuchsia-500 rounded-2xl opacity-20 dark:opacity-30"></div>
+              <span class="text-4xl font-bold bg-gradient-to-br from-violet-600 to-fuchsia-600 bg-clip-text text-transparent">1</span>
+            </div>
+            <h3 class="text-xl font-semibold text-gray-900 dark:text-slate-100 mb-3">Sign In</h3>
+            <p class="text-gray-500 dark:text-slate-400">
+              Log in with your GitHub account. Quick and hassle-free.
+            </p>
+          </div>
+
+          <!-- Step 2 -->
+          <div class="text-center">
+            <div class="relative inline-flex items-center justify-center w-20 h-20 mb-6">
+              <div class="absolute inset-0 bg-gradient-to-br from-violet-500 to-fuchsia-500 rounded-2xl opacity-20 dark:opacity-30"></div>
+              <span class="text-4xl font-bold bg-gradient-to-br from-violet-600 to-fuchsia-600 bg-clip-text text-transparent">2</span>
+            </div>
+            <h3 class="text-xl font-semibold text-gray-900 dark:text-slate-100 mb-3">Create a Page</h3>
+            <p class="text-gray-500 dark:text-slate-400">
+              Set up bookmark pages to organize links by topic or project.
+            </p>
+          </div>
+
+          <!-- Step 3 -->
+          <div class="text-center">
+            <div class="relative inline-flex items-center justify-center w-20 h-20 mb-6">
+              <div class="absolute inset-0 bg-gradient-to-br from-violet-500 to-fuchsia-500 rounded-2xl opacity-20 dark:opacity-30"></div>
+              <span class="text-4xl font-bold bg-gradient-to-br from-violet-600 to-fuchsia-600 bg-clip-text text-transparent">3</span>
+            </div>
+            <h3 class="text-xl font-semibold text-gray-900 dark:text-slate-100 mb-3">Add Bookmarks</h3>
+            <p class="text-gray-500 dark:text-slate-400">
+              Paste a URL to auto-fetch details, or bulk import your existing bookmarks.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Login Section -->
+    <section id="login" ref="loginSection" class="relative z-10 py-20 px-4">
+      <div class="max-w-md mx-auto animate-fade-in">
+        <!-- If logged in: Welcome back card -->
+        <div v-if="isLoggedIn" class="bg-white dark:bg-slate-800 rounded-2xl shadow-xl dark:shadow-black/30 border border-gray-100 dark:border-slate-700 p-8 transition-colors duration-300">
+          <div class="text-center">
+            <div class="w-16 h-16 bg-gradient-to-br from-violet-500 to-fuchsia-500 rounded-full flex items-center justify-center mx-auto mb-4">
+              <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+              </svg>
+            </div>
+            <h2 class="text-2xl font-semibold text-gray-900 dark:text-slate-100 mb-2">
+              Welcome Back!
+            </h2>
+            <p class="text-gray-500 dark:text-slate-400 mb-6">
+              You're already signed in. Ready to manage your bookmarks?
+            </p>
+            <router-link
+              to="/my"
+              class="w-full inline-flex items-center justify-center gap-3 px-6 py-3.5 bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white font-medium rounded-xl hover:from-violet-500 hover:to-fuchsia-500 transition-all duration-200 hover:shadow-lg"
+            >
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+              </svg>
+              Go to My Space
+            </router-link>
           </div>
         </div>
 
-        <!-- Collections Grid with Draggable (Edit mode) -->
-        <draggable
-          v-if="canEdit"
-          v-model="localCollections"
-          :group="{ name: 'collections' }"
-          item-key="__idx"
-          handle=".collection-drag-handle"
-          ghost-class="opacity-50"
-          :animation="200"
-          @start="handleCollectionDragStart"
-          @end="handleCollectionDragEnd"
-          @change="handleCollectionsChange"
-          class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"
-        >
-          <template #item="{ element: collection, index }">
-            <LinkCollection
-              :collection="collection"
-              :collectionIndex="index"
-              :canEdit="canEdit"
-              :searchQuery="searchQuery"
-              @update-title="(title) => updateCollectionTitle(index, title)"
-              @update-link="(linkIndex, link) => updateLink(index, linkIndex, link)"
-              @links-changed="(links) => updateCollectionLinks(index, links)"
-              @link-drag-start="(info) => handleLinkDragStart(index, info)"
-              @link-drag-end="handleLinkDragEnd"
-              @copy-collection="copyCollection(index)"
-            />
-          </template>
-        </draggable>
+        <!-- If not logged in: Login Card -->
+        <div v-else class="bg-white dark:bg-slate-800 rounded-2xl shadow-xl dark:shadow-black/30 border border-gray-100 dark:border-slate-700 p-8 transition-colors duration-300">
+          <h2 class="text-2xl font-semibold text-gray-900 dark:text-slate-100 mb-2 text-center">
+            Get Started
+          </h2>
+          <p class="text-gray-500 dark:text-slate-400 text-center mb-6">
+            Choose a login method. It's free.
+          </p>
 
-        <!-- Collections Grid (Read-only mode) -->
-        <div v-else-if="selectedPage.collections && selectedPage.collections.length" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          <LinkCollection
-            v-for="(collection, index) in selectedPage.collections"
-            :key="index"
-            :collection="collection"
-            :collectionIndex="index"
-            :canEdit="false"
-            :searchQuery="searchQuery"
-          />
+          <!-- Error Message -->
+          <div v-if="error" class="mb-6 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg text-red-600 dark:text-red-400 text-sm">
+            {{ error }}
+          </div>
+
+          <!-- Login Buttons -->
+          <div class="space-y-3">
+            <!-- Google Login -->
+            <button
+              @click="handleLogin('google')"
+              :disabled="loading"
+              class="w-full flex items-center justify-center gap-3 px-6 py-3.5 bg-white dark:bg-slate-700 text-gray-700 dark:text-slate-200 rounded-xl border border-gray-200 dark:border-slate-600 hover:bg-gray-50 dark:hover:bg-slate-600 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed hover:shadow-lg"
+            >
+              <svg class="w-5 h-5" viewBox="0 0 24 24">
+                <path
+                  fill="#4285F4"
+                  d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
+                />
+                <path
+                  fill="#34A853"
+                  d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+                />
+                <path
+                  fill="#FBBC05"
+                  d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
+                />
+                <path
+                  fill="#EA4335"
+                  d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
+                />
+              </svg>
+              <span class="font-medium">Sign in with Google</span>
+            </button>
+
+            <!-- GitHub Login -->
+            <button
+              @click="handleLogin('github')"
+              :disabled="loading"
+              class="w-full flex items-center justify-center gap-3 px-6 py-3.5 bg-gray-900 dark:bg-slate-700 text-white rounded-xl hover:bg-gray-800 dark:hover:bg-slate-600 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed hover:shadow-lg"
+            >
+              <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                <path
+                  fill-rule="evenodd"
+                  d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"
+                  clip-rule="evenodd"
+                />
+              </svg>
+              <span class="font-medium">Sign in with GitHub</span>
+            </button>
+
+            <!-- WeChat Login (Coming Soon) -->
+            <button
+              disabled
+              class="w-full flex items-center justify-center gap-3 px-6 py-3.5 bg-gray-200 dark:bg-slate-700 text-gray-400 dark:text-slate-500 rounded-xl cursor-not-allowed opacity-60"
+            >
+              <svg class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M8.691 2.188C3.891 2.188 0 5.476 0 9.53c0 2.212 1.17 4.203 3.002 5.55a.59.59 0 0 1 .213.665l-.39 1.48c-.019.07-.048.141-.048.213 0 .163.13.295.29.295a.326.326 0 0 0 .167-.054l1.903-1.114a.864.864 0 0 1 .717-.098 10.16 10.16 0 0 0 2.837.403c.276 0 .543-.027.811-.05-.857-2.578.157-4.972 1.932-6.446 1.703-1.415 3.882-1.98 5.853-1.838-.576-3.583-4.196-6.348-8.596-6.348zM5.785 5.991c.642 0 1.162.529 1.162 1.18a1.17 1.17 0 0 1-1.162 1.178A1.17 1.17 0 0 1 4.623 7.17c0-.651.52-1.18 1.162-1.18zm5.813 0c.642 0 1.162.529 1.162 1.18a1.17 1.17 0 0 1-1.162 1.178 1.17 1.17 0 0 1-1.162-1.178c0-.651.52-1.18 1.162-1.18zm5.34 2.867c-1.797-.052-3.746.512-5.28 1.786-1.72 1.428-2.687 3.72-1.78 6.22.942 2.453 3.666 4.229 6.884 4.229.826 0 1.622-.12 2.361-.336a.722.722 0 0 1 .598.082l1.584.926a.272.272 0 0 0 .14.047c.134 0 .24-.111.24-.247 0-.06-.023-.12-.038-.177l-.327-1.233a.582.582 0 0 1-.023-.156.49.49 0 0 1 .201-.398C23.024 18.48 24 16.82 24 14.98c0-3.21-2.931-5.837-6.656-6.088V8.89c-.135-.01-.27-.027-.407-.032zm-2.53 3.274c.535 0 .969.44.969.982a.976.976 0 0 1-.969.983.976.976 0 0 1-.969-.983c0-.542.434-.982.97-.982zm4.844 0c.535 0 .969.44.969.982a.976.976 0 0 1-.969.983.976.976 0 0 1-.969-.983c0-.542.434-.982.969-.982z"/>
+              </svg>
+              <span class="font-medium">WeChat Login</span>
+              <span class="text-xs bg-gray-300 dark:bg-slate-600 text-gray-500 dark:text-slate-400 px-2 py-0.5 rounded-full">Coming Soon</span>
+            </button>
+          </div>
+
+          <!-- Loading Indicator -->
+          <div v-if="loading" class="mt-6 text-center">
+            <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 dark:border-violet-400"></div>
+            <p class="mt-2 text-sm text-gray-600 dark:text-slate-400">Redirecting...</p>
+          </div>
         </div>
 
+        <!-- Footer -->
+        <p class="mt-6 text-center text-sm text-gray-500 dark:text-slate-500">
+          By signing in, you agree to our 
+          <router-link to="/terms" class="text-violet-600 dark:text-violet-400 hover:underline">Terms of Service</router-link>
+          and 
+          <router-link to="/privacy" class="text-violet-600 dark:text-violet-400 hover:underline">Privacy Policy</router-link>
+        </p>
       </div>
+    </section>
 
-      <!-- Select Page Hint -->
-      <div v-else class="flex flex-col items-center justify-center py-24 text-gray-400 dark:text-slate-500">
-        <svg class="w-12 h-12 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5M7.188 2.239l.777 2.897M5.136 7.965l-2.898-.777M13.95 4.05l-2.122 2.122m-5.657 5.656l-2.12 2.122" />
-        </svg>
-        <p>Select a page from the sidebar</p>
+    <!-- Footer -->
+    <footer class="relative z-10 py-4 px-4 border-t border-gray-200 dark:border-slate-800">
+      <div class="max-w-6xl mx-auto flex items-center justify-center gap-6">
+        <div class="flex items-center gap-2">
+          <div class="w-6 h-6 bg-gradient-to-br from-violet-500 to-fuchsia-500 rounded-md flex items-center justify-center">
+            <svg class="w-3 h-3 text-white" viewBox="0 0 24 24" fill="none">
+              <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <span class="text-sm font-semibold text-gray-700 dark:text-slate-300">ForgetURL</span>
+        </div>
+        <span class="text-gray-300 dark:text-slate-600">|</span>
+        <router-link to="/privacy" class="text-sm text-gray-600 dark:text-slate-400 hover:text-violet-600 dark:hover:text-violet-400 transition-colors duration-200">
+          Privacy Policy
+        </router-link>
+        <span class="text-gray-300 dark:text-slate-600">|</span>
+        <router-link to="/terms" class="text-sm text-gray-600 dark:text-slate-400 hover:text-violet-600 dark:hover:text-violet-400 transition-colors duration-200">
+          Terms of Service
+        </router-link>
       </div>
-    </div>
-
-    <!-- Create Page Modal -->
-    <CreatePageModal v-model:show="showCreateModal" @created="handlePageCreated" />
-
-    <!-- Share Modal -->
-    <ShareModal
-      v-if="selectedPage"
-      v-model:show="showShareModal"
-      :page="selectedPage"
-    />
-
-    <!-- Add Link Modal -->
-    <AddLinkModal
-      v-model:show="showAddLinkModal"
-      :collections="localCollections"
-      @add="handleAddNewLink"
-      @batch-add="handleBatchAddLinks"
-      :onImportBookmarks="handleImportBookmarks"
-    />
-
-    <!-- Add Collection Modal -->
-    <AddCollectionModal
-      v-model:show="showAddCollectionModal"
-      @confirm="handleAddCollection"
-    />
-
-    <!-- Edit Page Modal -->
-    <EditPageModal
-      v-model:show="showEditPageModal"
-      :title="selectedPage?.title"
-      :brief="selectedPage?.brief"
-      :saving="savingPageInfo"
-      @save="handleSavePageInfo"
-    />
-
-    <!-- Alert Modal -->
-    <AlertModal
-      v-model:show="alertModal.show"
-      :type="alertModal.type"
-      :title="alertModal.title"
-      :message="alertModal.message"
-    />
-
-    <!-- Confirm Modal -->
-    <ConfirmModal
-      v-model:show="confirmModal.show"
-      :type="confirmModal.type"
-      :title="confirmModal.title"
-      :message="confirmModal.message"
-      :confirm-text="confirmModal.confirmText"
-      @confirm="confirmModal.onConfirm"
-      @cancel="confirmModal.onCancel"
-    />
-  </AppLayout>
+    </footer>
+  </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onUnmounted, watch, nextTick } from 'vue'
-import { useRouter } from 'vue-router'
-import { useAuthStore } from '@/stores/auth'
-import { usePageStore } from '@/stores/page'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useAuth } from '@/composables/useAuth'
-import { useAutoSave } from '@/composables/useAutoSave'
-import draggable from 'vuedraggable'
-import AppLayout from '@/components/AppLayout.vue'
-import CreatePageModal from '@/components/CreatePageModal.vue'
-import ShareModal from '@/components/ShareModal.vue'
-import LinkCollection from '@/components/LinkCollection.vue'
-import AddLinkModal from '@/components/AddLinkModal.vue'
-import AddCollectionModal from '@/components/AddCollectionModal.vue'
-import DragDeleteZone from '@/components/DragDeleteZone.vue'
-import EditPageModal from '@/components/EditPageModal.vue'
-import AlertModal from '@/components/AlertModal.vue'
-import ConfirmModal from '@/components/ConfirmModal.vue'
+import { useTheme } from '@/composables/useTheme'
+import { useAuthStore } from '@/stores/auth'
 
-const router = useRouter()
+const { startAuth } = useAuth()
+const { isDark, toggleTheme } = useTheme()
 const authStore = useAuthStore()
-const pageStore = usePageStore()
-const { handleLogout: logout } = useAuth()
 
-const showCreateModal = ref(false)
-const showShareModal = ref(false)
-const showAddLinkModal = ref(false)
-const showAddCollectionModal = ref(false)
-const showEditPageModal = ref(false)
-const savingPageInfo = ref(false)
-const selectedPageId = ref('')
+const loading = ref(false)
+const error = ref('')
+const loginSection = ref(null)
+const showLoginDropdown = ref(false)
+const loginDropdownRef = ref(null)
+const showGithubDropdown = ref(false)
+const githubDropdownRef = ref(null)
 
-// Search state
-const showSearchBar = ref(false)
-const searchQuery = ref('')
-const searchInputRef = ref(null)
-const searchContainerRef = ref(null)
-const searchButtonRef = ref(null)
+// Check if user is logged in
+const isLoggedIn = computed(() => authStore.isLoggedIn)
 
-// Handle click outside to close search bar
-const handleClickOutside = (event) => {
-  if (!showSearchBar.value) return
-  
-  // Check if click is outside search container and search button
-  const isOutsideContainer = searchContainerRef.value && !searchContainerRef.value.contains(event.target)
-  const isOutsideButton = !event.target.closest('[data-search-button]')
-  
-  if (isOutsideContainer && isOutsideButton) {
-    showSearchBar.value = false
-    searchQuery.value = ''
-  }
+const scrollToLogin = () => {
+  loginSection.value?.scrollIntoView({ behavior: 'smooth' })
 }
 
-// Toggle search bar
-const toggleSearch = () => {
-  showSearchBar.value = !showSearchBar.value
-  if (showSearchBar.value) {
-    nextTick(() => {
-      searchInputRef.value?.focus()
-      // Add click outside listener
-      document.addEventListener('click', handleClickOutside)
-    })
-  } else {
-    searchQuery.value = ''
-    document.removeEventListener('click', handleClickOutside)
-  }
-}
+const handleLogin = async (provider) => {
+  loading.value = true
+  error.value = ''
+  showLoginDropdown.value = false
 
-// Clear search
-const clearSearch = () => {
-  searchQuery.value = ''
-  searchInputRef.value?.focus()
-}
-
-// Count filtered collections (for showing "no results" message)
-const filteredCollectionsCount = computed(() => {
-  if (!searchQuery.value) return localCollections.value.length
-  
-  const query = searchQuery.value.toLowerCase()
-  return localCollections.value.filter(collection => {
-    const links = collection.links || []
-    return links.some(link => {
-      // Check title
-      if (link.title?.toLowerCase().includes(query)) return true
-      // Check URL
-      if (link.url?.toLowerCase().includes(query)) return true
-      // Check tags
-      if (link.tags?.some(tag => tag.toLowerCase().includes(query))) return true
-      // Check sub_links title and url
-      if (link.sub_links?.some(subLink => 
-        subLink.sub_title?.toLowerCase().includes(query) ||
-        subLink.sub_url?.toLowerCase().includes(query)
-      )) return true
-      return false
-    })
-  }).length
-})
-
-// Alert modal state
-const alertModal = ref({
-  show: false,
-  type: 'error',
-  title: 'Error',
-  message: ''
-})
-
-// Confirm modal state
-const confirmModal = ref({
-  show: false,
-  type: 'warning',
-  title: 'Confirm',
-  message: '',
-  confirmText: 'Confirm',
-  onConfirm: () => {},
-  onCancel: () => {}
-})
-
-// Show alert modal
-const showAlert = (message, type = 'error', title = 'Error') => {
-  alertModal.value = {
-    show: true,
-    type,
-    title,
-    message
-  }
-}
-
-// Show confirm modal with promise
-const showConfirm = (message, options = {}) => {
-  return new Promise((resolve) => {
-    confirmModal.value = {
-      show: true,
-      type: options.type || 'warning',
-      title: options.title || 'Confirm',
-      message,
-      confirmText: options.confirmText || 'Confirm',
-      onConfirm: () => resolve(true),
-      onCancel: () => resolve(false)
-    }
-  })
-}
-
-// Drag delete state
-const isDragging = ref(false)
-const deleteZoneRef = ref(null)
-const dragType = ref(null) // 'collection' or 'link'
-const dragCollectionIndex = ref(-1)
-const dragLinkIndex = ref(-1)
-
-const selectedPage = computed(() => {
-  if (!selectedPageId.value) return null
-  return pageStore.myPages.find(p => p.page_id === selectedPageId.value)
-})
-
-// Can edit check
-const canEdit = computed(() => selectedPage.value?.page_conf?.can_edit)
-
-// Local collections for editing (reactive copy)
-const localCollections = ref([])
-
-// Long press detection for page title/brief
-let pageTitleLongPressTimer = null
-const longPressDelay = 500
-
-// Mouse handlers (desktop) - long press to edit page info
-const handlePageTitleMouseDown = (e) => {
-  if (!canEdit.value) return
-  
-  pageTitleLongPressTimer = setTimeout(() => {
-    showEditPageModal.value = true
-  }, longPressDelay)
-}
-
-const handlePageTitleMouseUp = () => {
-  if (pageTitleLongPressTimer) {
-    clearTimeout(pageTitleLongPressTimer)
-    pageTitleLongPressTimer = null
-  }
-}
-
-const handlePageTitleMouseLeave = () => {
-  if (pageTitleLongPressTimer) {
-    clearTimeout(pageTitleLongPressTimer)
-    pageTitleLongPressTimer = null
-  }
-}
-
-// Touch handlers (mobile) - long press to edit page info
-const handlePageTitleTouchStart = (e) => {
-  if (!canEdit.value) return
-  pageTitleLongPressTimer = setTimeout(() => {
-    showEditPageModal.value = true
-  }, longPressDelay)
-}
-
-const handlePageTitleTouchEnd = () => {
-  if (pageTitleLongPressTimer) {
-    clearTimeout(pageTitleLongPressTimer)
-    pageTitleLongPressTimer = null
-  }
-}
-
-const handlePageTitleTouchMove = () => {
-  if (pageTitleLongPressTimer) {
-    clearTimeout(pageTitleLongPressTimer)
-    pageTitleLongPressTimer = null
-  }
-}
-
-// Save page info (title and brief)
-const handleSavePageInfo = async ({ title, brief }) => {
-  if (!selectedPage.value) return
-  
-  savingPageInfo.value = true
   try {
-    await pageStore.updatePage({
-      page_id: selectedPage.value.page_id,
-      title: title,
-      brief: brief,
-      version: selectedPage.value.version,
-      mask: 3 // Only update title (1) and brief (2) = 3
-    })
-    
-    // Update will be reflected through the store
-    showEditPageModal.value = false
+    await startAuth(provider)
   } catch (err) {
-    console.error('Save page info error:', err)
-    showAlert(err.message || 'Unknown error', 'error', 'Save Failed')
-  } finally {
-    savingPageInfo.value = false
+    console.error('Login error:', err)
+    error.value = err.message || 'Login failed. Please try again.'
+    loading.value = false
   }
 }
 
-// Auto save functionality
-const autoSave = useAutoSave(async () => {
-  if (!selectedPage.value) return
-  
-  await pageStore.updatePage({
-    page_id: selectedPage.value.page_id,
-    title: selectedPage.value.title,
-    brief: selectedPage.value.brief,
-    collections: localCollections.value,
-    version: selectedPage.value.version,
-    mask: 7
-  })
+// Close dropdown when clicking outside
+const handleClickOutside = (event) => {
+  if (loginDropdownRef.value && !loginDropdownRef.value.contains(event.target)) {
+    showLoginDropdown.value = false
+  }
+  if (githubDropdownRef.value && !githubDropdownRef.value.contains(event.target)) {
+    showGithubDropdown.value = false
+  }
+}
+
+onMounted(() => {
+  document.addEventListener('click', handleClickOutside)
 })
 
-// Watch for page changes to sync local collections
-watch(() => selectedPage.value, (newPage) => {
-  if (newPage) {
-    localCollections.value = JSON.parse(JSON.stringify(newPage.collections || []))
-  }
-}, { immediate: true, deep: true })
-
-const selectPage = async (pageId) => {
-  selectedPageId.value = pageId
-  try {
-    await pageStore.fetchPage(pageId)
-    const index = pageStore.myPages.findIndex(p => p.page_id === pageId)
-    if (index !== -1 && pageStore.currentPage) {
-      pageStore.myPages[index] = { ...pageStore.myPages[index], ...pageStore.currentPage }
-    }
-  } catch (error) {
-    console.error('Failed to fetch page:', error)
-  }
-}
-
-const handleDeletePage = async (pageId) => {
-  const confirmed = await showConfirm(
-    'Are you sure you want to delete this page? This action cannot be undone.',
-    { type: 'danger', title: 'Delete Page', confirmText: 'Delete' }
-  )
-  if (!confirmed) return
-  
-  try {
-    await pageStore.deletePage(pageId)
-    if (selectedPageId.value === pageId) {
-      selectedPageId.value = pageStore.myPages[0]?.page_id || ''
-    }
-  } catch (error) {
-    console.error('Failed to delete page:', error)
-    showAlert(error.message || 'Unknown error', 'error', 'Delete Failed')
-  }
-}
-
-const handlePageCreated = async (pageId) => {
-  showCreateModal.value = false
-  if (pageId) {
-    selectedPageId.value = pageId
-    await selectPage(pageId)
-  }
-}
-
-const handleLogout = async () => {
-  await logout()
-}
-
-// ==================== Drag Delete Handlers ====================
-
-const handleCollectionDragStart = (evt) => {
-  isDragging.value = true
-  dragType.value = 'collection'
-  dragCollectionIndex.value = evt.oldIndex
-}
-
-const handleCollectionDragEnd = (evt) => {
-  // Check if dropped on delete zone using mouse position
-  if (evt.originalEvent && deleteZoneRef.value?.isPointInZone) {
-    const { clientX, clientY } = evt.originalEvent
-    if (deleteZoneRef.value.isPointInZone(clientX, clientY)) {
-      handleDragDelete()
-      return
-    }
-  }
-  
-  isDragging.value = false
-  dragType.value = null
-  dragCollectionIndex.value = -1
-}
-
-const handleLinkDragStart = (collectionIndex, { linkIndex }) => {
-  isDragging.value = true
-  dragType.value = 'link'
-  dragCollectionIndex.value = collectionIndex
-  dragLinkIndex.value = linkIndex
-}
-
-const handleLinkDragEnd = (evt) => {
-  // Check if dropped on delete zone using mouse position
-  if (evt?.originalEvent && deleteZoneRef.value?.isPointInZone) {
-    const { clientX, clientY } = evt.originalEvent
-    if (deleteZoneRef.value.isPointInZone(clientX, clientY)) {
-      handleDragDelete()
-      return
-    }
-  }
-  
-  isDragging.value = false
-  dragType.value = null
-  dragCollectionIndex.value = -1
-  dragLinkIndex.value = -1
-}
-
-const handleDragDelete = async () => {
-  // Capture current drag state before async operation
-  // (drag end handlers may reset these values while confirm modal is open)
-  const currentDragType = dragType.value
-  const currentCollectionIndex = dragCollectionIndex.value
-  const currentLinkIndex = dragLinkIndex.value
-  
-  const itemType = currentDragType === 'collection' ? 'folder' : 'link'
-  
-  const confirmed = await showConfirm(
-    `Are you sure you want to delete this ${itemType}?`,
-    { type: 'danger', title: `Delete ${itemType.charAt(0).toUpperCase() + itemType.slice(1)}`, confirmText: 'Delete' }
-  )
-  
-  if (confirmed) {
-    if (currentDragType === 'collection' && currentCollectionIndex >= 0) {
-      localCollections.value.splice(currentCollectionIndex, 1)
-      autoSave.markDirty()
-    } else if (currentDragType === 'link' && currentCollectionIndex >= 0 && currentLinkIndex >= 0) {
-      localCollections.value[currentCollectionIndex].links.splice(currentLinkIndex, 1)
-      autoSave.markDirty()
-    }
-  }
-  
-  // Reset drag state
-  isDragging.value = false
-  dragType.value = null
-  dragCollectionIndex.value = -1
-  dragLinkIndex.value = -1
-}
-
-// ==================== Collection Operations ====================
-
-// Add collection from modal
-const handleAddCollection = ({ name, position }) => {
-  const newCollection = {
-    title: name,
-    links: []
-  }
-  
-  if (position === 'head') {
-    localCollections.value.unshift(newCollection)
-  } else {
-    localCollections.value.push(newCollection)
-  }
-  
-  autoSave.markDirty()
-}
-
-// Update collection title
-const updateCollectionTitle = (index, title) => {
-  localCollections.value[index].title = title
-  autoSave.markDirty()
-}
-
-// Copy collection
-const copyCollection = (index) => {
-  const original = localCollections.value[index]
-  const copy = JSON.parse(JSON.stringify(original))
-  copy.title = original.title ? `${original.title} (Copy)` : 'Copy'
-  
-  // Insert after the original
-  localCollections.value.splice(index + 1, 0, copy)
-  autoSave.markDirty()
-}
-
-// Update collection links (for drag and drop)
-const updateCollectionLinks = (index, links) => {
-  localCollections.value[index].links = links
-  autoSave.markDirty()
-}
-
-// Handle collections order change (drag)
-const handleCollectionsChange = () => {
-  autoSave.markDirty()
-}
-
-// ==================== Link Operations ====================
-
-// Update link
-const updateLink = (collectionIndex, linkIndex, link) => {
-  localCollections.value[collectionIndex].links[linkIndex] = link
-  autoSave.markDirty()
-}
-
-// Handle add new link from modal
-const handleAddNewLink = ({ link, collectionIndex, newCollectionName }) => {
-  if (collectionIndex === -1 && newCollectionName) {
-    // Create new collection with the link
-    localCollections.value.push({
-      title: newCollectionName,
-      links: [link]
-    })
-  } else if (collectionIndex >= 0) {
-    // Add to existing collection
-    if (!localCollections.value[collectionIndex].links) {
-      localCollections.value[collectionIndex].links = []
-    }
-    localCollections.value[collectionIndex].links.push(link)
-  }
-  autoSave.markDirty()
-}
-
-// Handle batch add links from modal
-const handleBatchAddLinks = ({ links, collectionIndex, newCollectionName }) => {
-  if (collectionIndex === -1 && newCollectionName) {
-    // Create new collection with all the links
-    localCollections.value.push({
-      title: newCollectionName,
-      links: links
-    })
-  } else if (collectionIndex >= 0) {
-    // Add all links to existing collection
-    if (!localCollections.value[collectionIndex].links) {
-      localCollections.value[collectionIndex].links = []
-    }
-    localCollections.value[collectionIndex].links.push(...links)
-  }
-  autoSave.markDirty()
-}
-
-// Handle import bookmarks from modal
-const handleImportBookmarks = ({ folders }) => {
-  console.log('handleImportBookmarks called with:', folders)
-  
-  if (!folders || folders.length === 0) {
-    console.log('No folders to import')
-    return
-  }
-  
-  // Add each folder as a new collection
-  folders.forEach(folder => {
-    if (folder.links && folder.links.length > 0) {
-      localCollections.value.push({
-        title: folder.title || 'Imported Folder',
-        links: folder.links
-      })
-    }
-  })
-  
-  // Mark as dirty to trigger auto save (5s delay)
-  autoSave.markDirty()
-  console.log('Import complete, marked dirty for auto save')
-}
-
-onMounted(async () => {
-  try {
-    await pageStore.fetchMySpace()
-    if (pageStore.myPages.length > 0 && !selectedPageId.value) {
-      selectPage(pageStore.myPages[0].page_id)
-    }
-  } catch (error) {
-    console.error('Failed to fetch space:', error)
-  }
-})
-
-// Cleanup event listener on unmount
 onUnmounted(() => {
   document.removeEventListener('click', handleClickOutside)
 })
-
-watch(() => pageStore.myPages, (pages) => {
-  if (pages.length > 0 && !selectedPageId.value) {
-    selectPage(pages[0].page_id)
-  }
-}, { immediate: true })
 </script>
+
+<style scoped>
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+@keyframes bounce-slow {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
+.animate-bounce-slow {
+  animation: bounce-slow 2s ease-in-out infinite;
+}
+</style>

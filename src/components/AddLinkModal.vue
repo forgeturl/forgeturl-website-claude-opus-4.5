@@ -62,17 +62,6 @@
 
           <!-- Body - Single Link Mode -->
           <div v-show="activeTab === 'single'" ref="scrollContainerRef" class="px-6 py-5 space-y-5 overflow-y-auto max-h-[60vh]">
-            <!-- URL -->
-            <div class="flex items-center gap-4">
-              <label class="text-sm font-medium text-gray-700 dark:text-slate-300 w-12 flex-shrink-0">URL</label>
-              <input
-                v-model="form.url"
-                type="url"
-                placeholder="https://..."
-                class="flex-1 px-4 py-2.5 border border-gray-200 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-gray-900 dark:focus:ring-violet-500 focus:border-transparent outline-none transition-all bg-white dark:bg-slate-700 text-gray-900 dark:text-slate-100 placeholder:text-gray-400 dark:placeholder:text-slate-500"
-              />
-            </div>
-
             <!-- Title -->
             <div class="flex items-center gap-4">
               <label class="text-sm font-medium text-gray-700 dark:text-slate-300 w-12 flex-shrink-0">Title</label>
@@ -82,6 +71,17 @@
                 placeholder="Link title"
                 class="flex-1 px-4 py-2.5 border border-gray-200 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-gray-900 dark:focus:ring-violet-500 focus:border-transparent outline-none transition-all bg-white dark:bg-slate-700 text-gray-900 dark:text-slate-100 placeholder:text-gray-400 dark:placeholder:text-slate-500"
                 @input="handleTitleInput"
+              />
+            </div>
+
+            <!-- URL -->
+            <div class="flex items-center gap-4">
+              <label class="text-sm font-medium text-gray-700 dark:text-slate-300 w-12 flex-shrink-0">URL</label>
+              <input
+                v-model="form.url"
+                type="url"
+                placeholder="https://..."
+                class="flex-1 px-4 py-2.5 border border-gray-200 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-gray-900 dark:focus:ring-violet-500 focus:border-transparent outline-none transition-all bg-white dark:bg-slate-700 text-gray-900 dark:text-slate-100 placeholder:text-gray-400 dark:placeholder:text-slate-500"
               />
             </div>
 

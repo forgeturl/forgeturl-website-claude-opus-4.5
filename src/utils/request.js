@@ -81,11 +81,11 @@ request.interceptors.response.use(
 
             switch (status) {
                 case 401:
-                    // 未授权，清除token并跳转到登录页
+                    // 未授权，清除token并跳转到首页
                     storage.remove(STORAGE_KEYS.TOKEN)
                     storage.remove(STORAGE_KEYS.USER_INFO)
-                    if (window.location.pathname !== '/login') {
-                        window.location.href = '/login'
+                    if (window.location.pathname !== '/' && !window.location.pathname.startsWith('/share/')) {
+                        window.location.href = '/'
                     }
                     break
                 case 403:

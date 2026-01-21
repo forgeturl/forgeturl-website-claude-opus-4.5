@@ -23,7 +23,7 @@
         <h2 class="text-xl font-semibold text-gray-900 mb-2">Login Failed</h2>
         <p class="text-gray-600 mb-6">{{ error }}</p>
         <button @click="goToLogin" class="btn btn-primary">
-          Back to Login
+          Back to Home
         </button>
       </div>
     </div>
@@ -52,7 +52,8 @@ onMounted(async () => {
   try {
     const params = { ...route.query }
     await handleAuthCallback(provider, params)
-    const redirect = route.query.redirect || '/'
+    // 登录成功后默认跳转到我的空间，除非有指定的重定向路径
+    const redirect = route.query.redirect || '/my'
     router.replace(redirect)
   } catch (err) {
     console.error('Auth callback error:', err)
@@ -61,7 +62,7 @@ onMounted(async () => {
 })
 
 const goToLogin = () => {
-  router.push('/login')
+  router.push('/')
 }
 </script>
 

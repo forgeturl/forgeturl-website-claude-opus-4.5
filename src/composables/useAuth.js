@@ -72,11 +72,11 @@ export function useAuth() {
     const handleLogout = async () => {
         try {
             await authStore.logout()
-            router.push('/login')
+            router.push('/')
         } catch (error) {
             console.error('Logout error:', error)
-            // 即使出错也跳转到登录页
-            router.push('/login')
+            // 即使出错也跳转到首页
+            router.push('/')
         }
     }
 

@@ -305,7 +305,7 @@ const formatDate = (timestamp) => {
 
 const goToLogin = () => {
   router.push({
-    path: '/login',
+    path: '/',
     query: { redirect: route.fullPath }
   })
 }
