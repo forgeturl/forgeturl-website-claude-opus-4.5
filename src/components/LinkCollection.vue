@@ -82,11 +82,12 @@
     >
       <template #item="{ element: link, index }">
         <LinkItem
-          v-show="linkMatchesQuery(link, searchQuery)"
+          v-show="linkMatchesQuery(link, searchQuery) && linkMatchesActiveSublink(link)"
           :link="link"
           :linkIndex="index"
           :canEdit="true"
           :searchQuery="searchQuery"
+          :activeSublink="activeSublink"
           @edit="handleEditLink(index, link)"
         />
       </template>
@@ -104,15 +105,16 @@
     <!-- Links (Read-only) -->
     <div v-else class="flex flex-wrap gap-x-10 gap-y-2">
       <LinkItem
-        v-for="(link, linkIndex) in filteredLinks"
+        v-for="(link, linkIndex) in filteredLinksWithSublink"
         :key="linkIndex"
         :link="link"
         :linkIndex="linkIndex"
         :canEdit="false"
         :searchQuery="searchQuery"
+        :activeSublink="activeSublink"
       />
       <!-- Empty State for read-only -->
-      <div v-if="!filteredLinks.length" class="w-full text-center py-4 text-gray-400 dark:text-slate-500 text-sm">
+      <div v-if="!filteredLinksWithSublink.length" class="w-full text-center py-4 text-gray-400 dark:text-slate-500 text-sm">
         No links yet
       </div>
     </div>
@@ -156,6 +158,10 @@ const props = defineProps({
   searchQuery: {
     type: String,
     default: ''
+  },
+  activeSublink: {
+    type: String,
+    default: ''
   }
 })
 
@@ -197,16 +203,34 @@ const linkMatchesQuery = (link, query) => {
   return false
 }
 
+// Check if a link has the active sublink
+const linkMatchesActiveSublink = (link) => {
+  if (!props.activeSublink) return true
+  return link.sub_links?.some(subLink => subLink.sub_title?.trim() === props.activeSublink)
+}
+
 // Filtered links based on search query
 const filteredLinks = computed(() => {
   if (!props.searchQuery) return localLinks.value
   return localLinks.value.filter(link => linkMatchesQuery(link, props.searchQuery))
 })
 
+// Filtered links based on both search query and active sublink
+const filteredLinksWithSublink = computed(() => {
+  let links = localLinks.value
+  if (props.searchQuery) {
+    links = links.filter(link => linkMatchesQuery(link, props.searchQuery))
+  }
+  if (props.activeSublink) {
+    links = links.filter(link => linkMatchesActiveSublink(link))
+  }
+  return links
+})
+
 // Should hide collection if no links match
 const shouldHide = computed(() => {
-  if (!props.searchQuery) return false
-  return filteredLinks.value.length === 0
+  if (!props.searchQuery && !props.activeSublink) return false
+  return filteredLinksWithSublink.value.length === 0
 })
 
 // Title modal

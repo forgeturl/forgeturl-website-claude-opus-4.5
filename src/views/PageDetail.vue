@@ -110,6 +110,30 @@
 
           <!-- Action Buttons -->
           <div class="flex items-center gap-1.5 sm:ml-6 flex-shrink-0">
+            <div class="relative group">
+              <button
+                class="btn-compact flex items-center justify-center w-11 h-10 rounded-full bg-yellow-50 border border-yellow-200 text-yellow-500 hover:bg-yellow-100 hover:text-yellow-600 shadow-sm"
+                aria-label="Sublinks"
+              >
+                <svg class="w-7 h-7" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M12 3l1.8 4.4L18 9l-4.2 1.6L12 15l-1.8-4.4L6 9l4.2-1.6L12 3zM19 14l.9 2.2L22 17l-2.1.8L19 20l-.9-2.2L16 17l2.1-.8L19 14zM5 14l.9 2.2L8 17l-2.1.8L5 20l-.9-2.2L2 17l2.1-.8L5 14z" />
+                </svg>
+              </button>
+              <div class="absolute right-0 mt-2 w-64 bg-white border border-gray-100 rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-150 z-30">
+                <div class="max-h-[150px] overflow-y-auto py-2">
+                  <div
+                    v-for="item in sublinkUsageSorted"
+                    :key="item.title"
+                    class="px-3 py-1.5 text-sm text-gray-700 whitespace-nowrap"
+                  >
+                    {{ item.title }}（{{ item.count }}）
+                  </div>
+                  <div v-if="sublinkUsageSorted.length === 0" class="px-3 py-2 text-sm text-gray-400">
+                    暂无 sublinks
+                  </div>
+                </div>
+              </div>
+            </div>
             <button
               @click="toggleSearch"
               data-search-button
@@ -348,6 +372,28 @@ const filteredCollectionsCount = computed(() => {
       return false
     })
   }).length
+})
+
+const sublinkUsageSorted = computed(() => {
+  const usageMap = new Map()
+  localCollections.value.forEach((collection) => {
+    const links = collection.links || []
+    links.forEach((link) => {
+      const subLinks = link.sub_links || []
+      subLinks.forEach((subLink) => {
+        const title = subLink.sub_title?.trim()
+        if (!title) return
+        usageMap.set(title, (usageMap.get(title) || 0) + 1)
+      })
+    })
+  })
+
+  return Array.from(usageMap.entries())
+    .map(([title, count]) => ({ title, count }))
+    .sort((a, b) => {
+      if (b.count !== a.count) return b.count - a.count
+      return a.title.localeCompare(b.title)
+    })
 })
 
 // Alert modal state

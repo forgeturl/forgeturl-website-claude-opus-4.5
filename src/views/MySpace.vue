@@ -148,47 +148,84 @@
           </div>
           
           <!-- Action Buttons -->
-          <div class="flex items-center gap-1.5 sm:ml-6 flex-shrink-0">
-            <button
-              ref="searchButtonRef"
-              @click="toggleSearch"
-              data-search-button
-              class="btn-compact btn-secondary flex items-center justify-center w-8 h-8 focus:ring-0 focus:ring-offset-0"
-              :class="{ 'bg-gray-900 dark:bg-violet-600 text-white hover:bg-gray-800 dark:hover:bg-violet-500': showSearchBar }"
-            >
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-              </svg>
-            </button>
-            <button
-              v-if="canEdit"
-              @click="showAddLinkModal = true"
-              class="btn-compact btn-secondary flex items-center justify-center gap-1.5 h-8 w-8 sm:w-auto"
-            >
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-              </svg>
-              <span class="hidden sm:inline">Link</span>
-            </button>
-            <button
-              v-if="canEdit"
-              @click="showAddCollectionModal = true"
-              class="btn-compact btn-secondary flex items-center justify-center gap-1.5 h-8 w-8 sm:w-auto"
-            >
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M10 3h4v7h7v4h-7v7h-4v-7H3v-4h7V3z" />
-              </svg>
-              <span class="hidden sm:inline">Collection</span>
-            </button>
-            <button
-              @click="showShareModal = true"
-              class="btn-compact btn-secondary flex items-center justify-center gap-1.5 h-8 w-8 sm:w-auto"
-            >
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
-              </svg>
-              <span class="hidden sm:inline">Share</span>
-            </button>
+          <div class="flex flex-col items-end gap-1.5 sm:ml-6 flex-shrink-0">
+            <div class="flex items-center gap-1.5">
+              <button
+                ref="searchButtonRef"
+                @click="toggleSearch"
+                data-search-button
+                class="btn-compact btn-secondary flex items-center justify-center w-8 h-8 focus:ring-0 focus:ring-offset-0"
+                :class="{ 'bg-gray-900 dark:bg-violet-600 text-white hover:bg-gray-800 dark:hover:bg-violet-500': showSearchBar }"
+              >
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+              </button>
+              <button
+                v-if="canEdit"
+                @click="showAddLinkModal = true"
+                class="btn-compact btn-secondary flex items-center justify-center gap-1.5 h-8 w-8 sm:w-auto"
+              >
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                </svg>
+                <span class="hidden sm:inline">Link</span>
+              </button>
+              <button
+                v-if="canEdit"
+                @click="showAddCollectionModal = true"
+                class="btn-compact btn-secondary flex items-center justify-center gap-1.5 h-8 w-8 sm:w-auto"
+              >
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M10 3h4v7h7v4h-7v7h-4v-7H3v-4h7V3z" />
+                </svg>
+                <span class="hidden sm:inline">Collection</span>
+              </button>
+              <button
+                @click="showShareModal = true"
+                class="btn-compact btn-secondary flex items-center justify-center gap-1.5 h-8 w-8 sm:w-auto"
+              >
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
+                </svg>
+                <span class="hidden sm:inline">Share</span>
+              </button>
+            </div>
+            <!-- Sublinks Button -->
+            <div class="relative group">
+              <button
+                class="btn-compact btn-secondary flex items-center justify-center w-8 h-8 focus:ring-0 focus:ring-offset-0"
+                :class="activeSublink ? 'text-amber-500 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/30 border-amber-300 dark:border-amber-600' : 'text-amber-500 dark:text-amber-400'"
+                aria-label="Sublinks"
+                @click="activeSublink ? clearActiveSublink() : null"
+              >
+                <span class="text-xl font-bold">✦</span>
+              </button>
+              <div class="absolute right-0 mt-2 w-64 bg-white dark:bg-slate-800 border border-gray-100 dark:border-slate-700 rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-150 z-30">
+                <div class="max-h-[150px] overflow-y-auto py-2">
+                  <!-- Clear filter option -->
+                  <div
+                    v-if="activeSublink"
+                    @click="clearActiveSublink"
+                    class="px-3 py-1.5 text-sm text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 cursor-pointer whitespace-nowrap border-b border-gray-100 dark:border-slate-700 mb-1"
+                  >
+                    ✕ Clear Filter
+                  </div>
+                  <div
+                    v-for="item in sublinkUsageSorted"
+                    :key="item.title"
+                    @click="setActiveSublink(item.title)"
+                    class="px-3 py-1.5 text-sm cursor-pointer whitespace-nowrap hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors"
+                    :class="activeSublink === item.title ? 'text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/30 font-medium' : 'text-gray-700 dark:text-slate-200'"
+                  >
+                    {{ item.title }}（{{ item.count }}）
+                  </div>
+                  <div v-if="sublinkUsageSorted.length === 0" class="px-3 py-2 text-sm text-gray-400 dark:text-slate-400">
+                    暂无 sublinks
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -212,6 +249,7 @@
               :collectionIndex="index"
               :canEdit="canEdit"
               :searchQuery="searchQuery"
+              :activeSublink="activeSublink"
               @update-title="(title) => updateCollectionTitle(index, title)"
               @update-link="(linkIndex, link) => updateLink(index, linkIndex, link)"
               @links-changed="(links) => updateCollectionLinks(index, links)"
@@ -231,6 +269,7 @@
             :collectionIndex="index"
             :canEdit="false"
             :searchQuery="searchQuery"
+            :activeSublink="activeSublink"
           />
         </div>
 
@@ -397,6 +436,39 @@ const filteredCollectionsCount = computed(() => {
     })
   }).length
 })
+
+const sublinkUsageSorted = computed(() => {
+  const usageMap = new Map()
+  localCollections.value.forEach((collection) => {
+    const links = collection.links || []
+    links.forEach((link) => {
+      const subLinks = link.sub_links || []
+      subLinks.forEach((subLink) => {
+        const title = subLink.sub_title?.trim()
+        if (!title) return
+        usageMap.set(title, (usageMap.get(title) || 0) + 1)
+      })
+    })
+  })
+
+  return Array.from(usageMap.entries())
+    .map(([title, count]) => ({ title, count }))
+    .sort((a, b) => {
+      if (b.count !== a.count) return b.count - a.count
+      return a.title.localeCompare(b.title)
+    })
+})
+
+// Active sublink filter state
+const activeSublink = ref('')
+
+const setActiveSublink = (title) => {
+  activeSublink.value = title
+}
+
+const clearActiveSublink = () => {
+  activeSublink.value = ''
+}
 
 // Alert modal state
 const alertModal = ref({

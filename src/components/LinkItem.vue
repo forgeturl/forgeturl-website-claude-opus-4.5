@@ -17,24 +17,37 @@
     <div class="min-w-0 relative flex-1">
       <!-- Read-only mode: normal link -->
       <a
-        v-if="!canEdit"
-        :href="link.url"
+        v-if="!canEdit && isClickable"
+        :href="effectiveUrl"
         target="_blank"
         rel="noopener noreferrer"
-        class="text-gray-500 dark:text-slate-400 hover:text-gray-900 dark:hover:text-slate-100 hover:font-semibold transition-all no-underline block truncate"
+        class="hover:font-semibold transition-all no-underline block truncate"
+        :class="isActiveSublinkMode ? 'text-amber-600 dark:text-amber-400 hover:text-amber-700 dark:hover:text-amber-300' : 'text-gray-500 dark:text-slate-400 hover:text-gray-900 dark:hover:text-slate-100'"
         :title="link.title || 'Untitled'"
       >
         <span v-if="titleMatchesQuery" v-html="highlightedTitle"></span>
         <span v-else>{{ link.title || 'Untitled' }}</span>
       </a>
       
+      <!-- Read-only mode: no link (sub_url is empty) -->
+      <span
+        v-else-if="!canEdit && !isClickable"
+        class="block truncate cursor-default"
+        :class="isActiveSublinkMode ? 'text-amber-600/60 dark:text-amber-400/60' : 'text-gray-400 dark:text-slate-500'"
+        :title="link.title || 'Untitled'"
+      >
+        <span v-if="titleMatchesQuery" v-html="highlightedTitle"></span>
+        <span v-else>{{ link.title || 'Untitled' }}</span>
+      </span>
+      
       <!-- Edit mode: click to open, long press to edit -->
       <a
-        v-else
-        :href="link.url"
+        v-else-if="canEdit && isClickable"
+        :href="effectiveUrl"
         target="_blank"
         rel="noopener noreferrer"
-        class="text-gray-500 dark:text-slate-400 hover:text-gray-900 dark:hover:text-slate-100 hover:font-semibold transition-all no-underline select-none block truncate"
+        class="hover:font-semibold transition-all no-underline select-none block truncate"
+        :class="isActiveSublinkMode ? 'text-amber-600 dark:text-amber-400 hover:text-amber-700 dark:hover:text-amber-300' : 'text-gray-500 dark:text-slate-400 hover:text-gray-900 dark:hover:text-slate-100'"
         :title="link.title || 'Untitled'"
         @click="handleClick"
         @mousedown="handleMouseDown"
@@ -47,6 +60,23 @@
         <span v-if="titleMatchesQuery" v-html="highlightedTitle"></span>
         <span v-else>{{ link.title || 'Untitled' }}</span>
       </a>
+      
+      <!-- Edit mode: no link (sub_url is empty), but still allow long press to edit -->
+      <span
+        v-else
+        class="block truncate select-none"
+        :class="isActiveSublinkMode ? 'text-amber-600/60 dark:text-amber-400/60 cursor-default' : 'text-gray-500 dark:text-slate-400 hover:text-gray-900 dark:hover:text-slate-100 cursor-pointer'"
+        :title="link.title || 'Untitled'"
+        @mousedown="handleMouseDown"
+        @mouseup="handleMouseUp"
+        @mouseleave="handleMouseLeave"
+        @touchstart="handleTouchStart"
+        @touchend="handleTouchEnd"
+        @touchmove="handleTouchMove"
+      >
+        <span v-if="titleMatchesQuery" v-html="highlightedTitle"></span>
+        <span v-else>{{ link.title || 'Untitled' }}</span>
+      </span>
       
       <!-- Sub Links Star Icon with Dropdown -->
       <div 
@@ -108,6 +138,10 @@ const props = defineProps({
   searchQuery: {
     type: String,
     default: ''
+  },
+  activeSublink: {
+    type: String,
+    default: ''
   }
 })
 
@@ -122,6 +156,27 @@ const dropdownRef = ref(null)
 // Check if link has sub_links
 const hasSubLinks = computed(() => {
   return props.link.sub_links && props.link.sub_links.length > 0
+})
+
+// Check if link is in active sublink mode
+const isActiveSublinkMode = computed(() => {
+  return !!props.activeSublink
+})
+
+// Get the URL to use (original or sublink URL if activeSublink is set)
+const effectiveUrl = computed(() => {
+  if (!props.activeSublink) return props.link.url
+  // Find the first sublink with matching title
+  const matchingSublink = props.link.sub_links?.find(
+    subLink => subLink.sub_title?.trim() === props.activeSublink
+  )
+  // Return sublink URL if exists, otherwise null (no navigation)
+  return matchingSublink?.sub_url || null
+})
+
+// Check if the link should be clickable
+const isClickable = computed(() => {
+  return !!effectiveUrl.value
 })
 
 // Highlight matching text in title
