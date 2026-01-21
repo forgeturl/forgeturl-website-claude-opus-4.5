@@ -157,7 +157,7 @@
         <draggable
           v-if="canEdit"
           v-model="localCollections"
-          :group="{ name: 'collections' }"
+          :group="{ name: 'collections', pull: true, put: ['collections'] }"
           item-key="__idx"
           handle=".collection-drag-handle"
           ghost-class="collection-drop-indicator"

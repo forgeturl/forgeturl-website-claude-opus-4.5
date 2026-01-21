@@ -65,7 +65,7 @@
     <draggable
       v-if="canEdit"
       v-model="localLinks"
-      :group="{ name: 'links', pull: true, put: true }"
+      :group="{ name: 'links', pull: true, put: ['links'] }"
       item-key="__idx"
       handle=".link-drag-handle"
       ghost-class="link-drop-indicator"
