@@ -1,173 +1,247 @@
-# ForgetURL - 极简书签管理网站
+<p align="center">
+  <img src="https://forgeturl.com/favicon.svg" alt="ForgetURL Logo" width="100" height="100">
+</p>
 
-基于 Vue 3 + Vite + Pinia + Tailwind CSS 构建的极简风格书签管理网站。
+<h1 align="center">🎨 ForgetURL Website</h1>
 
-## ✨ 功能特性
+<p align="center">
+  <strong>Minimalist Bookmark Management Frontend - Built with Vue 3</strong>
+</p>
 
-- 🔐 **第三方登录** - 支持 Google、GitHub 登录
-- 📖 **书签管理** - 创建、编辑、删除书签页面
-- 🔗 **权限分享** - 支持只读、编辑、超级权限链接分享
-- 🌍 **多环境支持** - 自动切换 local、test、onl 环境
-- 💾 **状态持久化** - 登录状态和用户信息本地保存
-- 📱 **响应式设计** - 完美支持桌面端和移动端
-- 🎨 **极简风格** - 类似 X.com/ChatGPT 的简约设计
+<p align="center">
+  <a href="https://forgeturl.com" target="_blank">
+    <img src="https://img.shields.io/badge/🌐_Live_Demo-ForgetURL.com-blue?style=for-the-badge" alt="Live Demo">
+  </a>
+</p>
 
-## 🛠 技术栈
+<p align="center">
+  <a href="#-features">Features</a> •
+  <a href="#-tech-stack">Tech Stack</a> •
+  <a href="#-quick-start">Quick Start</a> •
+  <a href="#-project-structure">Structure</a> •
+  <a href="#-license">License</a>
+</p>
 
-- **Vue 3** - 渐进式 JavaScript 框架（Composition API）
-- **Vite** - 新一代前端构建工具
-- **Pinia** - Vue 官方状态管理库
-- **Vue Router 4** - 官方路由管理器
-- **Tailwind CSS** - 原子化 CSS 框架
-- **Headless UI** - 无样式可访问组件库
-- **Axios** - HTTP 客户端
+<p align="center">
+  English | <a href="./README_zh.md">中文</a>
+</p>
 
-## 📦 安装
+---
+
+## 📖 Introduction
+
+ForgetURL Website is the frontend application for [ForgetURL](https://forgeturl.com) - a minimalist bookmark management platform. Built with Vue 3 and modern web technologies, it provides a clean, elegant interface for organizing and sharing your web bookmarks.
+
+## ✨ Features
+
+| Feature | Description |
+|---------|-------------|
+| 🔐 **OAuth Login** | Sign in with Google or GitHub |
+| 📖 **Bookmark Pages** | Create, edit, delete bookmark pages |
+| 🔗 **Flexible Sharing** | Read-only, editable, or admin share links |
+| 📱 **Responsive Design** | Perfect on desktop and mobile |
+| 🎨 **Minimalist UI** | Clean X.com / ChatGPT inspired design |
+| 💾 **State Persistence** | Login state saved locally |
+| 🌍 **Multi-environment** | Auto-switch local/test/production |
+
+## 🛠 Tech Stack
+
+| Category | Technology |
+|----------|------------|
+| **Framework** | Vue 3 (Composition API) |
+| **Build Tool** | Vite |
+| **State Management** | Pinia |
+| **Router** | Vue Router 4 |
+| **Styling** | Tailwind CSS |
+| **UI Components** | Headless UI |
+| **HTTP Client** | Axios |
+
+## 🚀 Quick Start
+
+### Prerequisites
+
+- Node.js >= 16.0.0
+- npm >= 8.0.0
+
+### Installation
 
 ```bash
-# 安装依赖
+# Clone the repository
+git clone https://github.com/forgeturl/forgeturl-website-claude-opus-4.5.git
+cd forgeturl-website-claude-opus-4.5
+
+# Install dependencies
 npm install
-```
 
-## 🚀 开发
-
-```bash
-# 启动开发服务器
+# Start development server
 npm run dev
 ```
 
-访问 http://localhost:3000
+Visit http://localhost:3000
 
-## 🏗 构建
+### Build for Production
 
 ```bash
-# 构建生产版本
+# Build
 npm run build
 
-# 预览生产版本
+# Preview production build
 npm run preview
 ```
 
-## 📁 项目结构
+## 📁 Project Structure
 
 ```
 src/
-├── api/                # API 接口封装
-│   ├── auth.js         # 认证相关接口
-│   └── space.js        # 空间和页面接口
-├── assets/             # 静态资源
-│   └── main.css        # 全局样式
-├── components/         # 公共组件
-│   ├── CreatePageModal.vue   # 创建页面模态框
-│   ├── LinkCollection.vue    # 链接集合组件
-│   ├── LinkItem.vue          # 链接项组件
-│   ├── PageCard.vue          # 页面卡片组件
-│   └── ShareModal.vue        # 分享模态框
-├── composables/        # 组合式函数
-│   └── useAuth.js      # 认证相关逻辑
-├── router/             # 路由配置
-│   └── index.js        # 主路由
-├── stores/             # 状态管理
-│   ├── auth.js         # 认证状态
-│   └── page.js         # 页面状态
-├── utils/              # 工具函数
-│   ├── config.js       # 环境配置
-│   ├── request.js      # HTTP 请求封装
-│   └── storage.js      # 本地存储
-├── views/              # 页面视图
-│   ├── AuthCallback.vue  # 登录回调页
-│   ├── Home.vue          # 首页（我的空间）
-│   ├── Login.vue         # 登录页
-│   ├── PageDetail.vue    # 页面详情
-│   └── SharePage.vue     # 分享页面
-├── App.vue             # 根组件
-└── main.js             # 应用入口
+├── api/                    # API Layer
+│   ├── auth.js             # Authentication APIs
+│   └── space.js            # Space & page APIs
+├── assets/                 # Static Assets
+│   └── main.css            # Global styles
+├── components/             # UI Components
+│   ├── AddLinkModal.vue    # Add link modal
+│   ├── CreatePageModal.vue # Create page modal
+│   ├── EditPageModal.vue   # Edit page modal
+│   ├── LinkCollection.vue  # Link collection component
+│   ├── LinkItem.vue        # Link item component
+│   ├── PageCard.vue        # Page card component
+│   └── ShareModal.vue      # Share modal
+├── composables/            # Composition Functions
+│   ├── useAuth.js          # Authentication logic
+│   ├── useAutoSave.js      # Auto-save logic
+│   └── useTheme.js         # Theme logic
+├── router/                 # Router Configuration
+│   └── index.js            # Route definitions
+├── stores/                 # State Management
+│   ├── auth.js             # Auth store
+│   └── page.js             # Page store
+├── utils/                  # Utilities
+│   ├── config.js           # Environment config
+│   ├── request.js          # HTTP request wrapper
+│   └── storage.js          # Local storage utils
+├── views/                  # Page Views
+│   ├── AuthCallback.vue    # OAuth callback
+│   ├── Home.vue            # Home (My Space)
+│   ├── Login.vue           # Login page
+│   ├── MySpace.vue         # My Space page
+│   ├── PageDetail.vue      # Page detail
+│   └── SharePage.vue       # Shared page view
+├── App.vue                 # Root component
+└── main.js                 # Application entry
 ```
 
-## 🔑 核心功能说明
+## 🔑 Core Features
 
-### 登录流程
+### Authentication Flow
 
-1. 用户选择第三方登录方式（Google/GitHub）
-2. 调用 `/login/connector/auth` 获取授权 URL
-3. 跳转到第三方授权页面
-4. 授权成功后回调到 `/auth/callback/:provider`
-5. 前端调用 `/login/connector/callback/:provider` 获取用户信息
-6. 保存 X-Token 和用户信息到本地存储
+```
+User clicks login
+    ↓
+GET /login/connector/auth → Get OAuth URL
+    ↓
+Redirect to OAuth provider (Google/GitHub)
+    ↓
+User authorizes
+    ↓
+Callback to /auth/callback/:provider
+    ↓
+GET /login/connector/callback/:provider
+    ↓
+Receive X-Token + user info
+    ↓
+Save to localStorage → Redirect to home
+```
 
-### 页面管理
+### Permission Sharing
 
-- **我的空间** - 查看所有书签页面
-- **创建页面** - 新建书签页面，支持添加标题、描述和链接
-- **编辑页面** - 修改页面内容，支持添加/编辑/删除链接
-- **删除页面** - 删除不需要的页面
-- **页面排序** - 拖拽调整页面顺序（待实现）
+| Share Type | Prefix | Permission |
+|------------|--------|------------|
+| Read-only | `R` | View only |
+| Editable | `E` | View and edit |
+| Admin | `A` | Full control |
 
-### 链接管理
+## 🌐 Environment Configuration
 
-- **添加链接** - 支持标题、URL、标签和子链接
-- **编辑链接** - 修改链接信息
-- **删除链接** - 移除不需要的链接
-- **子链接** - 为主链接添加相关子链接
+The app automatically switches API endpoints based on hostname:
 
-### 权限分享
+| Environment | Hostname | API Endpoint |
+|-------------|----------|--------------|
+| Local | `localhost` | `http://127.0.0.1:80` |
+| Test | `test.forgeturl.com` | `https://test-api.brightguo.com` |
+| Production | `forgeturl.com` | `https://api.brightguo.com` |
 
-- **只读链接** - 其他人可以查看但不能编辑
-- **编辑链接** - 其他人可以查看和编辑
-- **超级权限链接** - 其他人拥有完全控制权限
+## 🎨 Design Philosophy
 
-## 🌐 环境配置
+- **Minimalism** - X.com / ChatGPT inspired clean interface
+- **Black & White** - Monochrome with blue accents
+- **Whitespace** - Focus on content, reduce noise
+- **Rounded Corners** - Soft, friendly appearance
+- **Smooth Animations** - Fluid transitions
 
-项目支持三个环境，根据域名自动切换：
+## 🔧 Development
 
-- **本地环境** (`localhost:3000`) → API: `http://127.0.0.1:80`
-- **测试环境** (`test.forgeturl.com`) → API: `https://test-api.brightguo.com`
-- **生产环境** (`forgeturl.com`) → API: `https://api.brightguo.com`
+### Code Style
 
-## 🔐 认证机制
+- Use Vue 3 Composition API
+- Follow Vue official style guide
+- Use ES6+ syntax
+- Component names in PascalCase
 
-### X-Token
+### Adding New Routes
 
-- 登录成功后从响应头获取
-- 保存到 localStorage
-- 每次请求自动携带在请求头中
+```javascript
+// src/router/index.js
+{
+  path: '/your-path',
+  name: 'YourPage',
+  component: () => import('@/views/YourPage.vue'),
+  meta: { 
+    requiresAuth: true,
+    title: 'Page Title'
+  }
+}
+```
 
-### X-Forget-Cookie
+### Adding New API
 
-- 登录流程中临时存储在 sessionStorage
-- 用于维持登录状态跨页面跳转
-- 登录完成后自动清除
+```javascript
+// src/api/your-api.js
+import request from '@/utils/request'
 
-## 📱 响应式设计
+export function yourApi(params) {
+  return request({
+    url: '/your/endpoint',
+    method: 'POST',
+    data: params
+  })
+}
+```
 
-使用 Tailwind CSS 的响应式类实现：
+## 📄 License
 
-- `sm:` - 640px 及以上
-- `md:` - 768px 及以上
-- `lg:` - 1024px 及以上
+This project is licensed under the [MIT License](LICENSE).
 
-## 🎨 设计风格
+## 🤝 Contributing
 
-- **极简主义** - 类似 X.com 和 ChatGPT 的简约设计
-- **黑白灰色调** - 主色调为黑白灰，点缀蓝色
-- **大量留白** - 专注内容，减少视觉干扰
-- **圆角设计** - 柔和的圆角卡片和按钮
-- **平滑动画** - 流畅的过渡效果
+Contributions are welcome!
 
-## 🐛 已知问题
+- 🐛 [Report Bugs](https://github.com/forgeturl/.github/issues/new?template=bug_report.md)
+- 💡 [Request Features](https://github.com/forgeturl/.github/issues/new?template=feature_request.md)
+- 📝 Improve documentation
+- 🔧 Submit Pull Requests
 
-- 拖拽排序功能待完善
-- 移动端部分交互待优化
-- 图片上传功能待实现
+## 🔗 Related Projects
 
-## 📄 许可证
+- [ForgetURL Server](https://github.com/forgeturl/forgeturl-server) - Backend API service
 
-MIT License
+---
 
-## 👥 贡献
+<p align="center">
+  <a href="https://forgeturl.com">
+    <img src="https://img.shields.io/badge/Try_ForgetURL-→_forgeturl.com-2ea44f?style=flat-square" alt="Try ForgetURL">
+  </a>
+</p>
 
-欢迎提交 Issue 和 Pull Request！
-
-## 📧 联系方式
-
-如有问题，请通过 Issue 联系我们。
+<p align="center">
+  Made with ❤️ by ForgetURL Team
+</p>
