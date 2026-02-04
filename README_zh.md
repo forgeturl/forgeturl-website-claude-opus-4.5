@@ -9,6 +9,20 @@
 </p>
 
 <p align="center">
+  <a href="https://github.com/forgeturl/forgeturl-website-claude-opus-4.5/releases">
+    <img src="https://img.shields.io/github/v/release/forgeturl/forgeturl-website-claude-opus-4.5" alt="Release">
+  </a>
+  <a href="https://github.com/forgeturl/forgeturl-website-claude-opus-4.5/blob/main/LICENSE">
+    <img src="https://img.shields.io/github/license/forgeturl/forgeturl-website-claude-opus-4.5" alt="License">
+  </a>
+  <img src="https://img.shields.io/badge/Vue-3.x-4FC08D?logo=vue.js" alt="Vue Version">
+  <img src="https://img.shields.io/badge/Vite-5.x-646CFF?logo=vite" alt="Vite">
+  <a href="https://github.com/forgeturl/forgeturl-website-claude-opus-4.5/stargazers">
+    <img src="https://img.shields.io/github/stars/forgeturl/forgeturl-website-claude-opus-4.5?style=social" alt="Stars">
+  </a>
+</p>
+
+<p align="center">
   <a href="https://forgeturl.com" target="_blank">
     <img src="https://img.shields.io/badge/🌐_在线体验-ForgetURL.com-blue?style=for-the-badge" alt="Live Demo">
   </a>
