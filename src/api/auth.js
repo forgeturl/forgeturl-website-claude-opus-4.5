@@ -55,3 +55,16 @@ export function getUserInfo(uid) {
     })
 }
 
+/**
+ * 获取用户总数统计
+ * @param {number} timeout - 超时时间(毫秒)，默认5000ms
+ * @returns {Promise} 返回用户数量
+ */
+export function getUserCount(timeout = 5000) {
+    return request({
+        url: '/stats/users',
+        method: 'GET',
+        timeout: timeout
+    })
+}
+

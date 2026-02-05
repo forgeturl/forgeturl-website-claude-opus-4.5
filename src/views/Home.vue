@@ -310,6 +310,18 @@
 
           <!-- Right: Hero Illustration -->
           <div class="flex-1 relative animate-fade-in" style="animation-delay: 0.2s">
+            <!-- User Count Display -->
+            <div v-if="userCount !== null" class="mb-6 flex justify-center lg:justify-start">
+              <div class="inline-flex items-center gap-2 px-4 py-2 bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-full border border-gray-200/50 dark:border-slate-700/50 shadow-sm">
+                <div class="flex items-center gap-1.5">
+                  <div class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                  <span class="text-sm font-medium text-gray-600 dark:text-slate-300">
+                    <span class="text-violet-600 dark:text-violet-400 font-bold">{{ userCount.toLocaleString() }}</span>
+                    users have joined
+                  </span>
+                </div>
+              </div>
+            </div>
             <div class="relative">
               <!-- Browser mockup -->
               <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl dark:shadow-black/40 border border-gray-200 dark:border-slate-700 overflow-hidden">
@@ -713,6 +725,7 @@ import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useAuth } from '@/composables/useAuth'
 import { useTheme } from '@/composables/useTheme'
 import { useAuthStore } from '@/stores/auth'
+import { getUserCount } from '@/api/auth'
 
 const { startAuth } = useAuth()
 const { isDark, toggleTheme } = useTheme()
@@ -725,9 +738,23 @@ const showLoginDropdown = ref(false)
 const loginDropdownRef = ref(null)
 const showGithubDropdown = ref(false)
 const githubDropdownRef = ref(null)
+const userCount = ref(null)
 
 // Check if user is logged in
 const isLoggedIn = computed(() => authStore.isLoggedIn)
+
+// Fetch user count asynchronously
+const fetchUserCount = async () => {
+  try {
+    const data = await getUserCount(5000)
+    if (data && data.count !== undefined) {
+      userCount.value = data.count
+    }
+  } catch (err) {
+    // Silently fail - don't show user count if request fails or times out
+    console.debug('Failed to fetch user count:', err.message)
+  }
+}
 
 const scrollToLogin = () => {
   loginSection.value?.scrollIntoView({ behavior: 'smooth' })
@@ -759,6 +786,8 @@ const handleClickOutside = (event) => {
 
 onMounted(() => {
   document.addEventListener('click', handleClickOutside)
+  // Fetch user count on mount
+  fetchUserCount()
 })
 
 onUnmounted(() => {
