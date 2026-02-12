@@ -110,19 +110,20 @@
 
                   <div class="my-1 border-t border-gray-100 dark:border-slate-700"></div>
 
-                  <!-- WeChat Login (Coming Soon) -->
+                  <!-- WeChat Login -->
                   <button
-                    disabled
-                    class="w-full flex items-center gap-3 px-4 py-3 text-gray-400 dark:text-slate-500 rounded-lg cursor-not-allowed opacity-60"
+                    @click="handleLogin('wechat')"
+                    :disabled="loading"
+                    class="w-full flex items-center gap-3 px-4 py-3 text-gray-700 dark:text-slate-200 hover:bg-gray-50 dark:hover:bg-slate-700 rounded-lg transition-colors duration-200 disabled:opacity-50"
                   >
-                    <div class="w-8 h-8 bg-gray-300 dark:bg-slate-600 rounded-lg flex items-center justify-center">
-                      <svg class="w-5 h-5 text-gray-400 dark:text-slate-500" viewBox="0 0 24 24" fill="currentColor">
+                    <div class="w-8 h-8 bg-[#07C160] rounded-lg flex items-center justify-center">
+                      <svg class="w-5 h-5 text-white" viewBox="0 0 24 24" fill="currentColor">
                         <path d="M8.691 2.188C3.891 2.188 0 5.476 0 9.53c0 2.212 1.17 4.203 3.002 5.55a.59.59 0 0 1 .213.665l-.39 1.48c-.019.07-.048.141-.048.213 0 .163.13.295.29.295a.326.326 0 0 0 .167-.054l1.903-1.114a.864.864 0 0 1 .717-.098 10.16 10.16 0 0 0 2.837.403c.276 0 .543-.027.811-.05-.857-2.578.157-4.972 1.932-6.446 1.703-1.415 3.882-1.98 5.853-1.838-.576-3.583-4.196-6.348-8.596-6.348zM5.785 5.991c.642 0 1.162.529 1.162 1.18a1.17 1.17 0 0 1-1.162 1.178A1.17 1.17 0 0 1 4.623 7.17c0-.651.52-1.18 1.162-1.18zm5.813 0c.642 0 1.162.529 1.162 1.18a1.17 1.17 0 0 1-1.162 1.178 1.17 1.17 0 0 1-1.162-1.178c0-.651.52-1.18 1.162-1.18zm5.34 2.867c-1.797-.052-3.746.512-5.28 1.786-1.72 1.428-2.687 3.72-1.78 6.22.942 2.453 3.666 4.229 6.884 4.229.826 0 1.622-.12 2.361-.336a.722.722 0 0 1 .598.082l1.584.926a.272.272 0 0 0 .14.047c.134 0 .24-.111.24-.247 0-.06-.023-.12-.038-.177l-.327-1.233a.582.582 0 0 1-.023-.156.49.49 0 0 1 .201-.398C23.024 18.48 24 16.82 24 14.98c0-3.21-2.931-5.837-6.656-6.088V8.89c-.135-.01-.27-.027-.407-.032zm-2.53 3.274c.535 0 .969.44.969.982a.976.976 0 0 1-.969.983.976.976 0 0 1-.969-.983c0-.542.434-.982.97-.982zm4.844 0c.535 0 .969.44.969.982a.976.976 0 0 1-.969.983.976.976 0 0 1-.969-.983c0-.542.434-.982.969-.982z"/>
                       </svg>
                     </div>
                     <div class="text-left">
                       <div class="font-medium">Sign in with WeChat</div>
-                      <div class="text-xs text-gray-400 dark:text-slate-500">Coming Soon</div>
+                      <div class="text-xs text-gray-500 dark:text-slate-400">WeChat Account</div>
                     </div>
                   </button>
                 </div>
@@ -515,16 +516,16 @@
               <span class="font-medium">Sign in with GitHub</span>
             </button>
 
-            <!-- WeChat Login (Coming Soon) -->
+            <!-- WeChat Login -->
             <button
-              disabled
-              class="w-full flex items-center justify-center gap-3 px-6 py-3.5 bg-gray-200 dark:bg-slate-700 text-gray-400 dark:text-slate-500 rounded-xl cursor-not-allowed opacity-60"
+              @click="handleLogin('wechat')"
+              :disabled="loading"
+              class="w-full flex items-center justify-center gap-3 px-6 py-3.5 bg-[#07C160] text-white rounded-xl hover:bg-[#06AD56] transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed hover:shadow-lg"
             >
               <svg class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
                 <path d="M8.691 2.188C3.891 2.188 0 5.476 0 9.53c0 2.212 1.17 4.203 3.002 5.55a.59.59 0 0 1 .213.665l-.39 1.48c-.019.07-.048.141-.048.213 0 .163.13.295.29.295a.326.326 0 0 0 .167-.054l1.903-1.114a.864.864 0 0 1 .717-.098 10.16 10.16 0 0 0 2.837.403c.276 0 .543-.027.811-.05-.857-2.578.157-4.972 1.932-6.446 1.703-1.415 3.882-1.98 5.853-1.838-.576-3.583-4.196-6.348-8.596-6.348zM5.785 5.991c.642 0 1.162.529 1.162 1.18a1.17 1.17 0 0 1-1.162 1.178A1.17 1.17 0 0 1 4.623 7.17c0-.651.52-1.18 1.162-1.18zm5.813 0c.642 0 1.162.529 1.162 1.18a1.17 1.17 0 0 1-1.162 1.178 1.17 1.17 0 0 1-1.162-1.178c0-.651.52-1.18 1.162-1.18zm5.34 2.867c-1.797-.052-3.746.512-5.28 1.786-1.72 1.428-2.687 3.72-1.78 6.22.942 2.453 3.666 4.229 6.884 4.229.826 0 1.622-.12 2.361-.336a.722.722 0 0 1 .598.082l1.584.926a.272.272 0 0 0 .14.047c.134 0 .24-.111.24-.247 0-.06-.023-.12-.038-.177l-.327-1.233a.582.582 0 0 1-.023-.156.49.49 0 0 1 .201-.398C23.024 18.48 24 16.82 24 14.98c0-3.21-2.931-5.837-6.656-6.088V8.89c-.135-.01-.27-.027-.407-.032zm-2.53 3.274c.535 0 .969.44.969.982a.976.976 0 0 1-.969.983.976.976 0 0 1-.969-.983c0-.542.434-.982.97-.982zm4.844 0c.535 0 .969.44.969.982a.976.976 0 0 1-.969.983.976.976 0 0 1-.969-.983c0-.542.434-.982.969-.982z"/>
               </svg>
-              <span class="font-medium">WeChat Login</span>
-              <span class="text-xs bg-gray-300 dark:bg-slate-600 text-gray-500 dark:text-slate-400 px-2 py-0.5 rounded-full">Coming Soon</span>
+              <span class="font-medium">Sign in with WeChat</span>
             </button>
           </div>
 
@@ -612,6 +613,7 @@
 import { ref, onMounted, onUnmounted } from 'vue'
 import { useAuth } from '@/composables/useAuth'
 import { useTheme } from '@/composables/useTheme'
+import { isWechatLoginDomain } from '@/utils/config'
 
 const { startAuth } = useAuth()
 const { isDark, toggleTheme } = useTheme()
@@ -648,6 +650,14 @@ const handleClickOutside = (event) => {
 
 onMounted(() => {
   document.addEventListener('click', handleClickOutside)
+
+  // 检测是否从主站跳转过来进行微信登录
+  // 当用户在 forgeturl.com 点击微信登录后，会被重定向到
+  // forgeturl.brightguo.com/?wechat_login=true，此时自动发起微信OAuth
+  const urlParams = new URLSearchParams(window.location.search)
+  if (urlParams.get('wechat_login') === 'true' && isWechatLoginDomain()) {
+    handleLogin('wechat')
+  }
 })
 
 onUnmounted(() => {

@@ -34,6 +34,8 @@
 import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useAuth } from '@/composables/useAuth'
+import { storage } from '@/utils/storage'
+import { STORAGE_KEYS, MAIN_DOMAIN, isWechatLoginDomain } from '@/utils/config'
 
 const route = useRoute()
 const router = useRouter()
@@ -51,8 +53,19 @@ onMounted(async () => {
 
   try {
     const params = { ...route.query }
-    await handleAuthCallback(provider, params)
-    // 登录成功后默认跳转到我的空间，除非有指定的重定向路径
+    const userInfo = await handleAuthCallback(provider, params)
+
+    // 微信登录特殊处理：如果当前在备案域名(forgeturl.brightguo.com)上完成的微信登录，
+    // 需要携带token和用户信息跳转回主站(forgeturl.com)
+    if (provider === 'wechat' && isWechatLoginDomain()) {
+      const token = storage.get(STORAGE_KEYS.TOKEN)
+      const userEncoded = encodeURIComponent(btoa(JSON.stringify(userInfo)))
+      const tokenEncoded = encodeURIComponent(token)
+      window.location.href = `${MAIN_DOMAIN}/?wechat_token=${tokenEncoded}&wechat_user=${userEncoded}`
+      return
+    }
+
+    // 其他provider或非跨域场景，正常跳转
     const redirect = route.query.redirect || '/my'
     router.replace(redirect)
   } catch (err) {

@@ -3,6 +3,8 @@
  */
 import { createRouter, createWebHistory } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
+import { storage } from '@/utils/storage'
+import { STORAGE_KEYS } from '@/utils/config'
 
 // 路由配置
 const routes = [
@@ -84,6 +86,33 @@ router.beforeEach((to, from, next) => {
         }
     } else {
         document.title = 'ForgetURL - Save links, free your mind'
+    }
+
+    // 处理微信跨域登录回传的token
+    // 当用户在 forgeturl.brightguo.com 完成微信登录后，会被重定向回
+    // forgeturl.com/?wechat_token=xxx&wechat_user=base64(userInfo)
+    if (to.query.wechat_token && to.query.wechat_user) {
+        try {
+            const token = decodeURIComponent(to.query.wechat_token)
+            const userInfo = JSON.parse(atob(decodeURIComponent(to.query.wechat_user)))
+
+            // 保存到localStorage
+            storage.set(STORAGE_KEYS.TOKEN, token)
+            storage.set(STORAGE_KEYS.USER_INFO, userInfo)
+
+            // 保存到auth store
+            const authStore = useAuthStore()
+            authStore.login(userInfo, token)
+
+            // 跳转到我的空间，清除URL中的敏感参数
+            next({ path: '/my', replace: true })
+            return
+        } catch (err) {
+            console.error('Failed to process wechat login token:', err)
+            // 解析失败，清除参数继续正常流程
+            next({ path: '/', replace: true })
+            return
+        }
     }
 
     // 检查是否需要登录
