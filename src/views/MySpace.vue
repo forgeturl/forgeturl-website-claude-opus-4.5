@@ -371,6 +371,9 @@ const showEditPageModal = ref(false)
 const savingPageInfo = ref(false)
 const selectedPageId = ref('')
 
+// Initialization flag - prevents watch from triggering getPage before getMySpace completes
+const initialized = ref(false)
+
 // Search state
 const showSearchBar = ref(false)
 const searchQuery = ref('')
@@ -868,6 +871,8 @@ onMounted(async () => {
     }
   } catch (error) {
     console.error('Failed to fetch space:', error)
+  } finally {
+    initialized.value = true
   }
 })
 
@@ -877,8 +882,9 @@ onUnmounted(() => {
 })
 
 watch(() => pageStore.myPages, (pages) => {
+  if (!initialized.value) return
   if (pages.length > 0 && !selectedPageId.value) {
     selectPage(pages[0].page_id)
   }
-}, { immediate: true })
+})
 </script>
