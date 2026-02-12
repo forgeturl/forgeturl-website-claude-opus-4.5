@@ -5,7 +5,7 @@ import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { getAuthUrl, authCallback } from '@/api/auth'
 import { storage, sessionStorage } from '@/utils/storage'
-import { STORAGE_KEYS } from '@/utils/config'
+import { STORAGE_KEYS, WECHAT_LOGIN_DOMAIN, isWechatLoginDomain, isMainDomain } from '@/utils/config'
 
 export function useAuth() {
     const router = useRouter()
@@ -13,9 +13,16 @@ export function useAuth() {
 
     /**
      * 发起第三方登录
+     * 微信登录特殊处理：需要跳转到已备案域名 (forgeturl.brightguo.com) 完成OAuth流程
      */
     const startAuth = async (provider) => {
         try {
+            // 微信登录：如果在主站(forgeturl.com)，需要先跳转到备案域名
+            if (provider === 'wechat' && isMainDomain()) {
+                window.location.href = `${WECHAT_LOGIN_DOMAIN}/?wechat_login=true`
+                return
+            }
+
             const data = await getAuthUrl(provider)
 
             if (data.auth_url) {
