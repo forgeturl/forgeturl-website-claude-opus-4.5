@@ -10,7 +10,7 @@
         <div class="absolute inset-0 bg-black/40 dark:bg-black/60 backdrop-blur-sm" @click="handleClose"></div>
         
         <!-- Modal Content -->
-        <div class="relative bg-white dark:bg-slate-800 w-full sm:w-[480px] sm:rounded-2xl rounded-t-2xl shadow-2xl dark:shadow-black/30 max-h-[85vh] overflow-hidden animate-slide-up transition-colors duration-300">
+        <div class="relative bg-white dark:bg-slate-800 w-full sm:w-[90vw] sm:max-w-[720px] sm:rounded-2xl rounded-t-2xl shadow-2xl dark:shadow-black/30 max-h-[85vh] overflow-hidden animate-slide-up transition-colors duration-300">
           <!-- Handle bar for mobile -->
           <div class="sm:hidden flex justify-center pt-3 pb-2">
             <div class="w-10 h-1 bg-gray-300 dark:bg-slate-600 rounded-full"></div>
@@ -115,30 +115,37 @@
                 <div
                   v-for="(subLink, index) in editForm.sub_links"
                   :key="index"
-                  class="flex gap-2 items-start"
+                  class="relative group border border-gray-200 dark:border-slate-600 rounded-xl p-3 bg-gray-50/50 dark:bg-slate-700/30"
                 >
-                  <div class="flex-1 space-y-2">
-                    <input
-                      v-model="subLink.sub_title"
-                      type="text"
-                      placeholder="Sub link title"
-                      class="w-full px-3 py-2 border border-gray-200 dark:border-slate-600 rounded-lg text-sm focus:ring-2 focus:ring-gray-900 dark:focus:ring-violet-500 focus:border-transparent outline-none transition-all bg-white dark:bg-slate-700 text-gray-900 dark:text-slate-100 placeholder:text-gray-400 dark:placeholder:text-slate-500"
-                    />
-                    <input
-                      v-model="subLink.sub_url"
-                      type="url"
-                      placeholder="Sub link URL"
-                      class="w-full px-3 py-2 border border-gray-200 dark:border-slate-600 rounded-lg text-sm focus:ring-2 focus:ring-gray-900 dark:focus:ring-violet-500 focus:border-transparent outline-none transition-all bg-white dark:bg-slate-700 text-gray-900 dark:text-slate-100 placeholder:text-gray-400 dark:placeholder:text-slate-500"
-                    />
-                  </div>
                   <button
                     @click="removeSubLink(index)"
-                    class="mt-2 p-2 text-gray-400 dark:text-slate-500 hover:text-red-500 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-colors"
+                    class="absolute -top-2 -right-2 p-1 bg-white dark:bg-slate-700 border border-gray-200 dark:border-slate-600 rounded-full text-gray-400 dark:text-slate-500 hover:text-red-500 dark:hover:text-red-400 hover:border-red-300 dark:hover:border-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 shadow-sm opacity-0 group-hover:opacity-100 transition-all"
+                    title="Remove this sub link"
                   >
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
                     </svg>
                   </button>
+                  <div class="space-y-2">
+                    <div class="flex items-center gap-2">
+                      <label class="text-xs font-medium text-gray-500 dark:text-slate-400 w-8 flex-shrink-0 text-right">Title</label>
+                      <input
+                        v-model="subLink.sub_title"
+                        type="text"
+                        placeholder="Sub link title"
+                        class="flex-1 px-3 py-2 border border-gray-200 dark:border-slate-600 rounded-lg text-sm focus:ring-2 focus:ring-gray-900 dark:focus:ring-violet-500 focus:border-transparent outline-none transition-all bg-white dark:bg-slate-700 text-gray-900 dark:text-slate-100 placeholder:text-gray-400 dark:placeholder:text-slate-500"
+                      />
+                    </div>
+                    <div class="flex items-center gap-2">
+                      <label class="text-xs font-medium text-gray-500 dark:text-slate-400 w-8 flex-shrink-0 text-right">URL</label>
+                      <input
+                        v-model="subLink.sub_url"
+                        type="url"
+                        placeholder="Sub link URL"
+                        class="flex-1 px-3 py-2 border border-gray-200 dark:border-slate-600 rounded-lg text-sm focus:ring-2 focus:ring-gray-900 dark:focus:ring-violet-500 focus:border-transparent outline-none transition-all bg-white dark:bg-slate-700 text-gray-900 dark:text-slate-100 placeholder:text-gray-400 dark:placeholder:text-slate-500"
+                      />
+                    </div>
+                  </div>
                 </div>
                 <button
                   @click="addSubLink"
