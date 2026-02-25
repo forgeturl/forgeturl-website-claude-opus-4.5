@@ -90,7 +90,7 @@
               <button
                 v-if="!showTags"
                 @click="showTags = true"
-                class="px-3 py-2 text-sm text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors flex items-center gap-1"
+                class="px-3 py-2 text-sm text-gray-500 dark:text-slate-400 hover:text-gray-700 dark:hover:text-slate-200 hover:bg-gray-100 dark:hover:bg-slate-700 rounded-lg transition-colors flex items-center gap-1"
               >
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
@@ -100,7 +100,7 @@
               <button
                 v-if="!showSubLinks"
                 @click="expandSubLinks"
-                class="px-3 py-2 text-sm text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors flex items-center gap-1"
+                class="px-3 py-2 text-sm text-gray-500 dark:text-slate-400 hover:text-gray-700 dark:hover:text-slate-200 hover:bg-gray-100 dark:hover:bg-slate-700 rounded-lg transition-colors flex items-center gap-1"
               >
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
@@ -112,10 +112,10 @@
             <!-- Tags (shown when expanded) -->
             <div v-if="showTags">
               <div class="flex items-center justify-between mb-2">
-                <label class="block text-sm font-medium text-gray-700">Tags <span class="text-gray-400 font-normal">(comma separated)</span></label>
+                <label class="block text-sm font-medium text-gray-700 dark:text-slate-300">Tags <span class="text-gray-400 dark:text-slate-500 font-normal">(comma separated)</span></label>
                 <button
                   @click="showTags = false; tagsInput = ''"
-                  class="p-1 text-gray-400 hover:text-gray-600 rounded transition-colors"
+                  class="p-1 text-gray-400 dark:text-slate-500 hover:text-gray-600 dark:hover:text-slate-300 rounded transition-colors"
                 >
                   <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
@@ -126,17 +126,17 @@
                 v-model="tagsInput"
                 type="text"
                 placeholder="tools, dev, design"
-                class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-gray-900 focus:border-transparent outline-none transition-all"
+                class="w-full px-4 py-3 border border-gray-200 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-gray-900 dark:focus:ring-violet-500 focus:border-transparent outline-none transition-all bg-white dark:bg-slate-700 text-gray-900 dark:text-slate-100 placeholder:text-gray-400 dark:placeholder:text-slate-500"
               />
             </div>
 
             <!-- Sub Links (shown when expanded) -->
             <div v-if="showSubLinks">
               <div class="flex items-center justify-between mb-2">
-                <label class="block text-sm font-medium text-gray-700">Sub Links</label>
+                <label class="block text-sm font-medium text-gray-700 dark:text-slate-300">Sub Links</label>
                 <button
                   @click="showSubLinks = false; form.sub_links = []"
-                  class="p-1 text-gray-400 hover:text-gray-600 rounded transition-colors"
+                  class="p-1 text-gray-400 dark:text-slate-500 hover:text-gray-600 dark:hover:text-slate-300 rounded transition-colors"
                 >
                   <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
@@ -154,18 +154,18 @@
                       v-model="subLink.sub_title"
                       type="text"
                       placeholder="Sub link title"
-                      class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-gray-900 focus:border-transparent outline-none transition-all"
+                      class="w-full px-3 py-2 border border-gray-200 dark:border-slate-600 rounded-lg text-sm focus:ring-2 focus:ring-gray-900 dark:focus:ring-violet-500 focus:border-transparent outline-none transition-all bg-white dark:bg-slate-700 text-gray-900 dark:text-slate-100 placeholder:text-gray-400 dark:placeholder:text-slate-500"
                     />
                     <input
                       v-model="subLink.sub_url"
                       type="url"
                       placeholder="Sub link URL"
-                      class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-gray-900 focus:border-transparent outline-none transition-all"
+                      class="w-full px-3 py-2 border border-gray-200 dark:border-slate-600 rounded-lg text-sm focus:ring-2 focus:ring-gray-900 dark:focus:ring-violet-500 focus:border-transparent outline-none transition-all bg-white dark:bg-slate-700 text-gray-900 dark:text-slate-100 placeholder:text-gray-400 dark:placeholder:text-slate-500"
                     />
                   </div>
                   <button
                     @click="removeSubLink(index)"
-                    class="mt-2 p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                    class="mt-2 p-2 text-gray-400 dark:text-slate-500 hover:text-red-500 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-colors"
                   >
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
@@ -174,7 +174,7 @@
                 </div>
                 <button
                   @click="addSubLink"
-                  class="w-full py-3 border-2 border-dashed border-gray-200 rounded-xl text-gray-400 hover:border-gray-300 hover:text-gray-500 transition-colors text-sm"
+                  class="w-full py-3 border-2 border-dashed border-gray-200 dark:border-slate-600 rounded-xl text-gray-400 dark:text-slate-500 hover:border-gray-300 dark:hover:border-slate-500 hover:text-gray-500 dark:hover:text-slate-400 transition-colors text-sm"
                 >
                   + Add sub link
                 </button>
@@ -183,7 +183,7 @@
 
             <!-- Collection Selection -->
             <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2">Add to Collection</label>
+              <label class="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-2">Add to Collection</label>
               <div class="grid grid-cols-3 gap-2">
                 <!-- Existing Collections -->
                 <div 
@@ -192,14 +192,14 @@
                   @click="selectCollection(index)"
                   class="flex flex-col items-center gap-1.5 p-3 border rounded-xl cursor-pointer transition-all text-center"
                   :class="selectedCollectionIndex === index 
-                    ? 'border-gray-900 bg-gray-50' 
-                    : 'border-gray-200 hover:border-gray-300'"
+                    ? 'border-gray-900 dark:border-violet-500 bg-gray-50 dark:bg-slate-700' 
+                    : 'border-gray-200 dark:border-slate-600 hover:border-gray-300 dark:hover:border-slate-500'"
                 >
                   <div 
                     class="w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all flex-shrink-0"
                     :class="selectedCollectionIndex === index 
-                      ? 'border-gray-900 bg-gray-900' 
-                      : 'border-gray-300'"
+                      ? 'border-gray-900 dark:border-violet-500 bg-gray-900 dark:bg-violet-600' 
+                      : 'border-gray-300 dark:border-slate-500'"
                   >
                     <svg 
                       v-if="selectedCollectionIndex === index" 
@@ -211,7 +211,7 @@
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7" />
                     </svg>
                   </div>
-                  <span class="text-gray-700 text-xs leading-tight line-clamp-2">{{ collection.title || 'Unnamed' }}</span>
+                  <span class="text-gray-700 dark:text-slate-300 text-xs leading-tight line-clamp-2">{{ collection.title || 'Unnamed' }}</span>
                 </div>
 
                 <!-- Create New Collection Option -->
@@ -219,14 +219,14 @@
                   @click="selectNewCollection"
                   class="flex flex-col items-center gap-1.5 p-3 border rounded-xl cursor-pointer transition-all text-center"
                   :class="isCreateNew 
-                    ? 'border-gray-900 bg-gray-50' 
-                    : 'border-gray-200 hover:border-gray-300'"
+                    ? 'border-gray-900 dark:border-violet-500 bg-gray-50 dark:bg-slate-700' 
+                    : 'border-gray-200 dark:border-slate-600 hover:border-gray-300 dark:hover:border-slate-500'"
                 >
                   <div 
                     class="w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all flex-shrink-0"
                     :class="isCreateNew 
-                      ? 'border-gray-900 bg-gray-900' 
-                      : 'border-gray-300'"
+                      ? 'border-gray-900 dark:border-violet-500 bg-gray-900 dark:bg-violet-600' 
+                      : 'border-gray-300 dark:border-slate-500'"
                   >
                     <svg 
                       v-if="isCreateNew" 
@@ -238,7 +238,7 @@
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7" />
                     </svg>
                   </div>
-                  <span class="text-gray-700 text-xs leading-tight">+ New Folder</span>
+                  <span class="text-gray-700 dark:text-slate-300 text-xs leading-tight">+ New Folder</span>
                 </div>
               </div>
 
@@ -249,7 +249,7 @@
                   v-model="newCollectionName"
                   type="text"
                   placeholder="Enter new folder name"
-                  class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-gray-900 focus:border-transparent outline-none transition-all"
+                  class="w-full px-4 py-3 border border-gray-200 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-gray-900 dark:focus:ring-violet-500 focus:border-transparent outline-none transition-all bg-white dark:bg-slate-700 text-gray-900 dark:text-slate-100 placeholder:text-gray-400 dark:placeholder:text-slate-500"
                 />
               </div>
             </div>
@@ -259,7 +259,7 @@
           <div v-show="activeTab === 'batch'" ref="batchScrollContainerRef" class="px-6 py-5 space-y-5 overflow-y-auto max-h-[60vh]">
             <!-- Collection Selection (First) -->
             <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2">Add to Collection</label>
+              <label class="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-2">Add to Collection</label>
               <div class="grid grid-cols-3 gap-2">
                 <!-- Existing Collections -->
                 <div 
@@ -268,14 +268,14 @@
                   @click="selectBatchCollection(index)"
                   class="flex flex-col items-center gap-1.5 p-3 border rounded-xl cursor-pointer transition-all text-center"
                   :class="batchSelectedCollectionIndex === index 
-                    ? 'border-gray-900 bg-gray-50' 
-                    : 'border-gray-200 hover:border-gray-300'"
+                    ? 'border-gray-900 dark:border-violet-500 bg-gray-50 dark:bg-slate-700' 
+                    : 'border-gray-200 dark:border-slate-600 hover:border-gray-300 dark:hover:border-slate-500'"
                 >
                   <div 
                     class="w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all flex-shrink-0"
                     :class="batchSelectedCollectionIndex === index 
-                      ? 'border-gray-900 bg-gray-900' 
-                      : 'border-gray-300'"
+                      ? 'border-gray-900 dark:border-violet-500 bg-gray-900 dark:bg-violet-600' 
+                      : 'border-gray-300 dark:border-slate-500'"
                   >
                     <svg 
                       v-if="batchSelectedCollectionIndex === index" 
@@ -287,7 +287,7 @@
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7" />
                     </svg>
                   </div>
-                  <span class="text-gray-700 text-xs leading-tight line-clamp-2">{{ collection.title || 'Unnamed' }}</span>
+                  <span class="text-gray-700 dark:text-slate-300 text-xs leading-tight line-clamp-2">{{ collection.title || 'Unnamed' }}</span>
                 </div>
 
                 <!-- Create New Collection Option -->
@@ -295,14 +295,14 @@
                   @click="selectBatchNewCollection"
                   class="flex flex-col items-center gap-1.5 p-3 border rounded-xl cursor-pointer transition-all text-center"
                   :class="isBatchCreateNew 
-                    ? 'border-gray-900 bg-gray-50' 
-                    : 'border-gray-200 hover:border-gray-300'"
+                    ? 'border-gray-900 dark:border-violet-500 bg-gray-50 dark:bg-slate-700' 
+                    : 'border-gray-200 dark:border-slate-600 hover:border-gray-300 dark:hover:border-slate-500'"
                 >
                   <div 
                     class="w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all flex-shrink-0"
                     :class="isBatchCreateNew 
-                      ? 'border-gray-900 bg-gray-900' 
-                      : 'border-gray-300'"
+                      ? 'border-gray-900 dark:border-violet-500 bg-gray-900 dark:bg-violet-600' 
+                      : 'border-gray-300 dark:border-slate-500'"
                   >
                     <svg 
                       v-if="isBatchCreateNew" 
@@ -314,7 +314,7 @@
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7" />
                     </svg>
                   </div>
-                  <span class="text-gray-700 text-xs leading-tight">+ New Folder</span>
+                  <span class="text-gray-700 dark:text-slate-300 text-xs leading-tight">+ New Folder</span>
                 </div>
               </div>
 
@@ -325,18 +325,18 @@
                   v-model="batchNewCollectionName"
                   type="text"
                   placeholder="Enter new folder name"
-                  class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-gray-900 focus:border-transparent outline-none transition-all"
+                  class="w-full px-4 py-3 border border-gray-200 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-gray-900 dark:focus:ring-violet-500 focus:border-transparent outline-none transition-all bg-white dark:bg-slate-700 text-gray-900 dark:text-slate-100 placeholder:text-gray-400 dark:placeholder:text-slate-500"
                 />
               </div>
             </div>
 
             <!-- Batch Links Input -->
             <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2">Paste Links</label>
+              <label class="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-2">Paste Links</label>
               <textarea
                 v-model="batchLinksInput"
                 placeholder="Paste multiple links here, separated by spaces or new lines...&#10;&#10;Example:&#10;https://google.com&#10;https://github.com&#10;https://twitter.com"
-                class="w-full h-32 px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-gray-900 focus:border-transparent outline-none transition-all resize-none text-sm"
+                class="w-full h-32 px-4 py-3 border border-gray-200 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-gray-900 dark:focus:ring-violet-500 focus:border-transparent outline-none transition-all resize-none text-sm bg-white dark:bg-slate-700 text-gray-900 dark:text-slate-100 placeholder:text-gray-400 dark:placeholder:text-slate-500"
                 @input="parseBatchLinks"
               ></textarea>
             </div>
@@ -344,13 +344,13 @@
             <!-- Parsed Links Preview -->
             <div v-if="parsedLinks.length > 0">
               <div class="flex items-center justify-between mb-2">
-                <label class="block text-sm font-medium text-gray-700">
+                <label class="block text-sm font-medium text-gray-700 dark:text-slate-300">
                   Parsed Links 
-                  <span class="text-gray-400 font-normal">({{ parsedLinks.length }} links)</span>
+                  <span class="text-gray-400 dark:text-slate-500 font-normal">({{ parsedLinks.length }} links)</span>
                 </label>
                 <button
                   @click="clearBatchLinks"
-                  class="px-2 py-1 text-xs text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded transition-colors"
+                  class="px-2 py-1 text-xs text-gray-500 dark:text-slate-400 hover:text-gray-700 dark:hover:text-slate-200 hover:bg-gray-100 dark:hover:bg-slate-700 rounded transition-colors"
                 >
                   Clear All
                 </button>
@@ -359,20 +359,20 @@
                 <div
                   v-for="(link, index) in parsedLinks"
                   :key="index"
-                  class="flex items-center gap-3 p-3 bg-gray-50 rounded-lg group"
+                  class="flex items-center gap-3 p-3 bg-gray-50 dark:bg-slate-700 rounded-lg group"
                 >
                   <div class="flex-1 min-w-0">
                     <input
                       v-model="link.title"
                       type="text"
-                      class="w-full text-sm font-medium text-gray-700 bg-transparent border-none outline-none focus:ring-0 p-0"
+                      class="w-full text-sm font-medium text-gray-700 dark:text-slate-200 bg-transparent border-none outline-none focus:ring-0 p-0"
                       placeholder="Link title"
                     />
-                    <p class="text-xs text-gray-400 truncate mt-0.5">{{ link.url }}</p>
+                    <p class="text-xs text-gray-400 dark:text-slate-500 truncate mt-0.5">{{ link.url }}</p>
                   </div>
                   <button
                     @click="removeParsedLink(index)"
-                    class="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded transition-colors opacity-0 group-hover:opacity-100"
+                    class="p-1.5 text-gray-400 dark:text-slate-500 hover:text-red-500 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 rounded transition-colors opacity-0 group-hover:opacity-100"
                   >
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
@@ -387,14 +387,14 @@
           <div v-show="activeTab === 'import'" ref="importScrollContainerRef" class="px-6 py-5 space-y-5 overflow-y-auto max-h-[60vh]">
             <!-- File Upload -->
             <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2">Select Chrome Bookmarks File</label>
+              <label class="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-2">Select Chrome Bookmarks File</label>
               <div 
-                class="border-2 border-dashed border-gray-200 rounded-xl p-6 text-center hover:border-gray-300 transition-colors cursor-pointer"
+                class="border-2 border-dashed border-gray-200 dark:border-slate-600 rounded-xl p-6 text-center hover:border-gray-300 dark:hover:border-slate-500 transition-colors cursor-pointer"
                 @click="triggerFileInput"
                 @dragover.prevent="handleDragOver"
                 @dragleave.prevent="handleDragLeave"
                 @drop.prevent="handleFileDrop"
-                :class="{ 'border-blue-400 bg-blue-50': isDragOver }"
+                :class="{ 'border-blue-400 bg-blue-50 dark:border-blue-500 dark:bg-blue-900/20': isDragOver }"
               >
                 <input
                   ref="fileInputRef"
@@ -403,15 +403,15 @@
                   class="hidden"
                   @change="handleFileSelect"
                 />
-                <svg class="w-10 h-10 mx-auto text-gray-400 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg class="w-10 h-10 mx-auto text-gray-400 dark:text-slate-500 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
                 </svg>
-                <p class="text-sm text-gray-600 mb-1">
-                  <span class="font-medium text-gray-900">Click to upload</span> or drag and drop
+                <p class="text-sm text-gray-600 dark:text-slate-400 mb-1">
+                  <span class="font-medium text-gray-900 dark:text-slate-200">Click to upload</span> or drag and drop
                 </p>
-                <p class="text-xs text-gray-400">Chrome bookmarks HTML file</p>
+                <p class="text-xs text-gray-400 dark:text-slate-500">Chrome bookmarks HTML file</p>
               </div>
-              <p v-if="importFileName" class="mt-2 text-sm text-gray-600 flex items-center gap-2">
+              <p v-if="importFileName" class="mt-2 text-sm text-gray-600 dark:text-slate-400 flex items-center gap-2">
                 <svg class="w-4 h-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
                 </svg>
@@ -422,13 +422,13 @@
             <!-- Import Preview -->
             <div v-if="importFolders.length > 0">
               <div class="flex items-center justify-between mb-2">
-                <label class="block text-sm font-medium text-gray-700">
+                <label class="block text-sm font-medium text-gray-700 dark:text-slate-300">
                   Preview
-                  <span class="text-gray-400 font-normal">({{ totalImportLinks }} links in {{ importFolders.length }} folders)</span>
+                  <span class="text-gray-400 dark:text-slate-500 font-normal">({{ totalImportLinks }} links in {{ importFolders.length }} folders)</span>
                 </label>
                 <button
                   @click="clearImport"
-                  class="px-2 py-1 text-xs text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded transition-colors"
+                  class="px-2 py-1 text-xs text-gray-500 dark:text-slate-400 hover:text-gray-700 dark:hover:text-slate-200 hover:bg-gray-100 dark:hover:bg-slate-700 rounded transition-colors"
                 >
                   Clear
                 </button>
@@ -437,15 +437,15 @@
                 <div
                   v-for="(folder, folderIndex) in importFolders"
                   :key="folderIndex"
-                  class="border border-gray-200 rounded-lg overflow-hidden"
+                  class="border border-gray-200 dark:border-slate-600 rounded-lg overflow-hidden"
                 >
                   <div 
-                    class="flex items-center justify-between px-3 py-2 bg-gray-50 cursor-pointer"
+                    class="flex items-center justify-between px-3 py-2 bg-gray-50 dark:bg-slate-700 cursor-pointer"
                     @click="toggleFolderExpand(folderIndex)"
                   >
                     <div class="flex items-center gap-2">
                       <svg 
-                        class="w-4 h-4 text-gray-400 transition-transform"
+                        class="w-4 h-4 text-gray-400 dark:text-slate-500 transition-transform"
                         :class="{ 'rotate-90': expandedFolders.includes(folderIndex) }"
                         fill="none" 
                         stroke="currentColor" 
@@ -456,22 +456,22 @@
                       <svg class="w-4 h-4 text-yellow-500" fill="currentColor" viewBox="0 0 20 20">
                         <path d="M2 6a2 2 0 012-2h5l2 2h5a2 2 0 012 2v6a2 2 0 01-2 2H4a2 2 0 01-2-2V6z" />
                       </svg>
-                      <span class="text-sm font-medium text-gray-700">{{ folder.title }}</span>
+                      <span class="text-sm font-medium text-gray-700 dark:text-slate-200">{{ folder.title }}</span>
                     </div>
-                    <span class="text-xs text-gray-400">{{ folder.links.length }} links</span>
+                    <span class="text-xs text-gray-400 dark:text-slate-500">{{ folder.links.length }} links</span>
                   </div>
-                  <div v-show="expandedFolders.includes(folderIndex)" class="px-3 py-2 space-y-1">
+                  <div v-show="expandedFolders.includes(folderIndex)" class="px-3 py-2 space-y-1 dark:bg-slate-800">
                     <div
                       v-for="(link, linkIndex) in folder.links.slice(0, 10)"
                       :key="linkIndex"
-                      class="flex items-center gap-2 text-xs text-gray-600 py-1"
+                      class="flex items-center gap-2 text-xs text-gray-600 dark:text-slate-400 py-1"
                     >
-                      <svg class="w-3 h-3 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <svg class="w-3 h-3 text-gray-400 dark:text-slate-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
                       </svg>
                       <span class="truncate">{{ link.title }}</span>
                     </div>
-                    <div v-if="folder.links.length > 10" class="text-xs text-gray-400 py-1 pl-5">
+                    <div v-if="folder.links.length > 10" class="text-xs text-gray-400 dark:text-slate-500 py-1 pl-5">
                       ... and {{ folder.links.length - 10 }} more links
                     </div>
                   </div>
@@ -480,7 +480,7 @@
             </div>
 
             <!-- Import Info -->
-            <div v-if="importFolders.length === 0" class="text-center py-4 text-gray-400 text-sm">
+            <div v-if="importFolders.length === 0" class="text-center py-4 text-gray-400 dark:text-slate-500 text-sm">
               <p>Export your Chrome bookmarks:</p>
               <p class="text-xs mt-1">Chrome → Bookmarks → Bookmark Manager → ⋮ → Export bookmarks</p>
             </div>
