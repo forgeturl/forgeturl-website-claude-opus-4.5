@@ -4,7 +4,7 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { storage } from '@/utils/storage'
-import { STORAGE_KEYS } from '@/utils/config'
+import { STORAGE_KEYS, MAIN_DOMAIN, isWechatLoginDomain } from '@/utils/config'
 
 // 路由配置
 const routes = [
@@ -115,12 +115,18 @@ router.beforeEach((to, from, next) => {
         }
     }
 
+    // 微信登录域名(forgeturl.brightguo.com)仅用于微信OAuth中转，
+    // 需要认证的路由直接跳转回主站(forgeturl.com)
+    if (to.meta.requiresAuth && isWechatLoginDomain()) {
+        window.location.href = `${MAIN_DOMAIN}${to.fullPath}`
+        return
+    }
+
     // 检查是否需要登录
     if (to.meta.requiresAuth) {
         const authStore = useAuthStore()
 
         if (!authStore.isLoggedIn) {
-            // 未登录，跳转到首页（首页包含登录功能）
             next({
                 path: '/',
                 query: { redirect: to.fullPath }
