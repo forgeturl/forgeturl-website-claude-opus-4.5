@@ -749,6 +749,7 @@ import { useAuth } from '@/composables/useAuth'
 import { useTheme } from '@/composables/useTheme'
 import { useAuthStore } from '@/stores/auth'
 import { getUserCount } from '@/api/auth'
+import { isWechatLoginDomain } from '@/utils/config'
 
 const { startAuth } = useAuth()
 const { isDark, toggleTheme } = useTheme()
@@ -814,8 +815,12 @@ const handleClickOutside = (event) => {
 
 onMounted(() => {
   document.addEventListener('click', handleClickOutside)
-  // Fetch user count on mount
   fetchUserCount()
+
+  const urlParams = new URLSearchParams(window.location.search)
+  if (urlParams.get('wechat_login') === 'true' && isWechatLoginDomain()) {
+    handleLogin('wechat')
+  }
 })
 
 onUnmounted(() => {
