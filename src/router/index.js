@@ -94,7 +94,7 @@ router.beforeEach((to, from, next) => {
     if (to.query.wechat_token && to.query.wechat_user) {
         try {
             const token = decodeURIComponent(to.query.wechat_token)
-            const userInfo = JSON.parse(atob(decodeURIComponent(to.query.wechat_user)))
+            const userInfo = JSON.parse(decodeURIComponent(atob(decodeURIComponent(to.query.wechat_user))))
 
             // 保存到localStorage
             storage.set(STORAGE_KEYS.TOKEN, token)

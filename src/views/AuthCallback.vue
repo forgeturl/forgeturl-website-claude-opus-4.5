@@ -59,7 +59,7 @@ onMounted(async () => {
     // 需要携带token和用户信息跳转回主站(forgeturl.com)
     if (provider === 'wechat' && isWechatLoginDomain()) {
       const token = storage.get(STORAGE_KEYS.TOKEN)
-      const userEncoded = encodeURIComponent(btoa(JSON.stringify(userInfo)))
+      const userEncoded = encodeURIComponent(btoa(encodeURIComponent(JSON.stringify(userInfo))))
       const tokenEncoded = encodeURIComponent(token)
       window.location.href = `${MAIN_DOMAIN}/?wechat_token=${tokenEncoded}&wechat_user=${userEncoded}`
       return
