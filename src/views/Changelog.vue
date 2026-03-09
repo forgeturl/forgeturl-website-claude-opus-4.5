@@ -90,7 +90,7 @@
                     </div>
                   </a>
                   <a
-                    href="https://github.com/forgeturl/forgeturl-website"
+                    href="https://github.com/forgeturl/forgeturl-website-claude-opus-4.5"
                     target="_blank"
                     rel="noopener noreferrer"
                     class="flex items-center gap-3 px-4 py-3 text-gray-700 dark:text-slate-200 hover:bg-gray-50 dark:hover:bg-slate-700 rounded-lg transition-colors duration-200"
@@ -102,7 +102,7 @@
                     </div>
                     <div class="text-left">
                       <div class="font-medium">Frontend</div>
-                      <div class="text-xs text-gray-500 dark:text-slate-400">forgeturl/forgeturl-website</div>
+                      <div class="text-xs text-gray-500 dark:text-slate-400">forgeturl/forgeturl-website-claude-opus-4.5</div>
                     </div>
                   </a>
                 </div>
@@ -156,6 +156,26 @@
 
         <!-- Changelog Entries -->
         <div class="space-y-6">
+          <!-- Version 0.1.2 -->
+          <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-lg dark:shadow-black/30 border border-gray-100 dark:border-slate-700 overflow-hidden">
+            <div class="px-6 py-4 bg-gradient-to-r from-violet-50 to-fuchsia-50 dark:from-violet-900/20 dark:to-fuchsia-900/20 border-b border-gray-100 dark:border-slate-700">
+              <div class="flex items-center justify-between">
+                <h2 class="text-xl font-bold text-gray-900 dark:text-slate-100">v0.1.2</h2>
+                <span class="px-3 py-1 text-sm font-medium bg-violet-100 dark:bg-violet-900/50 text-violet-600 dark:text-violet-400 rounded-full">
+                  2026-03-09
+                </span>
+              </div>
+            </div>
+            <div class="p-6">
+              <ul class="text-gray-600 dark:text-slate-300 space-y-2">
+                <li class="flex items-start gap-2">
+                  <span class="text-green-500 mt-0.5">+</span>
+                  WeChat QR code login support (微信扫码登录)
+                </li>
+              </ul>
+            </div>
+          </div>
+
           <!-- Version 0.1.1 -->
           <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-lg dark:shadow-black/30 border border-gray-100 dark:border-slate-700 overflow-hidden">
             <div class="px-6 py-4 bg-gradient-to-r from-violet-50 to-fuchsia-50 dark:from-violet-900/20 dark:to-fuchsia-900/20 border-b border-gray-100 dark:border-slate-700">
