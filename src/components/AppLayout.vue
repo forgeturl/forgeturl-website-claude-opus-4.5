@@ -109,7 +109,7 @@
             <div v-else class="w-8 h-8 rounded-full bg-gray-200 dark:bg-slate-600 flex items-center justify-center text-gray-600 dark:text-slate-300 text-sm font-medium">
               {{ getInitial(user?.displayName) }}
             </div>
-            <span class="text-sm text-gray-600 dark:text-slate-400 truncate max-w-[140px]">{{ user?.email }}</span>
+            <span class="text-sm text-gray-600 dark:text-slate-400 truncate max-w-[140px]">{{ userDisplayText }}</span>
           </div>
           
           <div class="flex items-center gap-1">
@@ -288,7 +288,7 @@
             <div v-else class="w-8 h-8 rounded-full bg-gray-200 dark:bg-slate-600 flex items-center justify-center text-gray-600 dark:text-slate-300 text-sm font-medium">
               {{ getInitial(user?.displayName) }}
             </div>
-            <span class="text-sm text-gray-600 dark:text-slate-400 truncate flex-1">{{ user?.email }}</span>
+            <span class="text-sm text-gray-600 dark:text-slate-400 truncate flex-1">{{ userDisplayText }}</span>
           </div>
           
           <!-- Theme Toggle & Logout Row -->
@@ -328,9 +328,9 @@
               :src="user.avatar"
               :alt="user.displayName"
               class="w-8 h-8 rounded-full object-cover"
-              :title="user?.email"
+              :title="userDisplayText"
             />
-            <div v-else class="w-8 h-8 rounded-full bg-gray-200 dark:bg-slate-600 flex items-center justify-center text-gray-600 dark:text-slate-300 text-sm font-medium" :title="user?.email">
+            <div v-else class="w-8 h-8 rounded-full bg-gray-200 dark:bg-slate-600 flex items-center justify-center text-gray-600 dark:text-slate-300 text-sm font-medium" :title="userDisplayText">
               {{ getInitial(user?.displayName) }}
             </div>
             
@@ -385,10 +385,10 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import { useTheme } from '@/composables/useTheme'
 
-defineProps({
+const props = defineProps({
   pages: {
     type: Array,
     default: () => []
@@ -412,6 +412,12 @@ const mobileMenuOpen = ref(false)
 
 // Sidebar collapse state (desktop only)
 const sidebarCollapsed = ref(false)
+
+const userDisplayText = computed(() => {
+  const u = props.user
+  if (!u) return ''
+  return u.displayName || u.display_name || u.username || u.email || `uid:${u.uid}`
+})
 
 const getInitial = (name) => {
   return name ? name.charAt(0).toUpperCase() : 'U'

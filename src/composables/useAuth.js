@@ -62,6 +62,9 @@ export function useAuth() {
                 // 保存到store
                 authStore.login(userInfo, token)
 
+                // 从后端刷新完整用户信息
+                await authStore.refreshUser().catch(() => {})
+
                 // 清除X-Forget-Cookie
                 sessionStorage.remove(STORAGE_KEYS.FORGET_COOKIE)
 

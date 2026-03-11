@@ -15,7 +15,7 @@ export const useAuthStore = defineStore('auth', () => {
     // 计算属性
     const isLoggedIn = computed(() => !!token.value && !!user.value)
 
-    // 初始化：从localStorage恢复状态
+    // 初始化：从localStorage恢复状态，并从后端刷新用户信息
     const init = () => {
         const savedToken = storage.get(STORAGE_KEYS.TOKEN)
         const savedUser = storage.get(STORAGE_KEYS.USER_INFO)
@@ -23,6 +23,7 @@ export const useAuthStore = defineStore('auth', () => {
         if (savedToken && savedUser) {
             token.value = savedToken
             user.value = savedUser
+            refreshUser().catch(() => {})
         }
     }
 
@@ -57,12 +58,19 @@ export const useAuthStore = defineStore('auth', () => {
         storage.set(STORAGE_KEYS.USER_INFO, user.value)
     }
 
-    // 刷新用户信息
+    // 通过后端 /space/getUserInfo 刷新用户信息
     const refreshUser = async () => {
         if (!user.value?.uid) return
 
         try {
-            const userInfo = await getUserInfo(user.value.uid)
+            const data = await getUserInfo(user.value.uid)
+            const userInfo = {
+                uid: data.uid,
+                username: data.username,
+                displayName: data.display_name,
+                avatar: data.avatar,
+                email: data.email,
+            }
             updateUser(userInfo)
             return userInfo
         } catch (error) {
