@@ -17,7 +17,7 @@
           >
             <!-- Header -->
             <div class="flex items-center justify-between px-6 py-5 border-b border-gray-100 dark:border-slate-700">
-              <h3 class="text-xl font-semibold text-gray-900 dark:text-slate-100">Create Page</h3>
+              <h3 class="text-xl font-semibold text-gray-900 dark:text-slate-100">{{ t('modal.createPage') }}</h3>
               <button
                 @click="close"
                 class="p-1.5 hover:bg-gray-100 dark:hover:bg-slate-700 rounded-lg transition-colors text-gray-400 dark:text-slate-500 hover:text-gray-600 dark:hover:text-slate-300"
@@ -33,12 +33,12 @@
               <!-- Title -->
               <div>
                 <label class="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1.5">
-                  Title <span class="text-red-500">*</span>
+                  {{ t('modal.title') }} <span class="text-red-500">*</span>
                 </label>
                 <input
                   v-model="form.title"
                   type="text"
-                  placeholder="Enter page title"
+                  :placeholder="t('modal.enterPageTitle')"
                   required
                   class="input"
                 />
@@ -47,11 +47,11 @@
               <!-- Brief -->
               <div>
                 <label class="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1.5">
-                  Description
+                  {{ t('modal.description') }}
                 </label>
                 <textarea
                   v-model="form.brief"
-                  placeholder="Enter page description (optional)"
+                  :placeholder="t('modal.enterPageDesc')"
                   rows="2"
                   class="textarea"
                 />
@@ -59,18 +59,18 @@
 
               <!-- Initial Link (Optional) -->
               <div class="pt-4 border-t border-gray-100 dark:border-slate-700">
-                <h4 class="text-sm font-medium text-gray-700 dark:text-slate-300 mb-3">Add first link (optional)</h4>
+                <h4 class="text-sm font-medium text-gray-700 dark:text-slate-300 mb-3">{{ t('modal.addFirstLink') }}</h4>
                 <div class="space-y-3">
                   <input
                     v-model="form.link.title"
                     type="text"
-                    placeholder="Link title"
+                    :placeholder="t('modal.linkTitle')"
                     class="input"
                   />
                   <input
                     v-model="form.link.url"
                     type="url"
-                    placeholder="https://..."
+                    :placeholder="t('modal.linkUrl')"
                     class="input"
                   />
                 </div>
@@ -89,14 +89,14 @@
                 @click="close"
                 class="btn btn-secondary"
               >
-                Cancel
+                {{ t('modal.cancel') }}
               </button>
               <button
                 @click="handleSubmit"
                 :disabled="creating || !form.title"
                 class="btn btn-primary"
               >
-                {{ creating ? 'Creating...' : 'Create' }}
+                {{ creating ? t('modal.creating') : t('modal.create') }}
               </button>
             </div>
           </div>
@@ -108,6 +108,7 @@
 
 <script setup>
 import { ref, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { usePageStore } from '@/stores/page'
 
 const props = defineProps({
@@ -119,6 +120,7 @@ const props = defineProps({
 
 const emit = defineEmits(['update:show', 'created'])
 
+const { t } = useI18n()
 const pageStore = usePageStore()
 
 const form = ref({
@@ -191,7 +193,7 @@ const handleSubmit = async () => {
     close()
   } catch (err) {
     console.error('Create page error:', err)
-    error.value = err.message || 'Creation failed, please try again'
+    error.value = err.message || t('modal.creationFailed')
   } finally {
     creating.value = false
   }

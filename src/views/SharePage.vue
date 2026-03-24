@@ -38,7 +38,7 @@
                     :style="{ width: autoSave.saveProgress.value + '%' }"
                   ></div>
                 </div>
-                <span class="text-xs text-gray-500">Saving...</span>
+                <span class="text-xs text-gray-500">{{ t('page.saving') }}</span>
               </div>
               
               <!-- Saved message -->
@@ -46,7 +46,7 @@
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
                 </svg>
-                <span class="text-xs font-medium">Saved</span>
+                <span class="text-xs font-medium">{{ t('page.saved') }}</span>
               </div>
               
               <!-- Error message -->
@@ -66,7 +66,7 @@
                 'bg-gray-100 text-gray-600': pageConf.read_only
               }"
             >
-              {{ pageConf.read_only ? 'Read-only' : pageConf.can_edit ? 'Editable' : 'View' }}
+              {{ pageConf.read_only ? t('page.readOnly') : pageConf.can_edit ? t('page.editable') : t('page.view') }}
             </span>
           </div>
         </div>
@@ -87,9 +87,9 @@
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
           </svg>
         </div>
-        <h3 class="text-lg font-medium text-gray-900 mb-2">Login Required</h3>
-        <p class="text-gray-500 mb-6">Please login to access this page</p>
-        <button @click="goToLogin" class="btn btn-primary">Login</button>
+        <h3 class="text-lg font-medium text-gray-900 mb-2">{{ t('auth.loginRequired') }}</h3>
+        <p class="text-gray-500 mb-6">{{ t('auth.pleaseLogin') }}</p>
+        <button @click="goToLogin" class="btn btn-primary">{{ t('auth.login') }}</button>
       </div>
 
       <!-- Error -->
@@ -99,9 +99,9 @@
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M6 18L18 6M6 6l12 12" />
           </svg>
         </div>
-        <h3 class="text-lg font-medium text-gray-900 mb-2">Load Failed</h3>
+        <h3 class="text-lg font-medium text-gray-900 mb-2">{{ t('page.loadFailed') }}</h3>
         <p class="text-gray-500 mb-6">{{ error }}</p>
-        <button @click="loadPage" class="btn btn-secondary">Retry</button>
+        <button @click="loadPage" class="btn btn-secondary">{{ t('page.retry') }}</button>
       </div>
 
       <!-- Page Content -->
@@ -122,7 +122,7 @@
               ref="searchInputRef"
               v-model="searchQuery"
               type="text"
-              placeholder="Search title, URL, tags, sub links..."
+              :placeholder="t('page.searchPlaceholder')"
               class="w-full pl-12 pr-10 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent transition-all text-gray-900 placeholder-gray-400"
             />
             <button
@@ -136,7 +136,7 @@
             </button>
           </div>
           <p v-if="searchQuery && filteredCollectionsCount === 0" class="text-center text-gray-500 mt-4">
-            No matching links found
+            {{ t('page.noMatchingLinks') }}
           </p>
         </div>
 
@@ -180,7 +180,7 @@
 
         <!-- Page Info -->
         <div class="mt-8 pt-6 border-t border-gray-200 text-sm text-gray-400">
-          <p>Updated: {{ formatDate(page.update_time) }}</p>
+          <p>{{ t('page.updated') }} {{ formatDate(page.update_time) }}</p>
         </div>
       </div>
     </main>
@@ -190,12 +190,14 @@
 <script setup>
 import { ref, computed, onMounted, onUnmounted, watch, nextTick } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import { getPage, updatePage } from '@/api/space'
 import { useAutoSave } from '@/composables/useAutoSave'
 import LinkCollection from '@/components/LinkCollection.vue'
 
 const route = useRoute()
 const router = useRouter()
+const { t } = useI18n()
 
 const page = ref(null)
 const loading = ref(false)
@@ -314,7 +316,7 @@ const goToLogin = () => {
 const loadPage = async () => {
   const pageId = route.params.pageId
   if (!pageId) {
-    error.value = 'Page ID does not exist'
+    error.value = t('page.pageIdNotExist')
     return
   }
 
@@ -329,9 +331,9 @@ const loadPage = async () => {
     console.error('Load page error:', err)
     if (err.code === 40001) {
       needLogin.value = true
-      error.value = 'Please login to access this page'
+      error.value = t('auth.pleaseLogin')
     } else {
-      error.value = err.message || 'Failed to load page, you may not have access'
+      error.value = err.message || t('page.noAccessHint')
     }
   } finally {
     loading.value = false
@@ -362,7 +364,7 @@ const updateLink = (collectionIndex, linkIndex, link) => {
 const copyCollection = (index) => {
   const original = localCollections.value[index]
   const copy = JSON.parse(JSON.stringify(original))
-  copy.title = original.title ? `${original.title} (Copy)` : 'Copy'
+  copy.title = original.title ? `${original.title} ${t('collection.copy')}` : t('collection.copy')
   
   localCollections.value.splice(index + 1, 0, copy)
   autoSave.markDirty()

@@ -18,7 +18,7 @@
 
           <!-- Header -->
           <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100 dark:border-slate-700">
-            <h3 class="text-lg font-semibold text-gray-900 dark:text-slate-100">Edit Link</h3>
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-slate-100">{{ t('modal.editLink') }}</h3>
             <button
               @click="handleClose"
               class="p-2 -mr-2 text-gray-400 dark:text-slate-500 hover:text-gray-600 dark:hover:text-slate-300 hover:bg-gray-100 dark:hover:bg-slate-700 rounded-lg transition-colors"
@@ -33,22 +33,22 @@
           <div class="px-6 py-5 space-y-5 overflow-y-auto max-h-[60vh]">
             <!-- Title -->
             <div class="flex items-center gap-4">
-              <label class="text-sm font-medium text-gray-700 dark:text-slate-300 w-12 flex-shrink-0">Title</label>
+              <label class="text-sm font-medium text-gray-700 dark:text-slate-300 w-12 flex-shrink-0">{{ t('modal.title') }}</label>
               <input
                 v-model="editForm.title"
                 type="text"
-                placeholder="Link title"
+                :placeholder="t('modal.linkTitle')"
                 class="flex-1 px-4 py-2.5 border border-gray-200 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-gray-900 dark:focus:ring-violet-500 focus:border-transparent outline-none transition-all bg-white dark:bg-slate-700 text-gray-900 dark:text-slate-100 placeholder:text-gray-400 dark:placeholder:text-slate-500"
               />
             </div>
 
             <!-- URL -->
             <div class="flex items-center gap-4">
-              <label class="text-sm font-medium text-gray-700 dark:text-slate-300 w-12 flex-shrink-0">URL</label>
+              <label class="text-sm font-medium text-gray-700 dark:text-slate-300 w-12 flex-shrink-0">{{ t('modal.url') }}</label>
               <input
                 v-model="editForm.url"
                 type="url"
-                placeholder="https://..."
+                :placeholder="t('modal.linkUrl')"
                 class="flex-1 px-4 py-2.5 border border-gray-200 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-gray-900 dark:focus:ring-violet-500 focus:border-transparent outline-none transition-all bg-white dark:bg-slate-700 text-gray-900 dark:text-slate-100 placeholder:text-gray-400 dark:placeholder:text-slate-500"
               />
             </div>
@@ -63,7 +63,7 @@
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
                 </svg>
-                Tags
+                {{ t('modal.tags') }}
               </button>
               <button
                 v-if="!showSubLinks"
@@ -73,14 +73,14 @@
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
                 </svg>
-                Sub Links
+                {{ t('modal.subLinks') }}
               </button>
             </div>
 
             <!-- Tags (shown when expanded) -->
             <div v-if="showTags">
               <div class="flex items-center justify-between mb-2">
-                <label class="block text-sm font-medium text-gray-700 dark:text-slate-300">Tags <span class="text-gray-400 dark:text-slate-500 font-normal">(comma separated)</span></label>
+                <label class="block text-sm font-medium text-gray-700 dark:text-slate-300">{{ t('modal.tags') }} <span class="text-gray-400 dark:text-slate-500 font-normal">({{ t('modal.commaSeparated') }})</span></label>
                 <button
                   @click="showTags = false; tagsInput = ''"
                   class="p-1 text-gray-400 dark:text-slate-500 hover:text-gray-600 dark:hover:text-slate-300 rounded transition-colors"
@@ -101,7 +101,7 @@
             <!-- Sub Links (shown when expanded) -->
             <div v-if="showSubLinks">
               <div class="flex items-center justify-between mb-2">
-                <label class="block text-sm font-medium text-gray-700 dark:text-slate-300">Sub Links</label>
+                <label class="block text-sm font-medium text-gray-700 dark:text-slate-300">{{ t('modal.subLinks') }}</label>
                 <button
                   @click="showSubLinks = false; editForm.sub_links = []"
                   class="p-1 text-gray-400 dark:text-slate-500 hover:text-gray-600 dark:hover:text-slate-300 rounded transition-colors"
@@ -128,20 +128,20 @@
                   </button>
                   <div class="space-y-2">
                     <div class="flex items-center gap-2">
-                      <label class="text-xs font-medium text-gray-500 dark:text-slate-400 w-8 flex-shrink-0 text-right">Title</label>
+                      <label class="text-xs font-medium text-gray-500 dark:text-slate-400 w-8 flex-shrink-0 text-right">{{ t('modal.title') }}</label>
                       <input
                         v-model="subLink.sub_title"
                         type="text"
-                        placeholder="Sub link title"
+                        :placeholder="t('modal.subLinkTitle')"
                         class="flex-1 px-3 py-2 border border-gray-200 dark:border-slate-600 rounded-lg text-sm focus:ring-2 focus:ring-gray-900 dark:focus:ring-violet-500 focus:border-transparent outline-none transition-all bg-white dark:bg-slate-700 text-gray-900 dark:text-slate-100 placeholder:text-gray-400 dark:placeholder:text-slate-500"
                       />
                     </div>
                     <div class="flex items-center gap-2">
-                      <label class="text-xs font-medium text-gray-500 dark:text-slate-400 w-8 flex-shrink-0 text-right">URL</label>
+                      <label class="text-xs font-medium text-gray-500 dark:text-slate-400 w-8 flex-shrink-0 text-right">{{ t('modal.url') }}</label>
                       <input
                         v-model="subLink.sub_url"
                         type="url"
-                        placeholder="Sub link URL"
+                        :placeholder="t('modal.subLinkUrl')"
                         class="flex-1 px-3 py-2 border border-gray-200 dark:border-slate-600 rounded-lg text-sm focus:ring-2 focus:ring-gray-900 dark:focus:ring-violet-500 focus:border-transparent outline-none transition-all bg-white dark:bg-slate-700 text-gray-900 dark:text-slate-100 placeholder:text-gray-400 dark:placeholder:text-slate-500"
                       />
                     </div>
@@ -151,7 +151,7 @@
                   @click="addSubLink"
                   class="w-full py-3 border-2 border-dashed border-gray-200 dark:border-slate-600 rounded-xl text-gray-400 dark:text-slate-500 hover:border-gray-300 dark:hover:border-slate-500 hover:text-gray-500 dark:hover:text-slate-400 transition-colors text-sm"
                 >
-                  + Add sub link
+                  + {{ t('modal.addSubLink') }}
                 </button>
               </div>
             </div>
@@ -163,13 +163,13 @@
               @click="handleClose"
               class="px-5 py-2.5 text-gray-600 dark:text-slate-400 hover:text-gray-800 dark:hover:text-slate-200 hover:bg-gray-100 dark:hover:bg-slate-700 rounded-xl transition-colors font-medium"
             >
-              Cancel
+              {{ t('modal.cancel') }}
             </button>
             <button
               @click="handleSave"
               class="px-5 py-2.5 bg-gray-900 dark:bg-violet-600 text-white rounded-xl hover:bg-gray-800 dark:hover:bg-violet-500 transition-colors font-medium"
             >
-              Save
+              {{ t('modal.save') }}
             </button>
           </div>
         </div>
@@ -180,6 +180,7 @@
 
 <script setup>
 import { ref, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 
 const props = defineProps({
   show: {
@@ -192,6 +193,7 @@ const props = defineProps({
   }
 })
 
+const { t } = useI18n()
 const emit = defineEmits(['update:show', 'save'])
 
 // Edit form

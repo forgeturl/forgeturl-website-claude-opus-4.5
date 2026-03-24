@@ -23,10 +23,10 @@
         rel="noopener noreferrer"
         class="hover:font-semibold transition-all no-underline block truncate"
         :class="isActiveSublinkMode ? 'text-amber-600 dark:text-amber-400 hover:text-amber-700 dark:hover:text-amber-300' : 'text-gray-500 dark:text-slate-400 hover:text-gray-900 dark:hover:text-slate-100'"
-        :title="link.title || 'Untitled'"
+        :title="link.title || t('collection.untitled')"
       >
         <span v-if="titleMatchesQuery" v-html="highlightedTitle"></span>
-        <span v-else>{{ link.title || 'Untitled' }}</span>
+        <span v-else>{{ link.title || t('collection.untitled') }}</span>
       </a>
       
       <!-- Read-only mode: no link (sub_url is empty) -->
@@ -34,10 +34,10 @@
         v-else-if="!canEdit && !isClickable"
         class="block truncate cursor-default"
         :class="isActiveSublinkMode ? 'text-amber-600/60 dark:text-amber-400/60' : 'text-gray-400 dark:text-slate-500'"
-        :title="link.title || 'Untitled'"
+        :title="link.title || t('collection.untitled')"
       >
         <span v-if="titleMatchesQuery" v-html="highlightedTitle"></span>
-        <span v-else>{{ link.title || 'Untitled' }}</span>
+        <span v-else>{{ link.title || t('collection.untitled') }}</span>
       </span>
       
       <!-- Edit mode: click to open, long press to edit -->
@@ -48,7 +48,7 @@
         rel="noopener noreferrer"
         class="hover:font-semibold transition-all no-underline select-none block truncate"
         :class="isActiveSublinkMode ? 'text-amber-600 dark:text-amber-400 hover:text-amber-700 dark:hover:text-amber-300' : 'text-gray-500 dark:text-slate-400 hover:text-gray-900 dark:hover:text-slate-100'"
-        :title="link.title || 'Untitled'"
+        :title="link.title || t('collection.untitled')"
         @click="handleClick"
         @mousedown="handleMouseDown"
         @mouseup="handleMouseUp"
@@ -58,7 +58,7 @@
         @touchmove="handleTouchMove"
       >
         <span v-if="titleMatchesQuery" v-html="highlightedTitle"></span>
-        <span v-else>{{ link.title || 'Untitled' }}</span>
+        <span v-else>{{ link.title || t('collection.untitled') }}</span>
       </a>
       
       <!-- Edit mode: no link (sub_url is empty), but still allow long press to edit -->
@@ -66,7 +66,7 @@
         v-else
         class="block truncate select-none"
         :class="isActiveSublinkMode ? 'text-amber-600/60 dark:text-amber-400/60 cursor-default' : 'text-gray-500 dark:text-slate-400 hover:text-gray-900 dark:hover:text-slate-100 cursor-pointer'"
-        :title="link.title || 'Untitled'"
+        :title="link.title || t('collection.untitled')"
         @mousedown="handleMouseDown"
         @mouseup="handleMouseUp"
         @mouseleave="handleMouseLeave"
@@ -75,7 +75,7 @@
         @touchmove="handleTouchMove"
       >
         <span v-if="titleMatchesQuery" v-html="highlightedTitle"></span>
-        <span v-else>{{ link.title || 'Untitled' }}</span>
+        <span v-else>{{ link.title || t('collection.untitled') }}</span>
       </span>
       
       <!-- Sub Links Star Icon with Dropdown -->
@@ -110,7 +110,7 @@
               class="block px-3 py-2 text-sm text-gray-700 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-700 hover:text-blue-600 dark:hover:text-violet-400 transition-colors truncate"
               :title="subLink.sub_title"
             >
-              {{ subLink.sub_title || 'Unnamed sub link' }}
+              {{ subLink.sub_title || t('collection.unnamedSubLink') }}
             </a>
           </div>
         </div>
@@ -121,6 +121,7 @@
 
 <script setup>
 import { ref, computed, nextTick } from 'vue'
+import { useI18n } from 'vue-i18n'
 
 const props = defineProps({
   link: {
@@ -145,6 +146,7 @@ const props = defineProps({
   }
 })
 
+const { t } = useI18n()
 const emit = defineEmits(['edit'])
 
 // Sub links dropdown state
@@ -201,8 +203,8 @@ const highlightedTitle = computed(() => {
 // Check if title matches search query (for determining if we should use v-html)
 const titleMatchesQuery = computed(() => {
   if (!props.searchQuery) return false
-  const title = props.link.title || 'Untitled'
-  return title.toLowerCase().includes(props.searchQuery.toLowerCase())
+  const title2 = props.link.title || t('collection.untitled')
+  return title2.toLowerCase().includes(props.searchQuery.toLowerCase())
 })
 
 // Check if sub_links match search query (for highlighting the star icon)

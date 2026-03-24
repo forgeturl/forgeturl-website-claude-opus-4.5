@@ -31,14 +31,14 @@
             class="px-3 py-1.5 text-sm font-medium rounded-lg transition-all duration-200"
             :class="$route.path === '/' ? 'text-violet-600 dark:text-violet-400 bg-violet-50 dark:bg-violet-900/30' : 'text-gray-600 dark:text-slate-300 hover:text-gray-900 dark:hover:text-slate-100 hover:bg-gray-100 dark:hover:bg-slate-800'"
           >
-            Home
+            {{ t('nav.home') }}
           </router-link>
           <router-link
             to="/changelog"
             class="px-3 py-1.5 text-sm font-medium rounded-lg transition-all duration-200"
             :class="$route.path === '/changelog' ? 'text-violet-600 dark:text-violet-400 bg-violet-50 dark:bg-violet-900/30' : 'text-gray-600 dark:text-slate-300 hover:text-gray-900 dark:hover:text-slate-100 hover:bg-gray-100 dark:hover:bg-slate-800'"
           >
-            Changelog
+            {{ t('nav.changelog') }}
           </router-link>
           <a
             href="https://github.com/forgeturl/forgeturl-server/issues"
@@ -46,7 +46,7 @@
             rel="noopener noreferrer"
             class="px-3 py-1.5 text-sm font-medium text-gray-600 dark:text-slate-300 hover:text-gray-900 dark:hover:text-slate-100 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-lg transition-all duration-200"
           >
-            Feedback
+            {{ t('nav.feedback') }}
           </a>
           <!-- GitHub Dropdown -->
           <div class="relative" ref="githubDropdownRef">
@@ -54,7 +54,7 @@
               @click="showGithubDropdown = !showGithubDropdown"
               @mouseenter="showGithubDropdown = true"
               class="p-1.5 text-gray-600 dark:text-slate-300 hover:text-gray-900 dark:hover:text-slate-100 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-lg transition-all duration-200"
-              title="Open Source"
+              :title="t('nav.openSource')"
             >
               <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
                 <path fill-rule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z" clip-rule="evenodd"/>
@@ -88,7 +88,7 @@
                       </svg>
                     </div>
                     <div class="text-left">
-                      <div class="font-medium">Backend</div>
+                      <div class="font-medium">{{ t('nav.backend') }}</div>
                       <div class="text-xs text-gray-500 dark:text-slate-400">forgeturl/forgeturl-server</div>
                     </div>
                   </a>
@@ -104,7 +104,7 @@
                       </svg>
                     </div>
                     <div class="text-left">
-                      <div class="font-medium">Frontend</div>
+                      <div class="font-medium">{{ t('nav.frontend') }}</div>
                       <div class="text-xs text-gray-500 dark:text-slate-400">forgeturl/forgeturl-website-claude-opus-4.5</div>
                     </div>
                   </a>
@@ -116,11 +116,12 @@
 
         <!-- Right side buttons -->
         <div class="flex items-center gap-2">
+          <LanguageSwitcher />
           <!-- Theme Toggle Button -->
           <button
             @click="toggleTheme"
             class="p-2 rounded-full bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm border border-gray-200 dark:border-slate-700 text-gray-600 dark:text-slate-300 hover:bg-white dark:hover:bg-slate-700 hover:text-gray-900 dark:hover:text-slate-100 transition-all duration-300 shadow-sm"
-            :title="isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode'"
+            :title="isDark ? t('theme.switchToLight') : t('theme.switchToDark')"
           >
             <svg v-if="isDark" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
@@ -139,7 +140,7 @@
             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
             </svg>
-            My Space
+            {{ t('home.mySpace') }}
           </router-link>
 
           <!-- If not logged in: Login Button with Dropdown -->
@@ -152,7 +153,7 @@
               <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
               </svg>
-              Sign In
+              {{ t('home.signIn') }}
             </button>
 
             <!-- Dropdown Menu -->
@@ -172,7 +173,7 @@
               >
                 <div class="p-2">
                   <!-- WeChat Login (first when zh-CN) -->
-                  <template v-if="isZhCN">
+                  <template v-if="isZh">
                     <button
                       @click="handleLogin('wechat')"
                       :disabled="loading"
@@ -184,8 +185,8 @@
                         </svg>
                       </div>
                       <div class="text-left">
-                        <div class="font-medium">微信登录</div>
-                        <div class="text-xs text-gray-500 dark:text-slate-400">推荐</div>
+                        <div class="font-medium">{{ t('auth.wechatLogin') }}</div>
+                        <div class="text-xs text-gray-500 dark:text-slate-400">{{ t('auth.recommended') }}</div>
                       </div>
                     </button>
                     <div class="my-1 border-t border-gray-100 dark:border-slate-700"></div>
@@ -206,8 +207,8 @@
                       </svg>
                     </div>
                     <div class="text-left">
-                      <div class="font-medium">Sign in with Google</div>
-                      <div class="text-xs text-gray-500 dark:text-slate-400">{{ isZhCN ? 'Google 账号' : 'Recommended' }}</div>
+                      <div class="font-medium">{{ t('auth.signInWithGoogle') }}</div>
+                      <div class="text-xs text-gray-500 dark:text-slate-400">{{ t('auth.recommended') }}</div>
                     </div>
                   </button>
 
@@ -225,13 +226,13 @@
                       </svg>
                     </div>
                     <div class="text-left">
-                      <div class="font-medium">Sign in with GitHub</div>
-                      <div class="text-xs text-gray-500 dark:text-slate-400">GitHub Account</div>
+                      <div class="font-medium">{{ t('auth.signInWithGitHub') }}</div>
+                      <div class="text-xs text-gray-500 dark:text-slate-400">{{ t('auth.githubAccount') }}</div>
                     </div>
                   </button>
 
                   <!-- WeChat Login (last when not zh-CN) -->
-                  <template v-if="!isZhCN">
+                  <template v-if="!isZh">
                     <div class="my-1 border-t border-gray-100 dark:border-slate-700"></div>
                     <button
                       @click="handleLogin('wechat')"
@@ -244,8 +245,8 @@
                         </svg>
                       </div>
                       <div class="text-left">
-                        <div class="font-medium">Sign in with WeChat</div>
-                        <div class="text-xs text-gray-500 dark:text-slate-400">WeChat Account</div>
+                        <div class="font-medium">{{ t('auth.signInWithWeChat') }}</div>
+                        <div class="text-xs text-gray-500 dark:text-slate-400">{{ t('auth.wechatAccount') }}</div>
                       </div>
                     </button>
                   </template>
@@ -255,7 +256,7 @@
                 <div v-if="loading" class="px-4 py-3 bg-gray-50 dark:bg-slate-900/50 border-t border-gray-100 dark:border-slate-700">
                   <div class="flex items-center gap-2 text-sm text-gray-500 dark:text-slate-400">
                     <div class="animate-spin rounded-full h-4 w-4 border-2 border-violet-500 border-t-transparent"></div>
-                    Redirecting...
+                    {{ t('auth.redirecting') }}
                   </div>
                 </div>
               </div>
@@ -296,11 +297,11 @@
             </h1>
             
             <p class="text-xl lg:text-2xl text-gray-600 dark:text-slate-300 font-medium mb-4">
-              Save links, free your mind
+              {{ t('home.tagline') }}
             </p>
             
             <p class="text-gray-500 dark:text-slate-400 text-lg mb-8 max-w-xl mx-auto lg:mx-0">
-              A clean and elegant bookmark manager. Say goodbye to cluttered browser favorites — organize with smart collections and find anything in seconds.
+              {{ t('home.description') }}
             </p>
 
             <!-- CTA Buttons -->
@@ -311,7 +312,7 @@
                 to="/my"
                 class="px-8 py-4 bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white font-semibold rounded-xl hover:from-violet-500 hover:to-fuchsia-500 transition-all duration-300 shadow-lg shadow-purple-500/25 hover:shadow-xl hover:shadow-purple-500/30 hover:-translate-y-0.5 text-center"
               >
-                Go to My Space
+                {{ t('home.goToMySpace') }}
               </router-link>
               <!-- If not logged in: Get Started -->
               <button
@@ -319,13 +320,13 @@
                 @click="scrollToLogin"
                 class="px-8 py-4 bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white font-semibold rounded-xl hover:from-violet-500 hover:to-fuchsia-500 transition-all duration-300 shadow-lg shadow-purple-500/25 hover:shadow-xl hover:shadow-purple-500/30 hover:-translate-y-0.5"
               >
-                Get Started Free
+                {{ t('home.getStarted') }}
               </button>
               <a
                 href="#features"
                 class="px-8 py-4 bg-white dark:bg-slate-800 text-gray-700 dark:text-slate-200 font-semibold rounded-xl border border-gray-200 dark:border-slate-700 hover:bg-gray-50 dark:hover:bg-slate-700 transition-all duration-300 text-center"
               >
-                Learn More
+                {{ t('home.learnMore') }}
               </a>
             </div>
           </div>
@@ -339,7 +340,7 @@
                   <div class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
                   <span class="text-sm font-medium text-gray-600 dark:text-slate-300">
                     <span class="text-violet-600 dark:text-violet-400 font-bold">{{ userCount.toLocaleString() }}</span>
-                    users have joined
+                    {{ t('home.usersJoined') }}
                   </span>
                 </div>
               </div>
@@ -435,7 +436,7 @@
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
                     </svg>
                   </div>
-                  <span class="text-sm font-medium text-gray-700 dark:text-slate-200">Saved!</span>
+                  <span class="text-sm font-medium text-gray-700 dark:text-slate-200">{{ t('home.saved') }}</span>
                 </div>
               </div>
               
@@ -444,7 +445,7 @@
                   <svg class="w-5 h-5 text-violet-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                   </svg>
-                  <span class="text-sm text-gray-500 dark:text-slate-400">Quick search...</span>
+                  <span class="text-sm text-gray-500 dark:text-slate-400">{{ t('home.quickSearch') }}</span>
                 </div>
               </div>
             </div>
@@ -458,10 +459,10 @@
       <div class="max-w-6xl mx-auto">
         <div class="text-center mb-16 animate-fade-in">
           <h2 class="text-3xl lg:text-4xl font-bold text-gray-900 dark:text-slate-100 mb-4">
-            Why choose <span class="bg-gradient-to-r from-violet-600 to-fuchsia-600 bg-clip-text text-transparent">ForgetURL</span>
+            {{ t('features.title') }} <span class="bg-gradient-to-r from-violet-600 to-fuchsia-600 bg-clip-text text-transparent">ForgetURL</span>
           </h2>
           <p class="text-gray-500 dark:text-slate-400 text-lg max-w-2xl mx-auto">
-            Built for productivity. Keep your bookmarks simple and organized.
+            {{ t('features.subtitle') }}
           </p>
         </div>
 
@@ -473,9 +474,9 @@
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
               </svg>
             </div>
-            <h3 class="text-xl font-semibold text-gray-900 dark:text-slate-100 mb-3">Smart Collections</h3>
+            <h3 class="text-xl font-semibold text-gray-900 dark:text-slate-100 mb-3">{{ t('features.smartCollections') }}</h3>
             <p class="text-gray-500 dark:text-slate-400 leading-relaxed">
-              Organize links with folders and tags. Drag and drop to reorder — keep everything tidy.
+              {{ t('features.smartCollectionsDesc') }}
             </p>
           </div>
 
@@ -486,9 +487,9 @@
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
               </svg>
             </div>
-            <h3 class="text-xl font-semibold text-gray-900 dark:text-slate-100 mb-3">Instant Search</h3>
+            <h3 class="text-xl font-semibold text-gray-900 dark:text-slate-100 mb-3">{{ t('features.instantSearch') }}</h3>
             <p class="text-gray-500 dark:text-slate-400 leading-relaxed">
-              Full-text search across titles, URLs, and tags. Find any link in milliseconds.
+              {{ t('features.instantSearchDesc') }}
             </p>
           </div>
 
@@ -499,9 +500,9 @@
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
               </svg>
             </div>
-            <h3 class="text-xl font-semibold text-gray-900 dark:text-slate-100 mb-3">One-Click Sharing</h3>
+            <h3 class="text-xl font-semibold text-gray-900 dark:text-slate-100 mb-3">{{ t('features.oneClickSharing') }}</h3>
             <p class="text-gray-500 dark:text-slate-400 leading-relaxed">
-              Generate beautiful share pages. Share your curated collections with friends or your team.
+              {{ t('features.oneClickSharingDesc') }}
             </p>
           </div>
 
@@ -512,9 +513,9 @@
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
               </svg>
             </div>
-            <h3 class="text-xl font-semibold text-gray-900 dark:text-slate-100 mb-3">Browser Import</h3>
+            <h3 class="text-xl font-semibold text-gray-900 dark:text-slate-100 mb-3">{{ t('features.browserImport') }}</h3>
             <p class="text-gray-500 dark:text-slate-400 leading-relaxed">
-              Import existing bookmarks from Chrome, Firefox, Safari, and more with one click.
+              {{ t('features.browserImportDesc') }}
             </p>
           </div>
 
@@ -525,9 +526,9 @@
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
               </svg>
             </div>
-            <h3 class="text-xl font-semibold text-gray-900 dark:text-slate-100 mb-3">Cross-Device Sync</h3>
+            <h3 class="text-xl font-semibold text-gray-900 dark:text-slate-100 mb-3">{{ t('features.crossDeviceSync') }}</h3>
             <p class="text-gray-500 dark:text-slate-400 leading-relaxed">
-              Cloud-based storage. Access all your bookmarks from any device, anywhere.
+              {{ t('features.crossDeviceSyncDesc') }}
             </p>
           </div>
 
@@ -538,9 +539,9 @@
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
               </svg>
             </div>
-            <h3 class="text-xl font-semibold text-gray-900 dark:text-slate-100 mb-3">Dark Mode</h3>
+            <h3 class="text-xl font-semibold text-gray-900 dark:text-slate-100 mb-3">{{ t('features.darkMode') }}</h3>
             <p class="text-gray-500 dark:text-slate-400 leading-relaxed">
-              Beautifully crafted dark theme. Easy on the eyes for late-night browsing.
+              {{ t('features.darkModeDesc') }}
             </p>
           </div>
         </div>
@@ -552,10 +553,10 @@
       <div class="max-w-6xl mx-auto">
         <div class="text-center mb-16">
           <h2 class="text-3xl lg:text-4xl font-bold text-gray-900 dark:text-slate-100 mb-4">
-            Get started in 3 simple steps
+            {{ t('steps.title') }}
           </h2>
           <p class="text-gray-500 dark:text-slate-400 text-lg">
-            No complicated setup. Just start saving.
+            {{ t('steps.subtitle') }}
           </p>
         </div>
 
@@ -566,9 +567,9 @@
               <div class="absolute inset-0 bg-gradient-to-br from-violet-500 to-fuchsia-500 rounded-2xl opacity-20 dark:opacity-30"></div>
               <span class="text-4xl font-bold bg-gradient-to-br from-violet-600 to-fuchsia-600 bg-clip-text text-transparent">1</span>
             </div>
-            <h3 class="text-xl font-semibold text-gray-900 dark:text-slate-100 mb-3">Sign In</h3>
+            <h3 class="text-xl font-semibold text-gray-900 dark:text-slate-100 mb-3">{{ t('steps.step1Title') }}</h3>
             <p class="text-gray-500 dark:text-slate-400">
-              Log in with your GitHub account. Quick and hassle-free.
+              {{ t('steps.step1Desc') }}
             </p>
           </div>
 
@@ -578,9 +579,9 @@
               <div class="absolute inset-0 bg-gradient-to-br from-violet-500 to-fuchsia-500 rounded-2xl opacity-20 dark:opacity-30"></div>
               <span class="text-4xl font-bold bg-gradient-to-br from-violet-600 to-fuchsia-600 bg-clip-text text-transparent">2</span>
             </div>
-            <h3 class="text-xl font-semibold text-gray-900 dark:text-slate-100 mb-3">Create a Page</h3>
+            <h3 class="text-xl font-semibold text-gray-900 dark:text-slate-100 mb-3">{{ t('steps.step2Title') }}</h3>
             <p class="text-gray-500 dark:text-slate-400">
-              Set up bookmark pages to organize links by topic or project.
+              {{ t('steps.step2Desc') }}
             </p>
           </div>
 
@@ -590,9 +591,9 @@
               <div class="absolute inset-0 bg-gradient-to-br from-violet-500 to-fuchsia-500 rounded-2xl opacity-20 dark:opacity-30"></div>
               <span class="text-4xl font-bold bg-gradient-to-br from-violet-600 to-fuchsia-600 bg-clip-text text-transparent">3</span>
             </div>
-            <h3 class="text-xl font-semibold text-gray-900 dark:text-slate-100 mb-3">Add Bookmarks</h3>
+            <h3 class="text-xl font-semibold text-gray-900 dark:text-slate-100 mb-3">{{ t('steps.step3Title') }}</h3>
             <p class="text-gray-500 dark:text-slate-400">
-              Paste a URL to auto-fetch details, or bulk import your existing bookmarks.
+              {{ t('steps.step3Desc') }}
             </p>
           </div>
         </div>
@@ -611,10 +612,10 @@
               </svg>
             </div>
             <h2 class="text-2xl font-semibold text-gray-900 dark:text-slate-100 mb-2">
-              Welcome Back!
+              {{ t('auth.welcomeBack') }}
             </h2>
             <p class="text-gray-500 dark:text-slate-400 mb-6">
-              You're already signed in. Ready to manage your bookmarks?
+              {{ t('auth.alreadySignedIn') }}
             </p>
             <router-link
               to="/my"
@@ -623,7 +624,7 @@
               <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
               </svg>
-              Go to My Space
+              {{ t('home.goToMySpace') }}
             </router-link>
           </div>
         </div>
@@ -631,10 +632,10 @@
         <!-- If not logged in: Login Card -->
         <div v-else class="bg-white dark:bg-slate-800 rounded-2xl shadow-xl dark:shadow-black/30 border border-gray-100 dark:border-slate-700 p-8 transition-colors duration-300">
           <h2 class="text-2xl font-semibold text-gray-900 dark:text-slate-100 mb-2 text-center">
-            Get Started
+            {{ t('auth.getStarted') }}
           </h2>
           <p class="text-gray-500 dark:text-slate-400 text-center mb-6">
-            Choose a login method. It's free.
+            {{ t('auth.chooseLogin') }}
           </p>
 
           <!-- Error Message -->
@@ -668,7 +669,7 @@
                   d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
                 />
               </svg>
-              <span class="font-medium">Sign in with Google</span>
+              <span class="font-medium">{{ t('auth.signInWithGoogle') }}</span>
             </button>
 
             <!-- GitHub Login -->
@@ -684,36 +685,36 @@
                   clip-rule="evenodd"
                 />
               </svg>
-              <span class="font-medium">Sign in with GitHub</span>
+              <span class="font-medium">{{ t('auth.signInWithGitHub') }}</span>
             </button>
 
             <!-- WeChat Login -->
             <button
               @click="handleLogin('wechat')"
               :disabled="loading"
-              :class="isZhCN ? 'order-first' : ''"
+              :class="isZh ? 'order-first' : ''"
               class="w-full flex items-center justify-center gap-3 px-6 py-3.5 bg-[#07C160] text-white rounded-xl hover:bg-[#06AD56] transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed hover:shadow-lg"
             >
               <svg class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
                 <path d="M8.691 2.188C3.891 2.188 0 5.476 0 9.53c0 2.212 1.17 4.203 3.002 5.55a.59.59 0 0 1 .213.665l-.39 1.48c-.019.07-.048.141-.048.213 0 .163.13.295.29.295a.326.326 0 0 0 .167-.054l1.903-1.114a.864.864 0 0 1 .717-.098 10.16 10.16 0 0 0 2.837.403c.276 0 .543-.027.811-.05-.857-2.578.157-4.972 1.932-6.446 1.703-1.415 3.882-1.98 5.853-1.838-.576-3.583-4.196-6.348-8.596-6.348zM5.785 5.991c.642 0 1.162.529 1.162 1.18a1.17 1.17 0 0 1-1.162 1.178A1.17 1.17 0 0 1 4.623 7.17c0-.651.52-1.18 1.162-1.18zm5.813 0c.642 0 1.162.529 1.162 1.18a1.17 1.17 0 0 1-1.162 1.178 1.17 1.17 0 0 1-1.162-1.178c0-.651.52-1.18 1.162-1.18zm5.34 2.867c-1.797-.052-3.746.512-5.28 1.786-1.72 1.428-2.687 3.72-1.78 6.22.942 2.453 3.666 4.229 6.884 4.229.826 0 1.622-.12 2.361-.336a.722.722 0 0 1 .598.082l1.584.926a.272.272 0 0 0 .14.047c.134 0 .24-.111.24-.247 0-.06-.023-.12-.038-.177l-.327-1.233a.582.582 0 0 1-.023-.156.49.49 0 0 1 .201-.398C23.024 18.48 24 16.82 24 14.98c0-3.21-2.931-5.837-6.656-6.088V8.89c-.135-.01-.27-.027-.407-.032zm-2.53 3.274c.535 0 .969.44.969.982a.976.976 0 0 1-.969.983.976.976 0 0 1-.969-.983c0-.542.434-.982.97-.982zm4.844 0c.535 0 .969.44.969.982a.976.976 0 0 1-.969.983.976.976 0 0 1-.969-.983c0-.542.434-.982.969-.982z"/>
               </svg>
-              <span class="font-medium">{{ isZhCN ? '微信登录' : 'Sign in with WeChat' }}</span>
+              <span class="font-medium">{{ t('auth.signInWithWeChat') }}</span>
             </button>
           </div>
 
           <!-- Loading Indicator -->
           <div v-if="loading" class="mt-6 text-center">
             <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 dark:border-violet-400"></div>
-            <p class="mt-2 text-sm text-gray-600 dark:text-slate-400">Redirecting...</p>
+            <p class="mt-2 text-sm text-gray-600 dark:text-slate-400">{{ t('auth.redirecting') }}</p>
           </div>
         </div>
 
         <!-- Footer -->
         <p class="mt-6 text-center text-sm text-gray-500 dark:text-slate-500">
-          By signing in, you agree to our 
-          <router-link to="/terms" class="text-violet-600 dark:text-violet-400 hover:underline">Terms of Service</router-link>
-          and 
-          <router-link to="/privacy" class="text-violet-600 dark:text-violet-400 hover:underline">Privacy Policy</router-link>
+          {{ t('auth.termsAgreement') }}
+          <router-link to="/terms" class="text-violet-600 dark:text-violet-400 hover:underline">{{ t('auth.termsOfService') }}</router-link>
+          {{ t('auth.and') }}
+          <router-link to="/privacy" class="text-violet-600 dark:text-violet-400 hover:underline">{{ t('auth.privacyPolicy') }}</router-link>
         </p>
       </div>
     </section>
@@ -732,11 +733,11 @@
         </div>
         <span class="text-gray-300 dark:text-slate-600">|</span>
         <router-link to="/privacy" class="text-sm text-gray-600 dark:text-slate-400 hover:text-violet-600 dark:hover:text-violet-400 transition-colors duration-200">
-          Privacy Policy
+          {{ t('footer.privacyPolicy') }}
         </router-link>
         <span class="text-gray-300 dark:text-slate-600">|</span>
         <router-link to="/terms" class="text-sm text-gray-600 dark:text-slate-400 hover:text-violet-600 dark:hover:text-violet-400 transition-colors duration-200">
-          Terms of Service
+          {{ t('footer.termsOfService') }}
         </router-link>
       </div>
     </footer>
@@ -745,14 +746,19 @@
 
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useAuth } from '@/composables/useAuth'
 import { useTheme } from '@/composables/useTheme'
+import { useLocale } from '@/composables/useLocale'
 import { useAuthStore } from '@/stores/auth'
 import { getUserCount } from '@/api/auth'
 import { isWechatLoginDomain } from '@/utils/config'
+import LanguageSwitcher from '@/components/LanguageSwitcher.vue'
 
 const { startAuth } = useAuth()
 const { isDark, toggleTheme } = useTheme()
+const { t } = useI18n()
+const { isZh } = useLocale()
 const authStore = useAuthStore()
 
 const loading = ref(false)
@@ -766,11 +772,6 @@ const userCount = ref(null)
 
 // Check if user is logged in
 const isLoggedIn = computed(() => authStore.isLoggedIn)
-
-const isZhCN = computed(() => {
-  const lang = navigator.language || ''
-  return lang.startsWith('zh')
-})
 
 // Fetch user count asynchronously
 const fetchUserCount = async () => {
@@ -798,7 +799,7 @@ const handleLogin = async (provider) => {
     await startAuth(provider)
   } catch (err) {
     console.error('Login error:', err)
-    error.value = err.message || 'Login failed. Please try again.'
+    error.value = err.message || t('auth.loginFailed')
     loading.value = false
   }
 }

@@ -4,8 +4,8 @@
       <!-- Loading -->
       <div v-if="!error" class="animate-fade-in">
         <div class="inline-block animate-spin rounded-full h-16 w-16 border-b-2 border-gray-900 mb-4"></div>
-        <h2 class="text-xl font-semibold text-gray-900 mb-2">Signing in...</h2>
-        <p class="text-gray-600">Processing your login information</p>
+        <h2 class="text-xl font-semibold text-gray-900 mb-2">{{ t('auth.signingIn') }}</h2>
+        <p class="text-gray-600">{{ t('auth.processingLogin') }}</p>
       </div>
 
       <!-- Error -->
@@ -20,10 +20,10 @@
             />
           </svg>
         </div>
-        <h2 class="text-xl font-semibold text-gray-900 mb-2">Login Failed</h2>
+        <h2 class="text-xl font-semibold text-gray-900 mb-2">{{ t('auth.loginFailedTitle') }}</h2>
         <p class="text-gray-600 mb-6">{{ error }}</p>
         <button @click="goToLogin" class="btn btn-primary">
-          Back to Home
+          {{ t('auth.backToHome') }}
         </button>
       </div>
     </div>
@@ -32,11 +32,13 @@
 
 <script setup>
 import { ref, onMounted } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
 import { useAuth } from '@/composables/useAuth'
 import { storage } from '@/utils/storage'
 import { STORAGE_KEYS, MAIN_DOMAIN, isWechatLoginDomain } from '@/utils/config'
 
+const { t } = useI18n()
 const route = useRoute()
 const router = useRouter()
 const { handleAuthCallback } = useAuth()
@@ -47,7 +49,7 @@ onMounted(async () => {
   const provider = route.params.provider
 
   if (!provider) {
-    error.value = 'Missing login provider parameter'
+    error.value = t('auth.missingProvider')
     return
   }
 
@@ -70,7 +72,7 @@ onMounted(async () => {
     router.replace(redirect)
   } catch (err) {
     console.error('Auth callback error:', err)
-    error.value = err.message || 'Login failed, please try again'
+    error.value = err.message || t('auth.loginFailed')
   }
 })
 

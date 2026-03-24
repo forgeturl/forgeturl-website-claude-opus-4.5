@@ -32,7 +32,7 @@
           class="text-xs font-medium transition-colors"
           :class="isOver ? 'text-white' : 'text-red-500 dark:text-red-400'"
         >
-          {{ isOver ? 'Release to delete' : 'Drag here to delete' }}
+          {{ isOver ? t('drag.releaseToDelete') : t('drag.dragHereToDelete') }}
         </span>
       </div>
     </div>
@@ -41,6 +41,9 @@
 
 <script setup>
 import { ref } from 'vue'
+import { useI18n } from 'vue-i18n'
+
+const { t } = useI18n()
 
 defineProps({
   visible: {

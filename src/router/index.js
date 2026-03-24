@@ -5,6 +5,7 @@ import { createRouter, createWebHistory } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { storage } from '@/utils/storage'
 import { STORAGE_KEYS, MAIN_DOMAIN, isWechatLoginDomain } from '@/utils/config'
+import i18n from '@/i18n'
 
 // 路由配置
 const routes = [
@@ -12,13 +13,13 @@ const routes = [
         path: '/',
         name: 'Home',
         component: () => import('@/views/Home.vue'),
-        meta: { title: 'ForgetURL - Save links, free your mind' }
+        meta: { titleKey: 'pageTitles.home' }
     },
     {
         path: '/my',
         name: 'MySpace',
         component: () => import('@/views/MySpace.vue'),
-        meta: { requiresAuth: true, title: 'My Space' }
+        meta: { requiresAuth: true, titleKey: 'pageTitles.mySpace' }
     },
     {
         path: '/login',
@@ -29,37 +30,37 @@ const routes = [
         path: '/auth/callback/:provider',
         name: 'AuthCallback',
         component: () => import('@/views/AuthCallback.vue'),
-        meta: { title: 'Signing In...' }
+        meta: { titleKey: 'pageTitles.signingIn' }
     },
     {
         path: '/page/:pageId',
         name: 'PageDetail',
         component: () => import('@/views/PageDetail.vue'),
-        meta: { requiresAuth: true, title: 'Page Detail' }
+        meta: { requiresAuth: true, titleKey: 'pageTitles.pageDetail' }
     },
     {
         path: '/share/:pageId',
         name: 'SharePage',
         component: () => import('@/views/SharePage.vue'),
-        meta: { title: 'Shared Page' }
+        meta: { titleKey: 'pageTitles.sharedPage' }
     },
     {
         path: '/privacy',
         name: 'PrivacyPolicy',
         component: () => import('@/views/PrivacyPolicy.vue'),
-        meta: { title: 'Privacy Policy' }
+        meta: { titleKey: 'pageTitles.privacyPolicy' }
     },
     {
         path: '/terms',
         name: 'TermsOfService',
         component: () => import('@/views/TermsOfService.vue'),
-        meta: { title: 'Terms of Service' }
+        meta: { titleKey: 'pageTitles.termsOfService' }
     },
     {
         path: '/changelog',
         name: 'Changelog',
         component: () => import('@/views/Changelog.vue'),
-        meta: { title: 'Changelog' }
+        meta: { titleKey: 'pageTitles.changelog' }
     },
     {
         path: '/:pathMatch(.*)*',
@@ -77,15 +78,16 @@ const router = createRouter({
 // 路由守卫
 router.beforeEach((to, from, next) => {
     // 设置页面标题
-    if (to.meta.title) {
-        // 如果标题已经包含品牌名，直接使用
-        if (to.meta.title.includes('ForgetURL')) {
-            document.title = to.meta.title
+    const t = i18n.global.t
+    if (to.meta.titleKey) {
+        const translated = t(to.meta.titleKey)
+        if (translated.includes('ForgetURL')) {
+            document.title = translated
         } else {
-            document.title = `${to.meta.title} - ForgetURL`
+            document.title = `${translated} - ForgetURL`
         }
     } else {
-        document.title = 'ForgetURL - Save links, free your mind'
+        document.title = t('pageTitles.home')
     }
 
     // 处理微信跨域登录回传的token

@@ -20,7 +20,7 @@
       v-if="canEdit"
       @click="handleCopyCollection"
       class="absolute -top-2 left-6 w-6 h-6 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 hover:bg-blue-50 dark:hover:bg-blue-900/30 hover:border-blue-300 dark:hover:border-blue-500 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all hover:scale-110"
-      title="Duplicate this collection"
+      :title="t('collection.duplicateCollection')"
     >
       <svg class="w-3 h-3 text-gray-400 dark:text-slate-400 hover:text-blue-500 dark:hover:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
@@ -57,7 +57,7 @@
           @touchstart="handleTitleTouchStart"
           @touchend="handleTitleTouchEnd"
           @touchmove="handleTitleTouchMove"
-        >Unnamed Collection</span>
+        >{{ t('collection.unnamedCollection') }}</span>
       </h3>
     </div>
 
@@ -97,7 +97,7 @@
           v-if="localLinks.length === 0" 
           class="empty-state-hint w-full text-center py-4 text-gray-400 dark:text-slate-500 text-sm"
         >
-          Drag links here
+          {{ t('collection.dragLinksHere') }}
         </div>
       </template>
     </draggable>
@@ -115,7 +115,7 @@
       />
       <!-- Empty State for read-only -->
       <div v-if="!filteredLinksWithSublink.length" class="w-full text-center py-4 text-gray-400 dark:text-slate-500 text-sm">
-        No links yet
+        {{ t('collection.noLinksYet') }}
       </div>
     </div>
 
@@ -137,10 +137,13 @@
 
 <script setup>
 import { ref, watch, computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 import draggable from 'vuedraggable'
 import LinkItem from './LinkItem.vue'
 import CollectionTitleModal from './CollectionTitleModal.vue'
 import LinkEditModal from './LinkEditModal.vue'
+
+const { t } = useI18n()
 
 const props = defineProps({
   collection: {

@@ -18,7 +18,7 @@
 
           <!-- Header -->
           <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100 dark:border-slate-700">
-            <h3 class="text-lg font-semibold text-gray-900 dark:text-slate-100">Edit Page Info</h3>
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-slate-100">{{ t('modal.editPageInfo') }}</h3>
             <button
               @click="handleClose"
               class="p-2 -mr-2 text-gray-400 dark:text-slate-500 hover:text-gray-600 dark:hover:text-slate-300 hover:bg-gray-100 dark:hover:bg-slate-700 rounded-lg transition-colors"
@@ -33,12 +33,12 @@
           <div class="px-6 py-5 space-y-5">
             <!-- Page Title -->
             <div>
-              <label class="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-2">Page Name</label>
+              <label class="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-2">{{ t('modal.pageName') }}</label>
               <input
                 ref="titleInputRef"
                 v-model="localTitle"
                 type="text"
-                placeholder="Enter page name"
+                :placeholder="t('modal.enterPageName')"
                 class="w-full px-4 py-3 border border-gray-200 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-gray-900 dark:focus:ring-violet-500 focus:border-transparent outline-none transition-all bg-white dark:bg-slate-700 text-gray-900 dark:text-slate-100 placeholder:text-gray-400 dark:placeholder:text-slate-500"
                 @keyup.enter="handleConfirm"
               />
@@ -46,10 +46,10 @@
 
             <!-- Page Brief -->
             <div>
-              <label class="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-2">Description</label>
+              <label class="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-2">{{ t('modal.description') }}</label>
               <textarea
                 v-model="localBrief"
-                placeholder="Enter page description (optional)"
+                :placeholder="t('modal.enterPageDesc')"
                 rows="3"
                 class="w-full px-4 py-3 border border-gray-200 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-gray-900 dark:focus:ring-violet-500 focus:border-transparent outline-none transition-all resize-none bg-white dark:bg-slate-700 text-gray-900 dark:text-slate-100 placeholder:text-gray-400 dark:placeholder:text-slate-500"
               ></textarea>
@@ -62,14 +62,14 @@
               @click="handleClose"
               class="px-5 py-2.5 text-gray-600 dark:text-slate-400 hover:text-gray-800 dark:hover:text-slate-200 hover:bg-gray-100 dark:hover:bg-slate-700 rounded-xl transition-colors font-medium"
             >
-              Cancel
+              {{ t('modal.cancel') }}
             </button>
             <button
               @click="handleConfirm"
               :disabled="saving"
               class="px-5 py-2.5 bg-gray-900 dark:bg-violet-600 text-white rounded-xl hover:bg-gray-800 dark:hover:bg-violet-500 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {{ saving ? 'Saving...' : 'Save' }}
+              {{ saving ? t('modal.saving') : t('modal.save') }}
             </button>
           </div>
         </div>
@@ -80,6 +80,9 @@
 
 <script setup>
 import { ref, watch, nextTick } from 'vue'
+import { useI18n } from 'vue-i18n'
+
+const { t } = useI18n()
 
 const props = defineProps({
   show: {

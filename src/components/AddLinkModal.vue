@@ -28,7 +28,7 @@
                     ? 'bg-white dark:bg-slate-600 text-gray-900 dark:text-slate-100 shadow-sm' 
                     : 'text-gray-500 dark:text-slate-400 hover:text-gray-700 dark:hover:text-slate-200'"
                 >
-                  Add Link
+                  {{ t('modal.addLink') }}
                 </button>
                 <button
                   @click="activeTab = 'batch'"
@@ -37,7 +37,7 @@
                     ? 'bg-white dark:bg-slate-600 text-gray-900 dark:text-slate-100 shadow-sm' 
                     : 'text-gray-500 dark:text-slate-400 hover:text-gray-700 dark:hover:text-slate-200'"
                 >
-                  Batch Add
+                  {{ t('modal.batchAdd') }}
                 </button>
                 <button
                   @click="activeTab = 'import'"
@@ -46,7 +46,7 @@
                     ? 'bg-white dark:bg-slate-600 text-gray-900 dark:text-slate-100 shadow-sm' 
                     : 'text-gray-500 dark:text-slate-400 hover:text-gray-700 dark:hover:text-slate-200'"
                 >
-                  Import
+                  {{ t('modal.import') }}
                 </button>
               </div>
               <button
@@ -64,11 +64,11 @@
           <div v-show="activeTab === 'single'" ref="scrollContainerRef" class="px-6 py-5 space-y-5 overflow-y-auto max-h-[60vh]">
             <!-- Title -->
             <div class="flex items-center gap-4">
-              <label class="text-sm font-medium text-gray-700 dark:text-slate-300 w-12 flex-shrink-0">Title</label>
+              <label class="text-sm font-medium text-gray-700 dark:text-slate-300 w-12 flex-shrink-0">{{ t('modal.title') }}</label>
               <input
                 v-model="form.title"
                 type="text"
-                placeholder="Link title"
+                :placeholder="t('modal.linkTitle')"
                 class="flex-1 px-4 py-2.5 border border-gray-200 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-gray-900 dark:focus:ring-violet-500 focus:border-transparent outline-none transition-all bg-white dark:bg-slate-700 text-gray-900 dark:text-slate-100 placeholder:text-gray-400 dark:placeholder:text-slate-500"
                 @input="handleTitleInput"
               />
@@ -76,11 +76,11 @@
 
             <!-- URL -->
             <div class="flex items-center gap-4">
-              <label class="text-sm font-medium text-gray-700 dark:text-slate-300 w-12 flex-shrink-0">URL</label>
+              <label class="text-sm font-medium text-gray-700 dark:text-slate-300 w-12 flex-shrink-0">{{ t('modal.url') }}</label>
               <input
                 v-model="form.url"
                 type="url"
-                placeholder="https://..."
+                :placeholder="t('modal.linkUrl')"
                 class="flex-1 px-4 py-2.5 border border-gray-200 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-gray-900 dark:focus:ring-violet-500 focus:border-transparent outline-none transition-all bg-white dark:bg-slate-700 text-gray-900 dark:text-slate-100 placeholder:text-gray-400 dark:placeholder:text-slate-500"
               />
             </div>
@@ -95,7 +95,7 @@
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
                 </svg>
-                Tags
+                {{ t('modal.tags') }}
               </button>
               <button
                 v-if="!showSubLinks"
@@ -105,14 +105,14 @@
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
                 </svg>
-                Sub Links
+                {{ t('modal.subLinks') }}
               </button>
             </div>
 
             <!-- Tags (shown when expanded) -->
             <div v-if="showTags">
               <div class="flex items-center justify-between mb-2">
-                <label class="block text-sm font-medium text-gray-700 dark:text-slate-300">Tags <span class="text-gray-400 dark:text-slate-500 font-normal">(comma separated)</span></label>
+                <label class="block text-sm font-medium text-gray-700 dark:text-slate-300">{{ t('modal.tags') }} <span class="text-gray-400 dark:text-slate-500 font-normal">({{ t('modal.commaSeparated') }})</span></label>
                 <button
                   @click="showTags = false; tagsInput = ''"
                   class="p-1 text-gray-400 dark:text-slate-500 hover:text-gray-600 dark:hover:text-slate-300 rounded transition-colors"
@@ -133,7 +133,7 @@
             <!-- Sub Links (shown when expanded) -->
             <div v-if="showSubLinks">
               <div class="flex items-center justify-between mb-2">
-                <label class="block text-sm font-medium text-gray-700 dark:text-slate-300">Sub Links</label>
+                <label class="block text-sm font-medium text-gray-700 dark:text-slate-300">{{ t('modal.subLinks') }}</label>
                 <button
                   @click="showSubLinks = false; form.sub_links = []"
                   class="p-1 text-gray-400 dark:text-slate-500 hover:text-gray-600 dark:hover:text-slate-300 rounded transition-colors"
@@ -153,13 +153,13 @@
                     <input
                       v-model="subLink.sub_title"
                       type="text"
-                      placeholder="Sub link title"
+                      :placeholder="t('modal.subLinkTitle')"
                       class="w-full px-3 py-2 border border-gray-200 dark:border-slate-600 rounded-lg text-sm focus:ring-2 focus:ring-gray-900 dark:focus:ring-violet-500 focus:border-transparent outline-none transition-all bg-white dark:bg-slate-700 text-gray-900 dark:text-slate-100 placeholder:text-gray-400 dark:placeholder:text-slate-500"
                     />
                     <input
                       v-model="subLink.sub_url"
                       type="url"
-                      placeholder="Sub link URL"
+                      :placeholder="t('modal.subLinkUrl')"
                       class="w-full px-3 py-2 border border-gray-200 dark:border-slate-600 rounded-lg text-sm focus:ring-2 focus:ring-gray-900 dark:focus:ring-violet-500 focus:border-transparent outline-none transition-all bg-white dark:bg-slate-700 text-gray-900 dark:text-slate-100 placeholder:text-gray-400 dark:placeholder:text-slate-500"
                     />
                   </div>
@@ -176,14 +176,14 @@
                   @click="addSubLink"
                   class="w-full py-3 border-2 border-dashed border-gray-200 dark:border-slate-600 rounded-xl text-gray-400 dark:text-slate-500 hover:border-gray-300 dark:hover:border-slate-500 hover:text-gray-500 dark:hover:text-slate-400 transition-colors text-sm"
                 >
-                  + Add sub link
+                  + {{ t('modal.addSubLink') }}
                 </button>
               </div>
             </div>
 
             <!-- Collection Selection -->
             <div>
-              <label class="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-2">Add to Collection</label>
+              <label class="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-2">{{ t('modal.addToCollection') }}</label>
               <div class="grid grid-cols-3 gap-2">
                 <!-- Existing Collections -->
                 <div 
@@ -211,7 +211,7 @@
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7" />
                     </svg>
                   </div>
-                  <span class="text-gray-700 dark:text-slate-300 text-xs leading-tight line-clamp-2">{{ collection.title || 'Unnamed' }}</span>
+                  <span class="text-gray-700 dark:text-slate-300 text-xs leading-tight line-clamp-2">{{ collection.title || t('collection.unnamed') }}</span>
                 </div>
 
                 <!-- Create New Collection Option -->
@@ -238,7 +238,7 @@
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7" />
                     </svg>
                   </div>
-                  <span class="text-gray-700 dark:text-slate-300 text-xs leading-tight">+ New Folder</span>
+                  <span class="text-gray-700 dark:text-slate-300 text-xs leading-tight">+ {{ t('modal.newFolder') }}</span>
                 </div>
               </div>
 
@@ -248,7 +248,7 @@
                   ref="newFolderInputRef"
                   v-model="newCollectionName"
                   type="text"
-                  placeholder="Enter new folder name"
+                  :placeholder="t('modal.enterNewFolderName')"
                   class="w-full px-4 py-3 border border-gray-200 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-gray-900 dark:focus:ring-violet-500 focus:border-transparent outline-none transition-all bg-white dark:bg-slate-700 text-gray-900 dark:text-slate-100 placeholder:text-gray-400 dark:placeholder:text-slate-500"
                 />
               </div>
@@ -259,7 +259,7 @@
           <div v-show="activeTab === 'batch'" ref="batchScrollContainerRef" class="px-6 py-5 space-y-5 overflow-y-auto max-h-[60vh]">
             <!-- Collection Selection (First) -->
             <div>
-              <label class="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-2">Add to Collection</label>
+              <label class="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-2">{{ t('modal.addToCollection') }}</label>
               <div class="grid grid-cols-3 gap-2">
                 <!-- Existing Collections -->
                 <div 
@@ -287,7 +287,7 @@
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7" />
                     </svg>
                   </div>
-                  <span class="text-gray-700 dark:text-slate-300 text-xs leading-tight line-clamp-2">{{ collection.title || 'Unnamed' }}</span>
+                  <span class="text-gray-700 dark:text-slate-300 text-xs leading-tight line-clamp-2">{{ collection.title || t('collection.unnamed') }}</span>
                 </div>
 
                 <!-- Create New Collection Option -->
@@ -314,7 +314,7 @@
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7" />
                     </svg>
                   </div>
-                  <span class="text-gray-700 dark:text-slate-300 text-xs leading-tight">+ New Folder</span>
+                  <span class="text-gray-700 dark:text-slate-300 text-xs leading-tight">+ {{ t('modal.newFolder') }}</span>
                 </div>
               </div>
 
@@ -324,7 +324,7 @@
                   ref="batchNewFolderInputRef"
                   v-model="batchNewCollectionName"
                   type="text"
-                  placeholder="Enter new folder name"
+                  :placeholder="t('modal.enterNewFolderName')"
                   class="w-full px-4 py-3 border border-gray-200 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-gray-900 dark:focus:ring-violet-500 focus:border-transparent outline-none transition-all bg-white dark:bg-slate-700 text-gray-900 dark:text-slate-100 placeholder:text-gray-400 dark:placeholder:text-slate-500"
                 />
               </div>
@@ -332,7 +332,7 @@
 
             <!-- Batch Links Input -->
             <div>
-              <label class="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-2">Paste Links</label>
+              <label class="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-2">{{ t('modal.pasteLinks') }}</label>
               <textarea
                 v-model="batchLinksInput"
                 placeholder="Paste multiple links here, separated by spaces or new lines...&#10;&#10;Example:&#10;https://google.com&#10;https://github.com&#10;https://twitter.com"
@@ -345,14 +345,14 @@
             <div v-if="parsedLinks.length > 0">
               <div class="flex items-center justify-between mb-2">
                 <label class="block text-sm font-medium text-gray-700 dark:text-slate-300">
-                  Parsed Links 
-                  <span class="text-gray-400 dark:text-slate-500 font-normal">({{ parsedLinks.length }} links)</span>
+                  {{ t('modal.parsedLinks') }} 
+                  <span class="text-gray-400 dark:text-slate-500 font-normal">({{ parsedLinks.length }} {{ t('modal.linksCount') }})</span>
                 </label>
                 <button
                   @click="clearBatchLinks"
                   class="px-2 py-1 text-xs text-gray-500 dark:text-slate-400 hover:text-gray-700 dark:hover:text-slate-200 hover:bg-gray-100 dark:hover:bg-slate-700 rounded transition-colors"
                 >
-                  Clear All
+                  {{ t('modal.clearAll') }}
                 </button>
               </div>
               <div class="space-y-2 max-h-48 overflow-y-auto">
@@ -366,7 +366,7 @@
                       v-model="link.title"
                       type="text"
                       class="w-full text-sm font-medium text-gray-700 dark:text-slate-200 bg-transparent border-none outline-none focus:ring-0 p-0"
-                      placeholder="Link title"
+                      :placeholder="t('modal.linkTitle')"
                     />
                     <p class="text-xs text-gray-400 dark:text-slate-500 truncate mt-0.5">{{ link.url }}</p>
                   </div>
@@ -387,7 +387,7 @@
           <div v-show="activeTab === 'import'" ref="importScrollContainerRef" class="px-6 py-5 space-y-5 overflow-y-auto max-h-[60vh]">
             <!-- File Upload -->
             <div>
-              <label class="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-2">Select Chrome Bookmarks File</label>
+              <label class="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-2">{{ t('modal.selectBookmarksFile') }}</label>
               <div 
                 class="border-2 border-dashed border-gray-200 dark:border-slate-600 rounded-xl p-6 text-center hover:border-gray-300 dark:hover:border-slate-500 transition-colors cursor-pointer"
                 @click="triggerFileInput"
@@ -407,9 +407,9 @@
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
                 </svg>
                 <p class="text-sm text-gray-600 dark:text-slate-400 mb-1">
-                  <span class="font-medium text-gray-900 dark:text-slate-200">Click to upload</span> or drag and drop
+                  <span class="font-medium text-gray-900 dark:text-slate-200">{{ t('modal.clickToUpload') }}</span> {{ t('modal.orDragAndDrop') }}
                 </p>
-                <p class="text-xs text-gray-400 dark:text-slate-500">Chrome bookmarks HTML file</p>
+                <p class="text-xs text-gray-400 dark:text-slate-500">{{ t('modal.chromeBookmarksFile') }}</p>
               </div>
               <p v-if="importFileName" class="mt-2 text-sm text-gray-600 dark:text-slate-400 flex items-center gap-2">
                 <svg class="w-4 h-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -423,14 +423,14 @@
             <div v-if="importFolders.length > 0">
               <div class="flex items-center justify-between mb-2">
                 <label class="block text-sm font-medium text-gray-700 dark:text-slate-300">
-                  Preview
-                  <span class="text-gray-400 dark:text-slate-500 font-normal">({{ totalImportLinks }} links in {{ importFolders.length }} folders)</span>
+                  {{ t('modal.preview') }}
+                  <span class="text-gray-400 dark:text-slate-500 font-normal">({{ totalImportLinks }} {{ t('modal.linksCount') }} / {{ importFolders.length }} {{ t('modal.foldersCount') }})</span>
                 </label>
                 <button
                   @click="clearImport"
                   class="px-2 py-1 text-xs text-gray-500 dark:text-slate-400 hover:text-gray-700 dark:hover:text-slate-200 hover:bg-gray-100 dark:hover:bg-slate-700 rounded transition-colors"
                 >
-                  Clear
+                  {{ t('modal.clear') }}
                 </button>
               </div>
               <div class="space-y-3 max-h-64 overflow-y-auto">
@@ -481,7 +481,7 @@
 
             <!-- Import Info -->
             <div v-if="importFolders.length === 0" class="text-center py-4 text-gray-400 dark:text-slate-500 text-sm">
-              <p>Export your Chrome bookmarks:</p>
+              <p>{{ t('modal.exportBookmarks') }}</p>
               <p class="text-xs mt-1">Chrome → Bookmarks → Bookmark Manager → ⋮ → Export bookmarks</p>
             </div>
           </div>
@@ -492,7 +492,7 @@
               @click="handleClose"
               class="px-5 py-2.5 text-gray-600 dark:text-slate-400 hover:text-gray-800 dark:hover:text-slate-200 hover:bg-gray-100 dark:hover:bg-slate-700 rounded-xl transition-colors font-medium"
             >
-              Cancel
+              {{ t('modal.cancel') }}
             </button>
             <button
               v-if="activeTab === 'single'"
@@ -500,7 +500,7 @@
               :disabled="!canSave"
               class="px-5 py-2.5 bg-gray-900 dark:bg-violet-600 text-white rounded-xl hover:bg-gray-800 dark:hover:bg-violet-500 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              Add
+              {{ t('modal.add') }}
             </button>
             <button
               v-else-if="activeTab === 'batch'"
@@ -508,7 +508,7 @@
               :disabled="!canBatchSave"
               class="px-5 py-2.5 bg-gray-900 dark:bg-violet-600 text-white rounded-xl hover:bg-gray-800 dark:hover:bg-violet-500 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              Add {{ parsedLinks.length }} Links
+              {{ t('modal.addNLinks', { count: parsedLinks.length }) }}
             </button>
             <button
               v-else-if="activeTab === 'import'"
@@ -516,7 +516,7 @@
               :disabled="!canImport"
               class="px-5 py-2.5 bg-gray-900 dark:bg-violet-600 text-white rounded-xl hover:bg-gray-800 dark:hover:bg-violet-500 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              Import {{ totalImportLinks }} Links
+              {{ t('modal.importNLinks', { count: totalImportLinks }) }}
             </button>
           </div>
         </div>
@@ -527,6 +527,7 @@
 
 <script setup>
 import { ref, computed, watch, nextTick } from 'vue'
+import { useI18n } from 'vue-i18n'
 
 const props = defineProps({
   show: {
@@ -543,6 +544,7 @@ const props = defineProps({
   }
 })
 
+const { t } = useI18n()
 const emit = defineEmits(['update:show', 'add', 'batch-add', 'import-bookmarks'])
 
 // Tab state
@@ -855,7 +857,7 @@ const handleSave = () => {
   emit('add', {
     link,
     collectionIndex: isCreateNew.value ? -1 : selectedCollectionIndex.value,
-    newCollectionName: isCreateNew.value ? (newCollectionName.value || 'New Folder') : null
+    newCollectionName: isCreateNew.value ? (newCollectionName.value || t('modal.newFolder')) : null
   })
 
   handleClose()
@@ -875,7 +877,7 @@ const handleBatchSave = () => {
       sub_links: []
     })),
     collectionIndex: isBatchCreateNew.value ? -1 : batchSelectedCollectionIndex.value,
-    newCollectionName: isBatchCreateNew.value ? (batchNewCollectionName.value || 'New Folder') : null
+    newCollectionName: isBatchCreateNew.value ? (batchNewCollectionName.value || t('modal.newFolder')) : null
   }
   
   console.log('Emitting batch-add with payload:', payload)

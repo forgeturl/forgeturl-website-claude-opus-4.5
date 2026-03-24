@@ -17,7 +17,7 @@
           >
             <!-- Header -->
             <div class="flex items-center justify-between px-6 py-5 border-b border-gray-100 dark:border-slate-700">
-              <h3 class="text-xl font-semibold text-gray-900 dark:text-slate-100">Share Page</h3>
+              <h3 class="text-xl font-semibold text-gray-900 dark:text-slate-100">{{ t('modal.sharePage') }}</h3>
               <button
                 @click="close"
                 class="p-1.5 hover:bg-gray-100 dark:hover:bg-slate-700 rounded-lg transition-colors text-gray-400 dark:text-slate-500 hover:text-gray-600 dark:hover:text-slate-300"
@@ -40,8 +40,8 @@
                     </svg>
                   </div>
                   <div>
-                    <h4 class="font-medium text-gray-900 dark:text-slate-100">Read-only Link</h4>
-                    <p class="text-sm text-gray-500 dark:text-slate-400">Others can view but cannot edit.</p>
+                    <h4 class="font-medium text-gray-900 dark:text-slate-100">{{ t('modal.readOnlyLink') }}</h4>
+                    <p class="text-sm text-gray-500 dark:text-slate-400">{{ t('modal.readOnlyDesc') }}</p>
                   </div>
                 </div>
                 
@@ -61,13 +61,13 @@
                     <svg v-else class="w-4 h-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
                     </svg>
-                    Copy
+                    {{ t('modal.copy') }}
                   </button>
                   <button
                     @click="removeLink('readonly')"
                     :disabled="removing"
                     class="px-3 py-2 bg-white dark:bg-slate-700 border border-red-200 dark:border-red-800 rounded-lg text-sm font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 transition-colors flex items-center gap-1 disabled:opacity-50"
-                    title="Delete this link"
+                    :title="t('modal.deleteThisLink')"
                   >
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
@@ -80,7 +80,7 @@
                   :disabled="generating"
                   class="w-full mt-3 px-4 py-2 bg-gray-100 dark:bg-slate-700 text-gray-700 dark:text-slate-200 rounded-lg text-sm font-medium hover:bg-gray-200 dark:hover:bg-slate-600 transition-colors disabled:opacity-50"
                 >
-                  {{ generating ? 'Generating...' : 'Generate Read-only Link' }}
+                  {{ generating ? t('modal.generating') : t('modal.generateReadOnly') }}
                 </button>
               </div>
 
@@ -93,8 +93,8 @@
                     </svg>
                   </div>
                   <div>
-                    <h4 class="font-medium text-gray-900 dark:text-slate-100">Edit Link</h4>
-                    <p class="text-sm text-gray-500 dark:text-slate-400">Others can view and edit.</p>
+                    <h4 class="font-medium text-gray-900 dark:text-slate-100">{{ t('modal.editLink') }}</h4>
+                    <p class="text-sm text-gray-500 dark:text-slate-400">{{ t('modal.editLinkDesc') }}</p>
                   </div>
                 </div>
                 
@@ -114,13 +114,13 @@
                     <svg v-else class="w-4 h-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
                     </svg>
-                    Copy
+                    {{ t('modal.copy') }}
                   </button>
                   <button
                     @click="removeLink('edit')"
                     :disabled="removing"
                     class="px-3 py-2 bg-white dark:bg-slate-700 border border-red-200 dark:border-red-800 rounded-lg text-sm font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 transition-colors flex items-center gap-1 disabled:opacity-50"
-                    title="Delete this link"
+                    :title="t('modal.deleteThisLink')"
                   >
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
@@ -133,7 +133,7 @@
                   :disabled="generating"
                   class="w-full mt-3 px-4 py-2 bg-gray-100 dark:bg-slate-700 text-gray-700 dark:text-slate-200 rounded-lg text-sm font-medium hover:bg-gray-200 dark:hover:bg-slate-600 transition-colors disabled:opacity-50"
                 >
-                  {{ generating ? 'Generating...' : 'Generate Edit Link' }}
+                  {{ generating ? t('modal.generating') : t('modal.generateEditLink') }}
                 </button>
               </div>
 
@@ -146,8 +146,8 @@
                     </svg>
                   </div>
                   <div>
-                    <h4 class="font-medium text-gray-900 dark:text-slate-100">Super Link</h4>
-                    <p class="text-sm text-gray-500 dark:text-slate-400">Others can view, edit, and delete content.</p>
+                    <h4 class="font-medium text-gray-900 dark:text-slate-100">{{ t('modal.superLink') }}</h4>
+                    <p class="text-sm text-gray-500 dark:text-slate-400">{{ t('modal.superLinkDesc') }}</p>
                   </div>
                 </div>
                 
@@ -167,13 +167,13 @@
                     <svg v-else class="w-4 h-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
                     </svg>
-                    Copy
+                    {{ t('modal.copy') }}
                   </button>
                   <button
                     @click="removeLink('admin')"
                     :disabled="removing"
                     class="px-3 py-2 bg-white dark:bg-slate-700 border border-red-200 dark:border-red-800 rounded-lg text-sm font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 transition-colors flex items-center gap-1 disabled:opacity-50"
-                    title="Delete this link"
+                    :title="t('modal.deleteThisLink')"
                   >
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
@@ -186,7 +186,7 @@
                   :disabled="generating"
                   class="w-full mt-3 px-4 py-2 bg-gray-100 dark:bg-slate-700 text-gray-700 dark:text-slate-200 rounded-lg text-sm font-medium hover:bg-gray-200 dark:hover:bg-slate-600 transition-colors disabled:opacity-50"
                 >
-                  {{ generating ? 'Generating...' : 'Generate Super Link' }}
+                  {{ generating ? t('modal.generating') : t('modal.generateSuperLink') }}
                 </button>
               </div>
 
@@ -202,7 +202,7 @@
                 @click="close"
                 class="px-4 py-2 text-sm font-medium text-gray-600 dark:text-slate-400 hover:text-gray-900 dark:hover:text-slate-200 transition-colors"
               >
-                Close
+                {{ t('modal.close') }}
               </button>
             </div>
           </div>
@@ -214,6 +214,7 @@
 
 <script setup>
 import { ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { usePageStore } from '@/stores/page'
 
 const props = defineProps({
@@ -229,6 +230,7 @@ const props = defineProps({
 
 const emit = defineEmits(['update:show'])
 
+const { t } = useI18n()
 const pageStore = usePageStore()
 
 const generating = ref(false)
@@ -254,7 +256,7 @@ const generateLink = async (type) => {
     await pageStore.addPageLink(props.page.page_id, type)
   } catch (err) {
     console.error('Generate link error:', err)
-    error.value = err.message || 'Failed to generate link'
+    error.value = err.message || t('modal.failedToGenerate')
   } finally {
     generating.value = false
   }
@@ -268,7 +270,7 @@ const removeLink = async (type) => {
     await pageStore.removePageLink(props.page.page_id, type)
   } catch (err) {
     console.error('Remove link error:', err)
-    error.value = err.message || 'Failed to delete link'
+    error.value = err.message || t('modal.failedToDelete')
   } finally {
     removing.value = false
   }
