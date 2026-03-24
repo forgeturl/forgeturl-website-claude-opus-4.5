@@ -18,7 +18,7 @@
 
           <!-- Header -->
           <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100 dark:border-slate-700">
-            <h3 class="text-lg font-semibold text-gray-900 dark:text-slate-100">New Collection</h3>
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-slate-100">{{ t('modal.newCollection') }}</h3>
             <button
               @click="handleClose"
               class="p-2 -mr-2 text-gray-400 dark:text-slate-500 hover:text-gray-600 dark:hover:text-slate-300 hover:bg-gray-100 dark:hover:bg-slate-700 rounded-lg transition-colors"
@@ -33,12 +33,12 @@
           <div class="px-6 py-5 space-y-5">
             <!-- Collection Name -->
             <div>
-              <label class="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-2">Collection Name</label>
+              <label class="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-2">{{ t('modal.collectionName') }}</label>
               <input
                 ref="inputRef"
                 v-model="collectionName"
                 type="text"
-                placeholder="Enter collection name"
+                :placeholder="t('modal.enterCollectionName')"
                 class="w-full px-4 py-3 border border-gray-200 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-gray-900 dark:focus:ring-violet-500 focus:border-transparent outline-none transition-all bg-white dark:bg-slate-700 text-gray-900 dark:text-slate-100 placeholder:text-gray-400 dark:placeholder:text-slate-500"
                 @keyup.enter="handleConfirm"
               />
@@ -46,7 +46,7 @@
 
             <!-- Position Selection -->
             <div>
-              <label class="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-2">Position</label>
+              <label class="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-2">{{ t('modal.position') }}</label>
               <div class="flex gap-3">
                 <button
                   @click="position = 'head'"
@@ -55,7 +55,7 @@
                     ? 'border-gray-900 dark:border-violet-500 bg-gray-900 dark:bg-violet-600 text-white' 
                     : 'border-gray-200 dark:border-slate-600 text-gray-600 dark:text-slate-400 hover:border-gray-300 dark:hover:border-slate-500'"
                 >
-                  Add to Head
+                  {{ t('modal.addToHead') }}
                 </button>
                 <button
                   @click="position = 'tail'"
@@ -64,7 +64,7 @@
                     ? 'border-gray-900 dark:border-violet-500 bg-gray-900 dark:bg-violet-600 text-white' 
                     : 'border-gray-200 dark:border-slate-600 text-gray-600 dark:text-slate-400 hover:border-gray-300 dark:hover:border-slate-500'"
                 >
-                  Add to Tail
+                  {{ t('modal.addToTail') }}
                 </button>
               </div>
             </div>
@@ -76,13 +76,13 @@
               @click="handleClose"
               class="px-5 py-2.5 text-gray-600 dark:text-slate-400 hover:text-gray-800 dark:hover:text-slate-200 hover:bg-gray-100 dark:hover:bg-slate-700 rounded-xl transition-colors font-medium"
             >
-              Cancel
+              {{ t('modal.cancel') }}
             </button>
             <button
               @click="handleConfirm"
               class="px-5 py-2.5 bg-gray-900 dark:bg-violet-600 text-white rounded-xl hover:bg-gray-800 dark:hover:bg-violet-500 transition-colors font-medium"
             >
-              Create
+              {{ t('modal.create') }}
             </button>
           </div>
         </div>
@@ -93,6 +93,7 @@
 
 <script setup>
 import { ref, watch, nextTick } from 'vue'
+import { useI18n } from 'vue-i18n'
 
 const props = defineProps({
   show: {
@@ -103,6 +104,7 @@ const props = defineProps({
 
 const emit = defineEmits(['update:show', 'confirm'])
 
+const { t } = useI18n()
 const collectionName = ref('')
 const position = ref('tail')
 const inputRef = ref(null)
@@ -124,7 +126,7 @@ const handleClose = () => {
 
 const handleConfirm = () => {
   emit('confirm', {
-    name: collectionName.value || 'New Collection',
+    name: collectionName.value || t('modal.newCollection'),
     position: position.value
   })
   handleClose()

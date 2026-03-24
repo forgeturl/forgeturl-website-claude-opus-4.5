@@ -18,7 +18,7 @@
 
           <!-- Header -->
           <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100 dark:border-slate-700">
-            <h3 class="text-lg font-semibold text-gray-900 dark:text-slate-100">Edit Folder Name</h3>
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-slate-100">{{ t('modal.editFolderName') }}</h3>
             <button
               @click="handleClose"
               class="p-2 -mr-2 text-gray-400 dark:text-slate-500 hover:text-gray-600 dark:hover:text-slate-300 hover:bg-gray-100 dark:hover:bg-slate-700 rounded-lg transition-colors"
@@ -35,7 +35,7 @@
               ref="inputRef"
               v-model="titleValue"
               type="text"
-              placeholder="Enter folder name"
+              :placeholder="t('modal.enterFolderName')"
               class="w-full px-4 py-3 border border-gray-200 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-gray-900 dark:focus:ring-violet-500 focus:border-transparent outline-none transition-all text-lg bg-white dark:bg-slate-700 text-gray-900 dark:text-slate-100 placeholder:text-gray-400 dark:placeholder:text-slate-500"
               @keyup.enter="handleSave"
             />
@@ -47,13 +47,13 @@
               @click="handleClose"
               class="px-5 py-2.5 text-gray-600 dark:text-slate-400 hover:text-gray-800 dark:hover:text-slate-200 hover:bg-gray-100 dark:hover:bg-slate-700 rounded-xl transition-colors font-medium"
             >
-              Cancel
+              {{ t('modal.cancel') }}
             </button>
             <button
               @click="handleSave"
               class="px-5 py-2.5 bg-gray-900 dark:bg-violet-600 text-white rounded-xl hover:bg-gray-800 dark:hover:bg-violet-500 transition-colors font-medium"
             >
-              Save
+              {{ t('modal.save') }}
             </button>
           </div>
         </div>
@@ -64,6 +64,9 @@
 
 <script setup>
 import { ref, watch, nextTick } from 'vue'
+import { useI18n } from 'vue-i18n'
+
+const { t } = useI18n()
 
 const props = defineProps({
   show: {

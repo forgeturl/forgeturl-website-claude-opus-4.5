@@ -14,7 +14,7 @@
 
     <!-- Content -->
     <div class="flex-1 min-w-0">
-      <h3 class="font-medium text-gray-900 truncate">{{ link.title || 'Untitled' }}</h3>
+      <h3 class="font-medium text-gray-900 truncate">{{ link.title || t('collection.untitled') }}</h3>
       <p v-if="displayUrl" class="text-sm text-gray-400 truncate mt-0.5">{{ displayUrl }}</p>
     </div>
   </a>
@@ -22,6 +22,9 @@
 
 <script setup>
 import { computed } from 'vue'
+import { useI18n } from 'vue-i18n'
+
+const { t } = useI18n()
 
 const props = defineProps({
   link: {

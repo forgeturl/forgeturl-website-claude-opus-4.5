@@ -1,6 +1,7 @@
 import { createApp } from 'vue'
 import { createPinia } from 'pinia'
 import router from './router'
+import i18n from './i18n'
 import App from './App.vue'
 import './assets/main.css'
 import { STORAGE_KEYS } from './utils/config'
@@ -68,6 +69,7 @@ if (window.location.hostname === 'localhost') {
     const pinia = createPinia()
 
     app.use(pinia)
+    app.use(i18n)
     app.use(router)
 
     app.mount('#app')

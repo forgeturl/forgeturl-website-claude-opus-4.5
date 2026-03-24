@@ -21,7 +21,7 @@
             :style="{ width: autoSave.saveProgress.value + '%' }"
           ></div>
         </div>
-        <span class="text-xs text-gray-500 whitespace-nowrap">Saving...</span>
+        <span class="text-xs text-gray-500 whitespace-nowrap">{{ t('page.saving') }}</span>
       </div>
       
       <!-- Saved message -->
@@ -29,7 +29,7 @@
         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
         </svg>
-        <span class="text-xs font-medium">Saved</span>
+        <span class="text-xs font-medium">{{ t('page.saved') }}</span>
       </div>
       
       <!-- Error message -->
@@ -62,7 +62,7 @@
           </svg>
         </div>
         <p class="text-red-600 mb-4">{{ error }}</p>
-        <button @click="loadPage" class="btn btn-secondary">Retry</button>
+        <button @click="loadPage" class="btn btn-secondary">{{ t('page.retry') }}</button>
       </div>
 
       <!-- Page Content -->
@@ -83,7 +83,7 @@
               ref="searchInputRef"
               v-model="searchQuery"
               type="text"
-              placeholder="Search title, URL, tags, sub links..."
+              :placeholder="t('page.searchPlaceholder')"
               class="w-full pl-12 pr-10 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent transition-all text-gray-900 placeholder-gray-400"
             />
             <button
@@ -97,7 +97,7 @@
             </button>
           </div>
           <p v-if="searchQuery && filteredCollectionsCount === 0" class="text-center text-gray-500 mt-4">
-            No matching links found
+            {{ t('page.noMatchingLinks') }}
           </p>
         </div>
 
@@ -129,7 +129,7 @@
                     {{ item.title }}（{{ item.count }}）
                   </div>
                   <div v-if="sublinkUsageSorted.length === 0" class="px-3 py-2 text-sm text-gray-400">
-                    暂无 sublinks
+                    {{ t('page.noSublinks') }}
                   </div>
                 </div>
               </div>
@@ -152,7 +152,7 @@
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
               </svg>
-              <span class="hidden sm:inline">Link</span>
+              <span class="hidden sm:inline">{{ t('page.link') }}</span>
             </button>
             <button
               v-if="canEdit"
@@ -162,7 +162,7 @@
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M10 3h4v7h7v4h-7v7h-4v-7H3v-4h7V3z" />
               </svg>
-              <span class="hidden sm:inline">Collection</span>
+              <span class="hidden sm:inline">{{ t('page.collection') }}</span>
             </button>
             <button
               v-if="page.is_self"
@@ -172,7 +172,7 @@
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
               </svg>
-              <span class="hidden sm:inline">Share</span>
+              <span class="hidden sm:inline">{{ t('page.share') }}</span>
             </button>
           </div>
         </div>
@@ -279,6 +279,7 @@
 <script setup>
 import { ref, computed, onMounted, onUnmounted, watch, nextTick } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import { useAuthStore } from '@/stores/auth'
 import { usePageStore } from '@/stores/page'
 import { useAuth } from '@/composables/useAuth'
@@ -299,6 +300,7 @@ const router = useRouter()
 const authStore = useAuthStore()
 const pageStore = usePageStore()
 const { handleLogout: logout } = useAuth()
+const { t } = useI18n()
 
 const pageId = computed(() => route.params.pageId)
 const page = computed(() => pageStore.currentPage)
@@ -479,7 +481,7 @@ watch(() => page.value, (newPage) => {
 const loadPage = async () => {
   const id = pageId.value
   if (!id) {
-    error.value = 'Page ID does not exist'
+    error.value = t('page.pageIdNotExist')
     return
   }
 
@@ -490,7 +492,7 @@ const loadPage = async () => {
     await pageStore.fetchPage(id)
   } catch (err) {
     console.error('Load page error:', err)
-    error.value = err.message || 'Failed to load page'
+    error.value = err.message || t('page.failedToLoadPage')
   } finally {
     loading.value = false
   }
@@ -506,8 +508,8 @@ const selectPage = (id) => {
 // Delete page
 const handleDeletePage = async (id) => {
   const confirmed = await showConfirm(
-    'Are you sure you want to delete this page? This action cannot be undone.',
-    { type: 'danger', title: 'Delete Page', confirmText: 'Delete' }
+    t('confirm.deletePageConfirm'),
+    { type: 'danger', title: t('confirm.deletePageTitle'), confirmText: t('confirm.delete') }
   )
   if (!confirmed) return
   
@@ -518,7 +520,7 @@ const handleDeletePage = async (id) => {
     }
   } catch (err) {
     console.error('Failed to delete page:', err)
-    showAlert(err.message || 'Unknown error', 'error', 'Delete Failed')
+    showAlert(err.message || 'Unknown error', 'error', t('confirm.deleteFailed'))
   }
 }
 
@@ -591,8 +593,8 @@ const handleDragDelete = async () => {
   const itemType = currentDragType === 'collection' ? 'folder' : 'link'
   
   const confirmed = await showConfirm(
-    `Are you sure you want to delete this ${itemType}?`,
-    { type: 'danger', title: `Delete ${itemType.charAt(0).toUpperCase() + itemType.slice(1)}`, confirmText: 'Delete' }
+    t('confirm.deleteItemConfirm', { item: itemType }),
+    { type: 'danger', title: t('confirm.deleteItemTitle', { item: itemType.charAt(0).toUpperCase() + itemType.slice(1) }), confirmText: t('confirm.delete') }
   )
   
   if (confirmed) {
@@ -640,7 +642,7 @@ const updateCollectionTitle = (index, title) => {
 const copyCollection = (index) => {
   const original = localCollections.value[index]
   const copy = JSON.parse(JSON.stringify(original))
-  copy.title = original.title ? `${original.title} (Copy)` : 'Copy'
+  copy.title = original.title ? `${original.title} ${t('collection.copy')}` : t('collection.copy')
   
   // Insert after the original
   localCollections.value.splice(index + 1, 0, copy)
