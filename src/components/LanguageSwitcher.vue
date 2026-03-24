@@ -1,7 +1,7 @@
 <template>
   <div class="relative" ref="dropdownRef">
     <button
-      @click="open = !open"
+      @click="toggleDropdown"
       class="flex items-center gap-1 p-2 rounded-full bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm border border-gray-200 dark:border-slate-700 text-gray-600 dark:text-slate-300 hover:bg-white dark:hover:bg-slate-700 hover:text-gray-900 dark:hover:text-slate-100 transition-all duration-300 shadow-sm"
       :title="currentLabel"
     >
@@ -15,15 +15,16 @@
 
     <Transition
       enter-active-class="transition ease-out duration-200"
-      enter-from-class="opacity-0 translate-y-1"
-      enter-to-class="opacity-100 translate-y-0"
+      enter-from-class="opacity-0 scale-95"
+      enter-to-class="opacity-100 scale-100"
       leave-active-class="transition ease-in duration-150"
-      leave-from-class="opacity-100 translate-y-0"
-      leave-to-class="opacity-0 translate-y-1"
+      leave-from-class="opacity-100 scale-100"
+      leave-to-class="opacity-0 scale-95"
     >
       <div
         v-if="open"
-        class="absolute right-0 mt-2 w-44 bg-white dark:bg-slate-800 rounded-xl shadow-2xl dark:shadow-black/40 border border-gray-100 dark:border-slate-700 overflow-hidden z-50"
+        class="absolute right-0 w-44 bg-white dark:bg-slate-800 rounded-xl shadow-2xl dark:shadow-black/40 border border-gray-100 dark:border-slate-700 overflow-hidden z-50"
+        :class="dropUp ? 'bottom-full mb-2' : 'mt-2'"
       >
         <div class="py-1">
           <button
@@ -51,12 +52,22 @@ import { useLocale } from '@/composables/useLocale'
 const { currentLocale, currentLocaleShort, supportedLocales, setLocale } = useLocale()
 
 const open = ref(false)
+const dropUp = ref(false)
 const dropdownRef = ref(null)
 
 const currentLabel = computed(() => {
   const meta = supportedLocales.find(m => m.code === currentLocale.value)
   return meta ? meta.label : 'English'
 })
+
+const toggleDropdown = () => {
+  if (!open.value && dropdownRef.value) {
+    const rect = dropdownRef.value.getBoundingClientRect()
+    const spaceBelow = window.innerHeight - rect.bottom
+    dropUp.value = spaceBelow < 320
+  }
+  open.value = !open.value
+}
 
 const switchLocale = (code) => {
   setLocale(code)
