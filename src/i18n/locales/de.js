@@ -11,7 +11,7 @@ export default {
   home: {
     tagline: 'Links speichern, Kopf frei',
     description:
-      'Ein klarer, eleganter Lesezeichen-Manager. Schluss mit unübersichtlichen Browser-Favoriten — organisieren Sie mit intelligenten Sammlungen und finden Sie alles in Sekunden.',
+      'Ein schlanker, eleganter Lesezeichen-Manager. Schluss mit dem Chaos in den Browser-Favoriten — organisieren Sie alles mit smarten Sammlungen und finden Sie jeden Link in Sekunden.',
     getStarted: 'Kostenlos starten',
     learnMore: 'Mehr erfahren',
     goToMySpace: 'Zu Mein Bereich',
@@ -52,7 +52,7 @@ export default {
     step2Desc: 'Richten Sie Lesezeichen-Seiten ein, um Links nach Thema oder Projekt zu ordnen.',
     step3Title: 'Lesezeichen hinzufügen',
     step3Desc:
-      'URL einfügen, Details werden automatisch geladen, oder importieren Sie bestehende Lesezeichen gesammelt.'
+      'URL einfügen — Details werden automatisch geladen. Oder importieren Sie bestehende Lesezeichen auf einen Schlag.'
   },
   auth: {
     getStarted: 'Loslegen',
@@ -136,12 +136,12 @@ export default {
     create: 'Erstellen',
     creationFailed: 'Erstellung fehlgeschlagen, bitte erneut versuchen',
     addLink: 'Link hinzufügen',
-    batchAdd: 'Stapelweise hinzufügen',
+    batchAdd: 'Mehrere hinzufügen',
     import: 'Importieren',
     url: 'URL',
     tags: 'Tags',
     tagsCommaSeparated: '(kommagetrennt)',
-    tagsPlaceholder: 'Werkzeuge, dev, Design',
+    tagsPlaceholder: 'Tools, Dev, Design',
     subLinks: 'Unterlinks',
     subLinkTitle: 'Titel des Unterlinks',
     subLinkUrl: 'URL des Unterlinks',
