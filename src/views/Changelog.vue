@@ -155,8 +155,52 @@
           </p>
         </div>
 
+        <!-- Update Notice -->
+        <div class="mb-6 rounded-2xl border border-sky-100 dark:border-sky-900/60 bg-gradient-to-r from-sky-50 to-cyan-50 dark:from-sky-900/20 dark:to-cyan-900/20 shadow-sm dark:shadow-black/20 overflow-hidden">
+          <div class="px-6 py-5">
+            <div class="flex items-center gap-2 mb-2">
+              <span class="px-2.5 py-1 text-xs font-semibold tracking-wide uppercase rounded-full bg-sky-100 dark:bg-sky-900/50 text-sky-700 dark:text-sky-300">Latest Update</span>
+              <span class="text-xs text-sky-600 dark:text-sky-400 font-medium">2026-03-26</span>
+            </div>
+            <h2 class="text-xl font-bold text-gray-900 dark:text-slate-100 mb-1">
+              Multilingual support is now available
+            </h2>
+            <p class="text-sm text-gray-600 dark:text-slate-300">
+              ForgetURL now supports English, Simplified Chinese, Traditional Chinese, Japanese, French, German, Spanish, and Portuguese.
+            </p>
+          </div>
+        </div>
+
         <!-- Changelog Entries -->
         <div class="space-y-6">
+          <!-- Version 0.1.3 -->
+          <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-lg dark:shadow-black/30 border border-gray-100 dark:border-slate-700 overflow-hidden">
+            <div class="px-6 py-4 bg-gradient-to-r from-violet-50 to-fuchsia-50 dark:from-violet-900/20 dark:to-fuchsia-900/20 border-b border-gray-100 dark:border-slate-700">
+              <div class="flex items-center justify-between">
+                <h2 class="text-xl font-bold text-gray-900 dark:text-slate-100">v0.1.3</h2>
+                <span class="px-3 py-1 text-sm font-medium bg-violet-100 dark:bg-violet-900/50 text-violet-600 dark:text-violet-400 rounded-full">
+                  2026-03-26
+                </span>
+              </div>
+            </div>
+            <div class="p-6">
+              <ul class="text-gray-600 dark:text-slate-300 space-y-2">
+                <li class="flex items-start gap-2">
+                  <span class="text-green-500 mt-0.5">+</span>
+                  Added multilingual interface support across the app
+                </li>
+                <li class="flex items-start gap-2">
+                  <span class="text-green-500 mt-0.5">+</span>
+                  Added language switching for English, Chinese, Japanese, French, German, Spanish, and Portuguese
+                </li>
+                <li class="flex items-start gap-2">
+                  <span class="text-blue-500 mt-0.5">~</span>
+                  Standardized changelog updates in English
+                </li>
+              </ul>
+            </div>
+          </div>
+
           <!-- Version 0.1.2 -->
           <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-lg dark:shadow-black/30 border border-gray-100 dark:border-slate-700 overflow-hidden">
             <div class="px-6 py-4 bg-gradient-to-r from-violet-50 to-fuchsia-50 dark:from-violet-900/20 dark:to-fuchsia-900/20 border-b border-gray-100 dark:border-slate-700">
@@ -171,7 +215,7 @@
               <ul class="text-gray-600 dark:text-slate-300 space-y-2">
                 <li class="flex items-start gap-2">
                   <span class="text-green-500 mt-0.5">+</span>
-                  WeChat QR code login support (微信扫码登录)
+                  Added WeChat QR code sign-in support
                 </li>
               </ul>
             </div>
