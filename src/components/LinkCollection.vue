@@ -165,7 +165,7 @@ const props = defineProps({
   activeSublink: {
     type: String,
     default: ''
-  }
+  },
 })
 
 const emit = defineEmits([
