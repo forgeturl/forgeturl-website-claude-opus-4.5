@@ -21,7 +21,14 @@
             :style="{ width: autoSave.saveProgress.value + '%' }"
           ></div>
         </div>
-        <span class="text-xs text-gray-500 whitespace-nowrap">{{ t('page.saving') }}</span>
+        <span class="text-xs text-gray-500 whitespace-nowrap">{{ t('page.pendingSave') }}</span>
+        <button
+          type="button"
+          @click="handleCancelPendingChanges"
+          class="text-xs font-medium text-gray-500 hover:text-red-600 whitespace-nowrap transition-colors"
+        >
+          {{ t('page.cancelChanges') }}
+        </button>
       </div>
       
       <!-- Saved message -->
@@ -201,6 +208,7 @@
         >
           <template #item="{ element: collection, index }">
             <LinkCollection
+              :key="collection.__idx"
               :collection="collection"
               :collectionIndex="index"
               :canEdit="canEdit"
@@ -294,6 +302,15 @@ import AddCollectionModal from '@/components/AddCollectionModal.vue'
 import DragDeleteZone from '@/components/DragDeleteZone.vue'
 import AlertModal from '@/components/AlertModal.vue'
 import ConfirmModal from '@/components/ConfirmModal.vue'
+import {
+  ensureCollectionsIdx,
+  ensureLinkIdx,
+  cloneCollectionWithNewIds,
+  createEmptyCollection,
+  stripCollectionsForSave,
+  removeCollectionByIdx,
+  removeLinkByIdx
+} from '@/utils/collections'
 
 const route = useRoute()
 const router = useRouter()
@@ -446,8 +463,8 @@ const showConfirm = (message, options = {}) => {
 const isDragging = ref(false)
 const deleteZoneRef = ref(null)
 const dragType = ref(null) // 'collection' or 'link'
-const dragCollectionIndex = ref(-1)
-const dragLinkIndex = ref(-1)
+const dragCollectionIdx = ref(null)
+const dragLinkIdx = ref(null)
 
 // Can edit check
 const canEdit = computed(() => page.value?.page_conf?.can_edit)
@@ -463,17 +480,24 @@ const autoSave = useAutoSave(async () => {
     page_id: page.value.page_id,
     title: page.value.title,
     brief: page.value.brief,
-    collections: localCollections.value,
+    collections: stripCollectionsForSave(localCollections.value),
     version: page.value.version,
     mask: 7
   })
 })
 
+const handleCancelPendingChanges = async () => {
+  autoSave.cancelSave()
+  await loadPage()
+}
+
 
 // Watch for page changes to sync local collections
 watch(() => page.value, (newPage) => {
   if (newPage) {
-    localCollections.value = JSON.parse(JSON.stringify(newPage.collections || []))
+    localCollections.value = ensureCollectionsIdx(
+      JSON.parse(JSON.stringify(newPage.collections || []))
+    )
   }
 }, { immediate: true, deep: true })
 
@@ -542,7 +566,7 @@ const handlePageCreated = (id) => {
 const handleCollectionDragStart = (evt) => {
   isDragging.value = true
   dragType.value = 'collection'
-  dragCollectionIndex.value = evt.oldIndex
+  dragCollectionIdx.value = localCollections.value[evt.oldIndex]?.__idx ?? null
 }
 
 const handleCollectionDragEnd = (evt) => {
@@ -557,14 +581,14 @@ const handleCollectionDragEnd = (evt) => {
   
   isDragging.value = false
   dragType.value = null
-  dragCollectionIndex.value = -1
+  dragCollectionIdx.value = null
 }
 
-const handleLinkDragStart = (collectionIndex, { linkIndex }) => {
+const handleLinkDragStart = (collectionIndex, { linkIdx, collectionIdx }) => {
   isDragging.value = true
   dragType.value = 'link'
-  dragCollectionIndex.value = collectionIndex
-  dragLinkIndex.value = linkIndex
+  dragCollectionIdx.value = collectionIdx ?? localCollections.value[collectionIndex]?.__idx ?? null
+  dragLinkIdx.value = linkIdx ?? null
 }
 
 const handleLinkDragEnd = (evt) => {
@@ -579,16 +603,16 @@ const handleLinkDragEnd = (evt) => {
   
   isDragging.value = false
   dragType.value = null
-  dragCollectionIndex.value = -1
-  dragLinkIndex.value = -1
+  dragCollectionIdx.value = null
+  dragLinkIdx.value = null
 }
 
 const handleDragDelete = async () => {
   // Capture current drag state before async operation
   // (drag end handlers may reset these values while confirm modal is open)
   const currentDragType = dragType.value
-  const currentCollectionIndex = dragCollectionIndex.value
-  const currentLinkIndex = dragLinkIndex.value
+  const currentCollectionIdx = dragCollectionIdx.value
+  const currentLinkIdx = dragLinkIdx.value
   
   const itemType = currentDragType === 'collection' ? 'folder' : 'link'
   
@@ -598,11 +622,11 @@ const handleDragDelete = async () => {
   )
   
   if (confirmed) {
-    if (currentDragType === 'collection' && currentCollectionIndex >= 0) {
-      localCollections.value.splice(currentCollectionIndex, 1)
+    if (currentDragType === 'collection' && currentCollectionIdx) {
+      removeCollectionByIdx(localCollections.value, currentCollectionIdx)
       autoSave.markDirty()
-    } else if (currentDragType === 'link' && currentCollectionIndex >= 0 && currentLinkIndex >= 0) {
-      localCollections.value[currentCollectionIndex].links.splice(currentLinkIndex, 1)
+    } else if (currentDragType === 'link' && currentCollectionIdx && currentLinkIdx) {
+      removeLinkByIdx(localCollections.value, currentCollectionIdx, currentLinkIdx)
       autoSave.markDirty()
     }
   }
@@ -610,18 +634,15 @@ const handleDragDelete = async () => {
   // Reset drag state
   isDragging.value = false
   dragType.value = null
-  dragCollectionIndex.value = -1
-  dragLinkIndex.value = -1
+  dragCollectionIdx.value = null
+  dragLinkIdx.value = null
 }
 
 // ==================== Collection Operations ====================
 
 // Add collection from modal
 const handleAddCollection = ({ name, position }) => {
-  const newCollection = {
-    title: name,
-    links: []
-  }
+  const newCollection = createEmptyCollection(name, [])
   
   if (position === 'head') {
     localCollections.value.unshift(newCollection)
@@ -641,7 +662,7 @@ const updateCollectionTitle = (index, title) => {
 // Copy collection
 const copyCollection = (index) => {
   const original = localCollections.value[index]
-  const copy = JSON.parse(JSON.stringify(original))
+  const copy = cloneCollectionWithNewIds(original)
   copy.title = original.title ? `${original.title} ${t('collection.copy')}` : t('collection.copy')
   
   // Insert after the original
@@ -676,14 +697,10 @@ const deleteLink = (collectionIndex, linkIndex) => {
 
 // Handle add new link from modal
 const handleAddNewLink = ({ link, collectionIndex, newCollectionName }) => {
+  ensureLinkIdx(link)
   if (collectionIndex === -1 && newCollectionName) {
-    // Create new collection with the link
-    localCollections.value.push({
-      title: newCollectionName,
-      links: [link]
-    })
+    localCollections.value.push(createEmptyCollection(newCollectionName, [link]))
   } else if (collectionIndex >= 0) {
-    // Add to existing collection
     if (!localCollections.value[collectionIndex].links) {
       localCollections.value[collectionIndex].links = []
     }
@@ -695,14 +712,10 @@ const handleAddNewLink = ({ link, collectionIndex, newCollectionName }) => {
 // Handle batch add links from modal
 const handleBatchAddLinks = ({ links, collectionIndex, newCollectionName }) => {
   console.log('handleBatchAddLinks called with:', { links, collectionIndex, newCollectionName })
+  links.forEach(ensureLinkIdx)
   if (collectionIndex === -1 && newCollectionName) {
-    // Create new collection with all the links
-    localCollections.value.push({
-      title: newCollectionName,
-      links: links
-    })
+    localCollections.value.push(createEmptyCollection(newCollectionName, links))
   } else if (collectionIndex >= 0) {
-    // Add all links to existing collection
     if (!localCollections.value[collectionIndex].links) {
       localCollections.value[collectionIndex].links = []
     }
@@ -715,32 +728,24 @@ const handleBatchAddLinks = ({ links, collectionIndex, newCollectionName }) => {
 const handleImportBookmarks = ({ folders }) => {
   console.log('handleImportBookmarks called with folders:', folders)
   
-  // Add each folder as a new collection
-  // If a collection with the same name exists, add links to it
   folders.forEach(folder => {
     const existingIndex = localCollections.value.findIndex(
       c => c.title?.toLowerCase() === folder.title?.toLowerCase()
     )
     
     if (existingIndex >= 0) {
-      // Add to existing collection
       if (!localCollections.value[existingIndex].links) {
         localCollections.value[existingIndex].links = []
       }
+      folder.links.forEach(ensureLinkIdx)
       localCollections.value[existingIndex].links.push(...folder.links)
     } else {
-      // Create new collection
-      localCollections.value.push({
-        title: folder.title,
-        links: folder.links
-      })
+      localCollections.value.push(createEmptyCollection(folder.title, folder.links))
     }
   })
   
   console.log('localCollections after import:', localCollections.value)
   console.log('Calling autoSave.markDirty()')
-  
-  // markDirty will trigger auto-save after 5 seconds (built-in delay in useAutoSave)
   autoSave.markDirty()
 }
 

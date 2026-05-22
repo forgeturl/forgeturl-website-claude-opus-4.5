@@ -38,7 +38,14 @@
                     :style="{ width: autoSave.saveProgress.value + '%' }"
                   ></div>
                 </div>
-                <span class="text-xs text-gray-500">{{ t('page.saving') }}</span>
+                <span class="text-xs text-gray-500">{{ t('page.pendingSave') }}</span>
+                <button
+                  type="button"
+                  @click="handleCancelPendingChanges"
+                  class="text-xs font-medium text-gray-500 hover:text-red-600 whitespace-nowrap transition-colors"
+                >
+                  {{ t('page.cancelChanges') }}
+                </button>
               </div>
               
               <!-- Saved message -->
@@ -166,7 +173,7 @@
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           <LinkCollection
             v-for="(collection, index) in localCollections"
-            :key="index"
+            :key="collection.__idx"
             :collection="collection"
             :collectionIndex="index"
             :canEdit="canEdit"
@@ -194,6 +201,11 @@ import { useI18n } from 'vue-i18n'
 import { getPage, updatePage } from '@/api/space'
 import { useAutoSave } from '@/composables/useAutoSave'
 import LinkCollection from '@/components/LinkCollection.vue'
+import {
+  ensureCollectionsIdx,
+  cloneCollectionWithNewIds,
+  stripCollectionsForSave
+} from '@/utils/collections'
 
 const route = useRoute()
 const router = useRouter()
@@ -285,16 +297,23 @@ const autoSave = useAutoSave(async () => {
     page_id: page.value.page_id,
     title: page.value.title,
     brief: page.value.brief,
-    collections: localCollections.value,
+    collections: stripCollectionsForSave(localCollections.value),
     version: page.value.version,
     mask: 7
   })
 })
 
+const handleCancelPendingChanges = async () => {
+  autoSave.cancelSave()
+  await loadPage()
+}
+
 // Watch for page changes to sync local collections
 watch(() => page.value, (newPage) => {
   if (newPage) {
-    localCollections.value = JSON.parse(JSON.stringify(newPage.collections || []))
+    localCollections.value = ensureCollectionsIdx(
+      JSON.parse(JSON.stringify(newPage.collections || []))
+    )
   }
 }, { immediate: true, deep: true })
 
@@ -363,7 +382,7 @@ const updateLink = (collectionIndex, linkIndex, link) => {
 // Copy collection
 const copyCollection = (index) => {
   const original = localCollections.value[index]
-  const copy = JSON.parse(JSON.stringify(original))
+  const copy = cloneCollectionWithNewIds(original)
   copy.title = original.title ? `${original.title} ${t('collection.copy')}` : t('collection.copy')
   
   localCollections.value.splice(index + 1, 0, copy)

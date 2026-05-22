@@ -94,6 +94,8 @@ export default {
   },
   page: {
     saving: 'Saving...',
+    pendingSave: 'Unsaved changes',
+    cancelChanges: 'Cancel',
     saved: 'Saved',
     addDescription: 'Add description',
     searchPlaceholder: 'Search title, URL, tags, sub links...',
