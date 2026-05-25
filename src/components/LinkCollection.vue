@@ -165,7 +165,7 @@ const props = defineProps({
   activeSublink: {
     type: String,
     default: ''
-  }
+  },
 })
 
 const emit = defineEmits([
@@ -322,7 +322,12 @@ let currentDragIndex = -1
 
 const handleDragStart = (evt) => {
   currentDragIndex = evt.oldIndex
-  emit('link-drag-start', { linkIndex: evt.oldIndex })
+  const link = localLinks.value[evt.oldIndex]
+  emit('link-drag-start', {
+    linkIndex: evt.oldIndex,
+    linkIdx: link?.__idx,
+    collectionIdx: props.collection.__idx
+  })
 }
 
 const handleDragEnd = (evt) => {

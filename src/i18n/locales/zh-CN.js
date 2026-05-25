@@ -95,6 +95,8 @@ export default {
   },
   page: {
     saving: '保存中...',
+    pendingSave: '有未保存的修改',
+    cancelChanges: '取消',
     saved: '已保存',
     addDescription: '添加描述',
     searchPlaceholder: '搜索标题、网址、标签、子链接...',
