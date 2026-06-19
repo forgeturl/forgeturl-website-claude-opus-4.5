@@ -55,6 +55,7 @@ export const PAGE_TYPES = {
 export const STORAGE_KEYS = {
     TOKEN: 'x-token',
     USER_INFO: 'user-info',
-    FORGET_COOKIE: 'x-forget-cookie'
+    FORGET_COOKIE: 'x-forget-cookie',
+    AVM_LOGIN: 'avm-login',
+    AVM_REDIRECT_URI: 'avm-redirect-uri'
 }
-

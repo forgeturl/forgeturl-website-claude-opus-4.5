@@ -17,8 +17,9 @@ export function useAuth() {
      */
     const startAuth = async (provider) => {
         try {
+            const isAVMLogin = sessionStorage.get(STORAGE_KEYS.AVM_LOGIN) === true
             // 微信登录：如果在主站(forgeturl.com)，需要先跳转到备案域名
-            if (provider === 'wechat' && isMainDomain()) {
+            if (provider === 'wechat' && isMainDomain() && !isAVMLogin) {
                 window.location.href = `${WECHAT_LOGIN_DOMAIN}/?wechat_login=true`
                 return
             }
@@ -42,11 +43,27 @@ export function useAuth() {
      */
     const handleAuthCallback = async (provider, params) => {
         try {
+            const isAVMLogin = sessionStorage.get(STORAGE_KEYS.AVM_LOGIN) === true
+            const callbackParams = isAVMLogin ? { ...params, avm_login: 'true' } : params
             // 调用回调接口
-            const data = await authCallback(provider, params)
+            const data = await authCallback(provider, callbackParams)
 
             // 登录成功，保存用户信息
             if (data) {
+                if (isAVMLogin && data.avm_auth_code) {
+                    const redirectUri = sessionStorage.get(STORAGE_KEYS.AVM_REDIRECT_URI)
+                    sessionStorage.remove(STORAGE_KEYS.AVM_LOGIN)
+                    sessionStorage.remove(STORAGE_KEYS.AVM_REDIRECT_URI)
+                    sessionStorage.remove(STORAGE_KEYS.FORGET_COOKIE)
+                    if (!redirectUri) {
+                        throw new Error('Missing AVM redirect URI')
+                    }
+                    const target = new URL(redirectUri, window.location.origin)
+                    target.searchParams.set('auth_code', data.avm_auth_code)
+                    window.location.href = target.toString()
+                    return null
+                }
+
                 const userInfo = {
                     uid: data.uid,
                     username: data.username,
@@ -98,4 +115,3 @@ export function useAuth() {
         user: authStore.user
     }
 }
-
