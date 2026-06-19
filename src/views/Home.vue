@@ -752,7 +752,8 @@ import { useTheme } from '@/composables/useTheme'
 import { useLocale } from '@/composables/useLocale'
 import { useAuthStore } from '@/stores/auth'
 import { getUserCount } from '@/api/auth'
-import { isWechatLoginDomain } from '@/utils/config'
+import { sessionStorage } from '@/utils/storage'
+import { isWechatLoginDomain, STORAGE_KEYS } from '@/utils/config'
 import LanguageSwitcher from '@/components/LanguageSwitcher.vue'
 
 const { startAuth } = useAuth()
@@ -819,6 +820,16 @@ onMounted(() => {
   fetchUserCount()
 
   const urlParams = new URLSearchParams(window.location.search)
+  if (urlParams.get('avm_login') === 'true' && isWechatLoginDomain()) {
+    const redirectUri = urlParams.get('redirect_uri')
+    if (redirectUri) {
+      sessionStorage.set(STORAGE_KEYS.AVM_LOGIN, true)
+      sessionStorage.set(STORAGE_KEYS.AVM_REDIRECT_URI, redirectUri)
+      handleLogin('wechat')
+      return
+    }
+  }
+
   if (urlParams.get('wechat_login') === 'true' && isWechatLoginDomain()) {
     handleLogin('wechat')
   }

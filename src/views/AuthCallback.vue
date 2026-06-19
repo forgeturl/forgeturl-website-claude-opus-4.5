@@ -56,6 +56,9 @@ onMounted(async () => {
   try {
     const params = { ...route.query }
     const userInfo = await handleAuthCallback(provider, params)
+    if (!userInfo) {
+      return
+    }
 
     // 微信登录特殊处理：如果当前在备案域名(forgeturl.brightguo.com)上完成的微信登录，
     // 需要携带token和用户信息跳转回主站(forgeturl.com)
@@ -80,4 +83,3 @@ const goToLogin = () => {
   router.push('/')
 }
 </script>
-
