@@ -251,7 +251,7 @@
               @links-changed="(links) => updateCollectionLinks(index, links)"
               @link-drag-start="(info) => handleLinkDragStart(index, info)"
               @link-drag-end="handleLinkDragEnd"
-              @copy-collection="copyCollection(index)"
+              @transfer-collection="openCollectionTransfer(index)"
             />
           </template>
         </draggable>
@@ -305,6 +305,15 @@
       @confirm="handleAddCollection"
     />
 
+    <CollectionTransferModal
+      v-model:show="showCollectionTransferModal"
+      :pages="pageStore.myPages"
+      :current-page-id="selectedPageId"
+      :collection-title="localCollections[transferCollectionIndex]?.title"
+      :loading="transferringCollection"
+      @confirm="handleCollectionTransfer"
+    />
+
     <!-- Edit Page Modal -->
     <EditPageModal
       v-model:show="showEditPageModal"
@@ -351,6 +360,7 @@ import ShareModal from '@/components/ShareModal.vue'
 import LinkCollection from '@/components/LinkCollection.vue'
 import AddLinkModal from '@/components/AddLinkModal.vue'
 import AddCollectionModal from '@/components/AddCollectionModal.vue'
+import CollectionTransferModal from '@/components/CollectionTransferModal.vue'
 import DragDeleteZone from '@/components/DragDeleteZone.vue'
 import EditPageModal from '@/components/EditPageModal.vue'
 import AlertModal from '@/components/AlertModal.vue'
@@ -375,6 +385,9 @@ const showCreateModal = ref(false)
 const showShareModal = ref(false)
 const showAddLinkModal = ref(false)
 const showAddCollectionModal = ref(false)
+const showCollectionTransferModal = ref(false)
+const transferCollectionIndex = ref(-1)
+const transferringCollection = ref(false)
 const showEditPageModal = ref(false)
 const savingPageInfo = ref(false)
 const selectedPageId = ref('')
@@ -773,15 +786,49 @@ const updateCollectionTitle = (index, title) => {
   queueAutoSave()
 }
 
-// Copy collection
-const copyCollection = (index) => {
+const openCollectionTransfer = (index) => {
+  transferCollectionIndex.value = index
+  showCollectionTransferModal.value = true
+}
+
+const handleCollectionTransfer = async ({ operation, targetPageId }) => {
+  const index = transferCollectionIndex.value
   const original = localCollections.value[index]
-  const copy = cloneCollectionWithNewIds(original)
-  copy.title = original.title ? `${original.title} (${t('collection.copy')})` : t('collection.copy')
-  
-  // Insert after the original
-  localCollections.value.splice(index + 1, 0, copy)
-  queueAutoSave()
+  if (!original || !selectedPage.value) return
+
+  transferringCollection.value = true
+  try {
+    if (targetPageId === selectedPageId.value) {
+      if (operation !== 'copy') return
+      const copy = cloneCollectionWithNewIds(original)
+      copy.title = original.title ? `${original.title} ${t('collection.copy')}` : t('collection.copy')
+      localCollections.value.splice(index + 1, 0, copy)
+      queueAutoSave()
+    } else {
+      await autoSave.flush()
+      await pageStore.transferCollection({
+        sourcePageId: selectedPageId.value,
+        targetPageId,
+        sourceCollectionIndex: index,
+        operation,
+        sourceVersion: selectedPage.value.version
+      })
+      if (operation === 'move') {
+        localCollections.value.splice(index, 1)
+      }
+    }
+
+    showCollectionTransferModal.value = false
+    showAlert(
+      operation === 'copy' ? t('collection.copySuccess') : t('collection.moveSuccess'),
+      'success',
+      t('confirm.notice')
+    )
+  } catch (err) {
+    showAlert(err.message || t('collection.transferFailed'), 'error', t('confirm.error'))
+  } finally {
+    transferringCollection.value = false
+  }
 }
 
 // Update collection links (for drag and drop)
