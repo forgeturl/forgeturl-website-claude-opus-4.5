@@ -64,6 +64,19 @@ export function updatePage(data) {
 }
 
 /**
+ * Copy or move a complete collection between editable pages.
+ * @param {Object} data
+ * @returns {Promise}
+ */
+export function transferCollection(data) {
+    return request({
+        url: '/space/transferCollection',
+        method: 'POST',
+        data
+    })
+}
+
+/**
  * 删除页面
  * @param {string} pageId - 页面ID
  * @returns {Promise}
@@ -122,4 +135,3 @@ export function removePageLink(pageId, pageType) {
         }
     })
 }
-

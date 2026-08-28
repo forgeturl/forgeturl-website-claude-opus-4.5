@@ -115,6 +115,18 @@ export function useAutoSave(saveFn) {
     void executeSave()
   }
 
+  const flush = async () => {
+    if (activeSavePromise) {
+      await activeSavePromise
+    }
+    if (pendingSaves.size > 0) {
+      await executeSave()
+    }
+    if (saveError.value) {
+      throw new Error(saveError.value)
+    }
+  }
+
   const dispose = () => {
     // Do not discard active or queued saves when navigating away. Payloads are
     // self-contained snapshots and can safely finish without the component UI.
@@ -142,6 +154,7 @@ export function useAutoSave(saveFn) {
     saveStatusText,
     showProgress,
     markDirty,
+    flush,
     dispose
   }
 }

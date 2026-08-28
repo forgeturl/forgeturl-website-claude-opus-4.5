@@ -55,3 +55,30 @@ test('advances when an older backend returns a non-advancing version', () => {
   assert.equal(resolveNextPageVersion(undefined, 7), 8)
   assert.equal(resolveNextPageVersion(9, 8), 9)
 })
+
+test('flush waits for the active save before a cross-page operation', async () => {
+  let releaseSave
+  const saveGate = new Promise((resolve) => {
+    releaseSave = resolve
+  })
+  let completed = false
+
+  const originalWarn = console.warn
+  console.warn = () => {}
+  const autoSave = useAutoSave(async (payload) => {
+    await saveGate
+    completed = true
+    return { version: payload.version + 1 }
+  })
+  console.warn = originalWarn
+
+  autoSave.markDirty({ page_id: 'A', version: 2, collections: [{ title: 'latest' }] })
+  const flushPromise = autoSave.flush()
+  await Promise.resolve()
+  assert.equal(completed, false)
+
+  releaseSave()
+  await flushPromise
+  assert.equal(completed, true)
+  assert.equal(autoSave.isDirty.value, false)
+})

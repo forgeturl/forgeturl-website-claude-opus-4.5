@@ -9,6 +9,7 @@ import {
     getPage,
     createPage as apiCreatePage,
     updatePage as apiUpdatePage,
+    transferCollection as apiTransferCollection,
     deletePage as apiDeletePage,
     savePageIds as apiSavePageIds,
     addPageLink as apiAddPageLink,
@@ -97,6 +98,44 @@ export const usePageStore = defineStore('page', () => {
         } catch (error) {
             console.error('Update page error:', error)
             throw error
+        } finally {
+            loading.value = false
+        }
+    }
+
+    const transferCollection = async ({
+        sourcePageId,
+        targetPageId,
+        sourceCollectionIndex,
+        operation,
+        sourceVersion
+    }) => {
+        loading.value = true
+        try {
+            const targetData = await getPage(targetPageId)
+            const targetPage = targetData.page || targetData
+            const result = await apiTransferCollection({
+                source_page_id: sourcePageId,
+                target_page_id: targetPageId,
+                source_collection_index: sourceCollectionIndex,
+                operation,
+                source_version: sourceVersion,
+                target_version: targetPage.version
+            })
+
+            const applySourceVersion = (page) => {
+                if (!page || page.page_id !== sourcePageId) return
+                page.version = result.source_version
+                if (result.update_time) page.update_time = result.update_time
+            }
+            applySourceVersion(currentPage.value)
+            applySourceVersion(myPages.value.find((page) => page.page_id === sourcePageId))
+
+            const targetBrief = myPages.value.find((page) => page.page_id === targetPageId)
+            if (targetBrief && result.update_time) {
+                targetBrief.update_time = result.update_time
+            }
+            return result
         } finally {
             loading.value = false
         }
@@ -208,6 +247,7 @@ export const usePageStore = defineStore('page', () => {
         fetchPage,
         createPage,
         updatePage,
+        transferCollection,
         deletePage,
         savePageOrder,
         addPageLink,
