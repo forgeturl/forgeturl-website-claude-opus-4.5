@@ -8,27 +8,15 @@
     @delete-page="handleDeletePage"
     @logout="handleLogout"
   >
-    <!-- Save Progress Bar (Fixed at top-right) -->
+    <!-- Save status (Fixed at top-right) -->
     <div 
       v-if="canEdit && (autoSave.showProgress.value || autoSave.showSavedMessage.value || autoSave.saveError.value)"
       class="fixed top-4 right-4 z-40 flex items-center gap-3 bg-white rounded-full shadow-lg px-4 py-2 border border-gray-100"
     >
-      <!-- Progress bar -->
+      <!-- Saving indicator -->
       <div v-if="autoSave.showProgress.value" class="flex items-center gap-3">
-        <div class="w-32 h-1.5 bg-gray-100 rounded-full overflow-hidden">
-          <div 
-            class="h-full bg-emerald-500 rounded-full transition-all duration-100"
-            :style="{ width: autoSave.saveProgress.value + '%' }"
-          ></div>
-        </div>
-        <span class="text-xs text-gray-500 whitespace-nowrap">{{ t('page.pendingSave') }}</span>
-        <button
-          type="button"
-          @click="handleCancelPendingChanges"
-          class="text-xs font-medium text-gray-500 hover:text-red-600 whitespace-nowrap transition-colors"
-        >
-          {{ t('page.cancelChanges') }}
-        </button>
+        <div class="w-4 h-4 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin"></div>
+        <span class="text-xs text-gray-500 whitespace-nowrap">{{ t('page.saving') }}</span>
       </div>
       
       <!-- Saved message -->
@@ -472,11 +460,16 @@ const canEdit = computed(() => page.value?.page_conf?.can_edit)
 // Local collections for editing (reactive copy)
 const localCollections = ref([])
 
-// Auto save functionality
-const autoSave = useAutoSave(async () => {
+// Auto save functionality. Queue complete page snapshots so route changes do
+// not redirect an older page's pending save to the newly selected page.
+const autoSave = useAutoSave(async (payload) => {
+  return pageStore.updatePage(payload)
+})
+
+const queueAutoSave = () => {
   if (!page.value) return
-  
-  await pageStore.updatePage({
+
+  autoSave.markDirty({
     page_id: page.value.page_id,
     title: page.value.title,
     brief: page.value.brief,
@@ -484,13 +477,7 @@ const autoSave = useAutoSave(async () => {
     version: page.value.version,
     mask: 7
   })
-})
-
-const handleCancelPendingChanges = async () => {
-  autoSave.cancelSave()
-  await loadPage()
 }
-
 
 // Watch for page changes to sync local collections
 watch(() => page.value, (newPage) => {
@@ -499,7 +486,7 @@ watch(() => page.value, (newPage) => {
       JSON.parse(JSON.stringify(newPage.collections || []))
     )
   }
-}, { immediate: true, deep: true })
+}, { immediate: true })
 
 // Load page
 const loadPage = async () => {
@@ -624,10 +611,10 @@ const handleDragDelete = async () => {
   if (confirmed) {
     if (currentDragType === 'collection' && currentCollectionIdx) {
       removeCollectionByIdx(localCollections.value, currentCollectionIdx)
-      autoSave.markDirty()
+      queueAutoSave()
     } else if (currentDragType === 'link' && currentCollectionIdx && currentLinkIdx) {
       removeLinkByIdx(localCollections.value, currentCollectionIdx, currentLinkIdx)
-      autoSave.markDirty()
+      queueAutoSave()
     }
   }
   
@@ -650,13 +637,13 @@ const handleAddCollection = ({ name, position }) => {
     localCollections.value.push(newCollection)
   }
   
-  autoSave.markDirty()
+  queueAutoSave()
 }
 
 // Update collection title
 const updateCollectionTitle = (index, title) => {
   localCollections.value[index].title = title
-  autoSave.markDirty()
+  queueAutoSave()
 }
 
 // Copy collection
@@ -667,18 +654,18 @@ const copyCollection = (index) => {
   
   // Insert after the original
   localCollections.value.splice(index + 1, 0, copy)
-  autoSave.markDirty()
+  queueAutoSave()
 }
 
 // Update collection links (for drag and drop)
 const updateCollectionLinks = (index, links) => {
   localCollections.value[index].links = links
-  autoSave.markDirty()
+  queueAutoSave()
 }
 
 // Handle collections order change (drag)
 const handleCollectionsChange = () => {
-  autoSave.markDirty()
+  queueAutoSave()
 }
 
 // ==================== Link Operations ====================
@@ -686,13 +673,13 @@ const handleCollectionsChange = () => {
 // Update link
 const updateLink = (collectionIndex, linkIndex, link) => {
   localCollections.value[collectionIndex].links[linkIndex] = link
-  autoSave.markDirty()
+  queueAutoSave()
 }
 
 // Delete link
 const deleteLink = (collectionIndex, linkIndex) => {
   localCollections.value[collectionIndex].links.splice(linkIndex, 1)
-  autoSave.markDirty()
+  queueAutoSave()
 }
 
 // Handle add new link from modal
@@ -706,7 +693,7 @@ const handleAddNewLink = ({ link, collectionIndex, newCollectionName }) => {
     }
     localCollections.value[collectionIndex].links.push(link)
   }
-  autoSave.markDirty()
+  queueAutoSave()
 }
 
 // Handle batch add links from modal
@@ -721,7 +708,7 @@ const handleBatchAddLinks = ({ links, collectionIndex, newCollectionName }) => {
     }
     localCollections.value[collectionIndex].links.push(...links)
   }
-  autoSave.markDirty()
+  queueAutoSave()
 }
 
 // Handle import bookmarks from modal
@@ -745,8 +732,8 @@ const handleImportBookmarks = ({ folders }) => {
   })
   
   console.log('localCollections after import:', localCollections.value)
-  console.log('Calling autoSave.markDirty()')
-  autoSave.markDirty()
+  console.log('Queueing immediate auto save')
+  queueAutoSave()
 }
 
 

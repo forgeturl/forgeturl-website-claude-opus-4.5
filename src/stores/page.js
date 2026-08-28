@@ -3,6 +3,7 @@
  */
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
+import { resolveNextPageVersion } from '@/utils/pageVersion'
 import {
     getMySpace,
     getPage,
@@ -73,19 +74,26 @@ export const usePageStore = defineStore('page', () => {
         loading.value = true
         try {
             const result = await apiUpdatePage(pageData)
-            // 更新成功后刷新当前页面
-            if (pageData.page_id) {
-                await fetchPage(pageData.page_id)
-                
-                // 同步更新 myPages 中对应的页面
-                if (currentPage.value) {
-                    const index = myPages.value.findIndex(p => p.page_id === pageData.page_id)
-                    if (index !== -1) {
-                        myPages.value[index] = { ...myPages.value[index], ...currentPage.value }
-                    }
-                }
+
+            // 后端使用乐观锁保存，成功后版本必定递增。直接同步版本和页面摘要，
+            // 避免立即保存期间额外拉取页面覆盖用户刚刚做出的下一次修改。
+            const nextVersion = resolveNextPageVersion(result?.version, pageData.version)
+            const updateTime = result?.update_time
+            const mask = Number(pageData.mask || 0)
+            const applySavedFields = (page) => {
+                if (!page || page.page_id !== pageData.page_id) return
+                page.version = nextVersion
+                if (updateTime) page.update_time = updateTime
+                if ((mask & 1) !== 0) page.title = pageData.title
+                if ((mask & 2) !== 0) page.brief = pageData.brief
             }
-            return result
+
+            applySavedFields(currentPage.value)
+            const index = myPages.value.findIndex(p => p.page_id === pageData.page_id)
+            if (index !== -1) {
+                applySavedFields(myPages.value[index])
+            }
+            return { ...(result || {}), version: nextVersion }
         } catch (error) {
             console.error('Update page error:', error)
             throw error
@@ -207,4 +215,3 @@ export const usePageStore = defineStore('page', () => {
         clear
     }
 })
-

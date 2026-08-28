@@ -7,29 +7,16 @@
     @select-page="selectPage"
     @delete-page="handleDeletePage"
     @logout="handleLogout"
-    @manage-api-key="handleManageApiKey"
   >
-    <!-- Save Progress Bar (Fixed at top-right) -->
+    <!-- Save status (Fixed at top-right) -->
     <div 
       v-if="canEdit && (autoSave.showProgress.value || autoSave.showSavedMessage.value || autoSave.saveError.value)"
       class="fixed top-4 right-4 z-40 flex items-center gap-3 bg-white dark:bg-slate-800 rounded-full shadow-lg px-4 py-2 border border-gray-100 dark:border-slate-700 transition-colors duration-300"
     >
-      <!-- Progress bar -->
+      <!-- Saving indicator -->
       <div v-if="autoSave.showProgress.value" class="flex items-center gap-3">
-        <div class="w-32 h-1.5 bg-gray-100 dark:bg-slate-700 rounded-full overflow-hidden">
-          <div 
-            class="h-full bg-emerald-500 dark:bg-emerald-400 rounded-full transition-all duration-100"
-            :style="{ width: autoSave.saveProgress.value + '%' }"
-          ></div>
-        </div>
-        <span class="text-xs text-gray-500 dark:text-slate-400 whitespace-nowrap">{{ t('page.pendingSave') }}</span>
-        <button
-          type="button"
-          @click="handleCancelPendingChanges"
-          class="text-xs font-medium text-gray-500 dark:text-slate-400 hover:text-red-600 dark:hover:text-red-400 whitespace-nowrap transition-colors"
-        >
-          {{ t('page.cancelChanges') }}
-        </button>
+        <div class="w-4 h-4 border-2 border-emerald-500 dark:border-emerald-400 border-t-transparent rounded-full animate-spin"></div>
+        <span class="text-xs text-gray-500 dark:text-slate-400 whitespace-nowrap">{{ t('page.saving') }}</span>
       </div>
       
       <!-- Saved message -->
@@ -237,53 +224,6 @@
           </div>
         </div>
 
-        <!-- Temporary Bookmarks -->
-        <div
-          v-if="tmpBookmarks.length > 0"
-          class="mb-5 border border-dashed border-gray-300 dark:border-slate-600 rounded-xl p-4 bg-white dark:bg-slate-800 transition-colors max-w-md"
-        >
-          <div class="mb-2">
-            <h3 class="text-base font-semibold text-gray-400 dark:text-slate-500 text-center select-none">
-              临时书签
-              <span class="text-xs font-normal ml-1">{{ tmpBookmarks.length }}</span>
-            </h3>
-          </div>
-
-          <div class="overflow-y-auto max-h-[280px]">
-            <draggable
-              v-model="tmpBookmarks"
-              :group="{ name: 'links', pull: true, put: false }"
-              item-key="id"
-              handle=".tmp-bookmark-drag-handle"
-              ghost-class="opacity-50"
-              :animation="200"
-              class="space-y-0.5"
-              @change="handleTmpBookmarksChange"
-            >
-              <template #item="{ element: bookmark }">
-                <div class="group flex items-center gap-2 rounded-lg px-2 py-1.5 hover:bg-gray-50 dark:hover:bg-slate-700/50 transition-colors">
-                  <div class="tmp-bookmark-drag-handle flex-shrink-0 w-4 h-4 flex items-center justify-center cursor-grab opacity-0 group-hover:opacity-100 transition-opacity">
-                    <svg class="w-3 h-3 text-gray-300 dark:text-slate-500" fill="currentColor" viewBox="0 0 20 20">
-                      <path d="M7 2a2 2 0 1 0 .001 4.001A2 2 0 0 0 7 2zm0 6a2 2 0 1 0 .001 4.001A2 2 0 0 0 7 8zm0 6a2 2 0 1 0 .001 4.001A2 2 0 0 0 7 14zm6-8a2 2 0 1 0-.001-4.001A2 2 0 0 0 13 6zm0 2a2 2 0 1 0 .001 4.001A2 2 0 0 0 13 8zm0 6a2 2 0 1 0 .001 4.001A2 2 0 0 0 13 14z"/>
-                    </svg>
-                  </div>
-
-                  <a
-                    :href="bookmark.url"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    class="flex-1 min-w-0 text-sm text-gray-500 dark:text-slate-400 hover:text-gray-900 dark:hover:text-slate-100 hover:font-semibold transition-all no-underline truncate"
-                    :title="bookmark.url"
-                  >
-                    {{ bookmark.title }}
-                  </a>
-
-                </div>
-              </template>
-            </draggable>
-          </div>
-        </div>
-
         <!-- Collections Grid with Draggable (Edit mode) -->
         <draggable
           v-if="canEdit"
@@ -393,13 +333,6 @@
       @cancel="confirmModal.onCancel"
     />
 
-    <ApiKeyModal
-      v-model:show="showApiKeyModal"
-      :apiKey="openClawApiKey"
-      :loading="apiKeyLoading"
-      @regenerate="handleRegenerateApiKey"
-      @copy="handleCopyApiKey"
-    />
   </AppLayout>
 </template>
 
@@ -422,13 +355,6 @@ import DragDeleteZone from '@/components/DragDeleteZone.vue'
 import EditPageModal from '@/components/EditPageModal.vue'
 import AlertModal from '@/components/AlertModal.vue'
 import ConfirmModal from '@/components/ConfirmModal.vue'
-import ApiKeyModal from '@/components/ApiKeyModal.vue'
-import {
-  getOpenClawApiKey,
-  regenerateOpenClawApiKey,
-  listTmpBookmarks,
-  moveTmpBookmarkToPage
-} from '@/api/openclaw'
 import {
   ensureCollectionsIdx,
   ensureLinkIdx,
@@ -450,13 +376,8 @@ const showShareModal = ref(false)
 const showAddLinkModal = ref(false)
 const showAddCollectionModal = ref(false)
 const showEditPageModal = ref(false)
-const showApiKeyModal = ref(false)
 const savingPageInfo = ref(false)
 const selectedPageId = ref('')
-const openClawApiKey = ref('')
-const apiKeyLoading = ref(false)
-const tmpBookmarks = ref([])
-const skipAutoSaveForTmpMove = ref(false)
 
 // Initialization flag - prevents watch from triggering getPage before getMySpace completes
 const initialized = ref(false)
@@ -604,88 +525,6 @@ const showConfirm = (message, options = {}) => {
   })
 }
 
-const fetchTmpBookmarks = async () => {
-  try {
-    const data = await listTmpBookmarks(200)
-    tmpBookmarks.value = data.bookmarks || []
-  } catch (error) {
-    console.error('Failed to fetch temporary bookmarks:', error)
-  }
-}
-
-const handleTmpBookmarksChange = async (evt) => {
-  if (!evt.removed || !selectedPage.value) return
-  const bookmark = evt.removed.element
-  skipAutoSaveForTmpMove.value = true
-
-  await nextTick()
-  skipAutoSaveForTmpMove.value = false
-
-  const targetCollection = localCollections.value.find(c =>
-    c.links?.some(l => l.url === bookmark.url && l.title === bookmark.title)
-  )
-  const collectionTitle = targetCollection?.title || 'Temporary Inbox'
-
-  try {
-    await moveTmpBookmarkToPage({
-      bookmark_id: bookmark.id,
-      page_id: selectedPage.value.page_id,
-      collection_title: collectionTitle
-    })
-    await Promise.all([
-      selectPage(selectedPage.value.page_id),
-      fetchTmpBookmarks()
-    ])
-  } catch (error) {
-    console.error('Failed to move temporary bookmark:', error)
-    showAlert(error.message || 'Unknown error', 'error', '移动失败')
-    await Promise.all([
-      selectPage(selectedPage.value.page_id),
-      fetchTmpBookmarks()
-    ])
-  }
-}
-
-const fetchOpenClawApiKey = async () => {
-  apiKeyLoading.value = true
-  try {
-    const data = await getOpenClawApiKey()
-    openClawApiKey.value = data.api_key || ''
-  } catch (error) {
-    showAlert(error.message || 'Unknown error', 'error', 'API Key')
-  } finally {
-    apiKeyLoading.value = false
-  }
-}
-
-const handleManageApiKey = async () => {
-  showApiKeyModal.value = true
-  await fetchOpenClawApiKey()
-}
-
-const handleRegenerateApiKey = async () => {
-  apiKeyLoading.value = true
-  try {
-    const data = await regenerateOpenClawApiKey()
-    openClawApiKey.value = data.api_key || ''
-    showAlert('API Key 已重新生成', 'success', '成功')
-  } catch (error) {
-    showAlert(error.message || 'Unknown error', 'error', 'API Key')
-  } finally {
-    apiKeyLoading.value = false
-  }
-}
-
-const handleCopyApiKey = async () => {
-  if (!openClawApiKey.value) return
-  try {
-    await navigator.clipboard.writeText(openClawApiKey.value)
-    showAlert('已复制 API Key', 'success', '成功')
-  } catch (error) {
-    showAlert('复制失败，请手动复制', 'error', '失败')
-  }
-}
-
 // Drag delete state
 const isDragging = ref(false)
 const deleteZoneRef = ref(null)
@@ -753,35 +592,16 @@ const handlePageTitleTouchMove = () => {
   }
 }
 
-// Save page info (title and brief)
-const handleSavePageInfo = async ({ title, brief }) => {
-  if (!selectedPage.value) return
-  
-  savingPageInfo.value = true
-  try {
-    await pageStore.updatePage({
-      page_id: selectedPage.value.page_id,
-      title: title,
-      brief: brief,
-      version: selectedPage.value.version,
-      mask: 3 // Only update title (1) and brief (2) = 3
-    })
-    
-    // Update will be reflected through the store
-    showEditPageModal.value = false
-  } catch (err) {
-    console.error('Save page info error:', err)
-    showAlert(err.message || 'Unknown error', 'error', t('confirm.saveFailed'))
-  } finally {
-    savingPageInfo.value = false
-  }
-}
+// Auto save functionality. Every queued item is a complete snapshot so it can
+// finish safely even if the user switches to another page.
+const autoSave = useAutoSave(async (payload) => {
+  return pageStore.updatePage(payload)
+})
 
-// Auto save functionality
-const autoSave = useAutoSave(async () => {
+const queueAutoSave = () => {
   if (!selectedPage.value) return
-  
-  await pageStore.updatePage({
+
+  autoSave.markDirty({
     page_id: selectedPage.value.page_id,
     title: selectedPage.value.title,
     brief: selectedPage.value.brief,
@@ -789,13 +609,18 @@ const autoSave = useAutoSave(async () => {
     version: selectedPage.value.version,
     mask: 7
   })
-})
+}
 
-const handleCancelPendingChanges = async () => {
-  autoSave.cancelSave()
-  if (selectedPageId.value) {
-    await selectPage(selectedPageId.value)
-  }
+// Save page info through the same serializer as collection changes.
+const handleSavePageInfo = ({ title, brief }) => {
+  if (!selectedPage.value) return
+
+  savingPageInfo.value = true
+  selectedPage.value.title = title
+  selectedPage.value.brief = brief
+  queueAutoSave()
+  showEditPageModal.value = false
+  savingPageInfo.value = false
 }
 
 // Watch for page changes to sync local collections
@@ -805,7 +630,7 @@ watch(() => selectedPage.value, (newPage) => {
       JSON.parse(JSON.stringify(newPage.collections || []))
     )
   }
-}, { immediate: true, deep: true })
+}, { immediate: true })
 
 const selectPage = async (pageId) => {
   selectedPageId.value = pageId
@@ -913,10 +738,10 @@ const handleDragDelete = async () => {
   if (confirmed) {
     if (currentDragType === 'collection' && currentCollectionIdx) {
       removeCollectionByIdx(localCollections.value, currentCollectionIdx)
-      autoSave.markDirty()
+      queueAutoSave()
     } else if (currentDragType === 'link' && currentCollectionIdx && currentLinkIdx) {
       removeLinkByIdx(localCollections.value, currentCollectionIdx, currentLinkIdx)
-      autoSave.markDirty()
+      queueAutoSave()
     }
   }
   
@@ -939,13 +764,13 @@ const handleAddCollection = ({ name, position }) => {
     localCollections.value.push(newCollection)
   }
   
-  autoSave.markDirty()
+  queueAutoSave()
 }
 
 // Update collection title
 const updateCollectionTitle = (index, title) => {
   localCollections.value[index].title = title
-  autoSave.markDirty()
+  queueAutoSave()
 }
 
 // Copy collection
@@ -956,20 +781,18 @@ const copyCollection = (index) => {
   
   // Insert after the original
   localCollections.value.splice(index + 1, 0, copy)
-  autoSave.markDirty()
+  queueAutoSave()
 }
 
 // Update collection links (for drag and drop)
 const updateCollectionLinks = (index, links) => {
   localCollections.value[index].links = links
-  if (!skipAutoSaveForTmpMove.value) {
-    autoSave.markDirty()
-  }
+  queueAutoSave()
 }
 
 // Handle collections order change (drag)
 const handleCollectionsChange = () => {
-  autoSave.markDirty()
+  queueAutoSave()
 }
 
 // ==================== Link Operations ====================
@@ -977,7 +800,7 @@ const handleCollectionsChange = () => {
 // Update link
 const updateLink = (collectionIndex, linkIndex, link) => {
   localCollections.value[collectionIndex].links[linkIndex] = link
-  autoSave.markDirty()
+  queueAutoSave()
 }
 
 // Handle add new link from modal
@@ -991,7 +814,7 @@ const handleAddNewLink = ({ link, collectionIndex, newCollectionName }) => {
     }
     localCollections.value[collectionIndex].links.push(link)
   }
-  autoSave.markDirty()
+  queueAutoSave()
 }
 
 // Handle batch add links from modal
@@ -1005,7 +828,7 @@ const handleBatchAddLinks = ({ links, collectionIndex, newCollectionName }) => {
     }
     localCollections.value[collectionIndex].links.push(...links)
   }
-  autoSave.markDirty()
+  queueAutoSave()
 }
 
 // Handle import bookmarks from modal
@@ -1026,17 +849,14 @@ const handleImportBookmarks = ({ folders }) => {
     }
   })
   
-  // Mark as dirty to trigger auto save (5s delay)
-  autoSave.markDirty()
+  // Mark as dirty to save immediately
+  queueAutoSave()
   console.log('Import complete, marked dirty for auto save')
 }
 
 onMounted(async () => {
   try {
-    await Promise.all([
-      pageStore.fetchMySpace(),
-      fetchTmpBookmarks()
-    ])
+    await pageStore.fetchMySpace()
     if (pageStore.myPages.length > 0 && !selectedPageId.value) {
       selectPage(pageStore.myPages[0].page_id)
     }

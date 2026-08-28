@@ -112,17 +112,8 @@
             <span class="text-sm text-gray-600 dark:text-slate-400 truncate max-w-[140px]">{{ userDisplayText }}</span>
           </div>
           
-          <div class="flex items-center gap-1">
-            <button
-              @click="$emit('manage-api-key'); mobileMenuOpen = false"
-              class="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-700 text-gray-500 dark:text-slate-400 hover:text-gray-700 dark:hover:text-slate-200 transition-colors"
-              title="OpenClaw API Key"
-            >
-              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a3 3 0 10-6 0v2a2 2 0 00-2 2v4a2 2 0 002 2h6a2 2 0 002-2v-4a2 2 0 00-2-2V7z" />
-              </svg>
-            </button>
-            <!-- Language Switcher -->
+	          <div class="flex items-center gap-1">
+	            <!-- Language Switcher -->
             <LanguageSwitcher />
             <!-- Theme Toggle -->
             <button
@@ -309,20 +300,11 @@
             </svg>
           </button>
 
-          <div
-            v-if="showUserMenu"
-            class="absolute bottom-[72px] left-3 right-3 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl shadow-xl overflow-hidden z-50"
-          >
-            <button
-              @click="handleManageApiKey"
-              class="w-full flex items-center gap-2 px-4 py-3 text-sm text-gray-700 dark:text-slate-200 hover:bg-gray-50 dark:hover:bg-slate-700 text-left transition-colors"
-            >
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a3 3 0 10-6 0v2a2 2 0 00-2 2v4a2 2 0 002 2h6a2 2 0 002-2v-4a2 2 0 00-2-2V7z" />
-              </svg>
-              OpenClaw API Key
-            </button>
-            <button
+	          <div
+	            v-if="showUserMenu"
+	            class="absolute bottom-[72px] left-3 right-3 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl shadow-xl overflow-hidden z-50"
+	          >
+	            <button
               @click="handleLogoutFromMenu"
               class="w-full flex items-center gap-2 px-4 py-3 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 text-left transition-colors border-t border-gray-100 dark:border-slate-700"
             >
@@ -371,20 +353,11 @@
               </div>
             </button>
 
-            <div
-              v-if="showUserMenu"
-              class="absolute bottom-[112px] left-2 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl shadow-xl overflow-hidden z-50 min-w-[180px]"
-            >
-              <button
-                @click="handleManageApiKey"
-                class="w-full flex items-center gap-2 px-3 py-2.5 text-sm text-gray-700 dark:text-slate-200 hover:bg-gray-50 dark:hover:bg-slate-700 text-left transition-colors"
-              >
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a3 3 0 10-6 0v2a2 2 0 00-2 2v4a2 2 0 002 2h6a2 2 0 002-2v-4a2 2 0 00-2-2V7z" />
-                </svg>
-                OpenClaw API Key
-              </button>
-              <button
+	            <div
+	              v-if="showUserMenu"
+	              class="absolute bottom-[112px] left-2 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl shadow-xl overflow-hidden z-50 min-w-[180px]"
+	            >
+	              <button
                 @click="handleLogoutFromMenu"
                 class="w-full flex items-center gap-2 px-3 py-2.5 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 text-left transition-colors border-t border-gray-100 dark:border-slate-700"
               >
@@ -458,7 +431,7 @@ const props = defineProps({
   }
 })
 
-const emit = defineEmits(['create-page', 'select-page', 'delete-page', 'logout', 'manage-api-key'])
+const emit = defineEmits(['create-page', 'select-page', 'delete-page', 'logout'])
 
 const { isDark, toggleTheme } = useTheme()
 const { t } = useI18n()
@@ -483,11 +456,6 @@ const getInitial = (name) => {
 
 const toggleUserMenu = () => {
   showUserMenu.value = !showUserMenu.value
-}
-
-const handleManageApiKey = () => {
-  showUserMenu.value = false
-  emit('manage-api-key')
 }
 
 const handleLogoutFromMenu = () => {

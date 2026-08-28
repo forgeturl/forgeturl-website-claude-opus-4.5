@@ -30,22 +30,10 @@
               v-if="canEdit && (autoSave.showProgress.value || autoSave.showSavedMessage.value || autoSave.saveError.value)"
               class="flex items-center gap-3 bg-white rounded-full px-3 py-1"
             >
-              <!-- Progress bar -->
+              <!-- Saving indicator -->
               <div v-if="autoSave.showProgress.value" class="flex items-center gap-2">
-                <div class="w-20 h-1.5 bg-gray-100 rounded-full overflow-hidden">
-                  <div 
-                    class="h-full bg-emerald-500 rounded-full transition-all duration-100"
-                    :style="{ width: autoSave.saveProgress.value + '%' }"
-                  ></div>
-                </div>
-                <span class="text-xs text-gray-500">{{ t('page.pendingSave') }}</span>
-                <button
-                  type="button"
-                  @click="handleCancelPendingChanges"
-                  class="text-xs font-medium text-gray-500 hover:text-red-600 whitespace-nowrap transition-colors"
-                >
-                  {{ t('page.cancelChanges') }}
-                </button>
+                <div class="w-4 h-4 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin"></div>
+                <span class="text-xs text-gray-500">{{ t('page.saving') }}</span>
               </div>
               
               <!-- Saved message -->
@@ -200,6 +188,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { getPage, updatePage } from '@/api/space'
 import { useAutoSave } from '@/composables/useAutoSave'
+import { resolveNextPageVersion } from '@/utils/pageVersion'
 import LinkCollection from '@/components/LinkCollection.vue'
 import {
   ensureCollectionsIdx,
@@ -290,10 +279,22 @@ const canEdit = computed(() => pageConf.value?.can_edit || false)
 const localCollections = ref([])
 
 // Auto save functionality
-const autoSave = useAutoSave(async () => {
+const autoSave = useAutoSave(async (payload) => {
+  const result = await updatePage(payload)
+  const nextVersion = resolveNextPageVersion(result?.version, payload.version)
+
+  if (page.value?.page_id === payload.page_id) {
+    page.value.version = nextVersion
+    if (result?.update_time) page.value.update_time = result.update_time
+  }
+
+  return { ...(result || {}), version: nextVersion }
+})
+
+const queueAutoSave = () => {
   if (!page.value || !canEdit.value) return
-  
-  await updatePage({
+
+  autoSave.markDirty({
     page_id: page.value.page_id,
     title: page.value.title,
     brief: page.value.brief,
@@ -301,11 +302,6 @@ const autoSave = useAutoSave(async () => {
     version: page.value.version,
     mask: 7
   })
-})
-
-const handleCancelPendingChanges = async () => {
-  autoSave.cancelSave()
-  await loadPage()
 }
 
 // Watch for page changes to sync local collections
@@ -315,7 +311,7 @@ watch(() => page.value, (newPage) => {
       JSON.parse(JSON.stringify(newPage.collections || []))
     )
   }
-}, { immediate: true, deep: true })
+}, { immediate: true })
 
 // Format date
 const formatDate = (timestamp) => {
@@ -364,19 +360,19 @@ const loadPage = async () => {
 // Update collection title
 const updateCollectionTitle = (index, title) => {
   localCollections.value[index].title = title
-  autoSave.markDirty()
+  queueAutoSave()
 }
 
 // Update collection links
 const updateCollectionLinks = (index, links) => {
   localCollections.value[index].links = links
-  autoSave.markDirty()
+  queueAutoSave()
 }
 
 // Update link
 const updateLink = (collectionIndex, linkIndex, link) => {
   localCollections.value[collectionIndex].links[linkIndex] = link
-  autoSave.markDirty()
+  queueAutoSave()
 }
 
 // Copy collection
@@ -386,7 +382,7 @@ const copyCollection = (index) => {
   copy.title = original.title ? `${original.title} ${t('collection.copy')}` : t('collection.copy')
   
   localCollections.value.splice(index + 1, 0, copy)
-  autoSave.markDirty()
+  queueAutoSave()
 }
 
 onMounted(() => {
