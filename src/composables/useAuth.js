@@ -2,6 +2,7 @@
  * 认证相关的组合式函数
  */
 import { useRouter } from 'vue-router'
+import { validateAVMRedirect } from '@/utils/avmLogin'
 import { useAuthStore } from '@/stores/auth'
 import { getAuthUrl, authCallback } from '@/api/auth'
 import { storage, sessionStorage } from '@/utils/storage'
@@ -44,21 +45,26 @@ export function useAuth() {
     const handleAuthCallback = async (provider, params) => {
         try {
             const isAVMLogin = sessionStorage.get(STORAGE_KEYS.AVM_LOGIN) === true
+            if (isAVMLogin && provider !== (sessionStorage.get(STORAGE_KEYS.AVM_PROVIDER) || 'wechat')) {
+                throw new Error('AVM login provider mismatch')
+            }
             const callbackParams = isAVMLogin ? { ...params, avm_login: 'true' } : params
             // 调用回调接口
             const data = await authCallback(provider, callbackParams)
 
             // 登录成功，保存用户信息
             if (data) {
-                if (isAVMLogin && data.avm_auth_code) {
+                if (isAVMLogin) {
+                    if (!data.avm_auth_code) throw new Error('Missing AVM authorization code')
                     const redirectUri = sessionStorage.get(STORAGE_KEYS.AVM_REDIRECT_URI)
+                    const target = validateAVMRedirect(redirectUri, window.location.origin)
                     sessionStorage.remove(STORAGE_KEYS.AVM_LOGIN)
+                    sessionStorage.remove(STORAGE_KEYS.AVM_PROVIDER)
                     sessionStorage.remove(STORAGE_KEYS.AVM_REDIRECT_URI)
                     sessionStorage.remove(STORAGE_KEYS.FORGET_COOKIE)
                     if (!redirectUri) {
                         throw new Error('Missing AVM redirect URI')
                     }
-                    const target = new URL(redirectUri, window.location.origin)
                     target.searchParams.set('auth_code', data.avm_auth_code)
                     window.location.href = target.toString()
                     return null

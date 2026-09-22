@@ -748,6 +748,7 @@
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useAuth } from '@/composables/useAuth'
+import { avmLoginRequest } from '@/utils/avmLogin'
 import { useTheme } from '@/composables/useTheme'
 import { useLocale } from '@/composables/useLocale'
 import { useAuthStore } from '@/stores/auth'
@@ -820,14 +821,24 @@ onMounted(() => {
   fetchUserCount()
 
   const urlParams = new URLSearchParams(window.location.search)
-  if (urlParams.get('avm_login') === 'true' && isWechatLoginDomain()) {
-    const redirectUri = urlParams.get('redirect_uri')
-    if (redirectUri) {
+  try {
+    const relay = avmLoginRequest(window.location.search, window.location.origin)
+    if (relay) {
+      // Google and WeChat return to different origins. Store relay state only
+      // after reaching the origin that will receive this provider's callback.
+      if (window.location.origin !== relay.relayOrigin) {
+        window.location.replace(relay.relayUrl)
+        return
+      }
       sessionStorage.set(STORAGE_KEYS.AVM_LOGIN, true)
-      sessionStorage.set(STORAGE_KEYS.AVM_REDIRECT_URI, redirectUri)
-      handleLogin('wechat')
+      sessionStorage.set(STORAGE_KEYS.AVM_PROVIDER, relay.provider)
+      sessionStorage.set(STORAGE_KEYS.AVM_REDIRECT_URI, relay.redirectUri)
+      handleLogin(relay.provider)
       return
     }
+  } catch (err) {
+    error.value = err.message || t('auth.loginFailed')
+    return
   }
 
   if (urlParams.get('wechat_login') === 'true' && isWechatLoginDomain()) {
