@@ -1,166 +1,33 @@
 <template>
-  <Teleport to="body">
-    <Transition name="modal">
-      <div
-        v-if="show"
-        class="fixed inset-0 z-50 flex items-end sm:items-center justify-center"
-        @click.self="handleClose"
-      >
-        <!-- Backdrop -->
-        <div class="absolute inset-0 bg-black/40 dark:bg-black/60 backdrop-blur-sm" @click="handleClose"></div>
-        
-        <!-- Modal Content -->
-        <div class="relative bg-white dark:bg-slate-800 w-full sm:w-[400px] sm:rounded-2xl rounded-t-2xl shadow-2xl dark:shadow-black/30 overflow-hidden animate-slide-up transition-colors duration-300">
-          <!-- Handle bar for mobile -->
-          <div class="sm:hidden flex justify-center pt-3 pb-2">
-            <div class="w-10 h-1 bg-gray-300 dark:bg-slate-600 rounded-full"></div>
-          </div>
-
-          <!-- Header with icon -->
-          <div class="flex items-center gap-3 px-6 py-4 border-b border-gray-100 dark:border-slate-700">
-            <!-- Icon based on type -->
-            <div 
-              class="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0"
-              :class="iconContainerClass"
-            >
-              <!-- Error icon -->
-              <svg v-if="type === 'error'" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-              </svg>
-              <!-- Success icon -->
-              <svg v-else-if="type === 'success'" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-              </svg>
-              <!-- Warning icon -->
-              <svg v-else-if="type === 'warning'" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-              </svg>
-              <!-- Info icon -->
-              <svg v-else class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-            </div>
-            <h3 class="text-lg font-semibold text-gray-900 dark:text-slate-100">{{ title }}</h3>
-          </div>
-
-          <!-- Body -->
-          <div class="px-6 py-5">
-            <p class="text-gray-600 dark:text-slate-400 leading-relaxed">{{ message }}</p>
-          </div>
-
-          <!-- Footer -->
-          <div class="px-6 py-4 bg-gray-50 dark:bg-slate-900/50 border-t border-gray-100 dark:border-slate-700 flex justify-end">
-            <button
-              @click="handleClose"
-              class="px-6 py-2.5 bg-gray-900 dark:bg-violet-600 text-white rounded-xl hover:bg-gray-800 dark:hover:bg-violet-500 transition-colors font-medium"
-            >
-              {{ confirmText }}
-            </button>
-          </div>
+  <Dialog :open="show" :initial-focus="safeButton" class="relative z-[70]" @close="handleClose">
+    <div class="fixed inset-0 bg-slate-950/35 backdrop-blur-sm" aria-hidden="true" />
+    <div class="fixed inset-0 flex items-end justify-center sm:items-center sm:p-6">
+      <DialogPanel class="w-full max-w-[420px] overflow-hidden rounded-t-2xl bg-white shadow-2xl sm:rounded-2xl dark:bg-slate-800">
+        <div class="flex items-center gap-3 border-b border-slate-100 px-6 py-5 dark:border-slate-700">
+          <div class="flex size-10 shrink-0 items-center justify-center rounded-xl" :class="tone"><component :is="icon" class="size-5" aria-hidden="true" /></div>
+          <DialogTitle class="text-lg font-semibold text-slate-900 dark:text-slate-100">{{ title || t('title') }}</DialogTitle>
         </div>
-      </div>
-    </Transition>
-  </Teleport>
+        <DialogDescription class="max-h-[60dvh] overflow-y-auto px-6 py-5 text-sm leading-6 text-slate-600 dark:text-slate-300">{{ message }}</DialogDescription>
+        <div class="flex justify-end gap-3 border-t border-slate-100 bg-slate-50/70 p-4 sm:px-6 dark:border-slate-700 dark:bg-slate-900/30">
+          <button ref="safeButton" type="button" class="rounded-lg bg-violet-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-violet-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet-500" @click="handleClose">{{ confirmText || t('confirm') }}</button>
+        </div>
+      </DialogPanel>
+    </div>
+  </Dialog>
 </template>
-
 <script setup>
-import { computed } from 'vue'
-
-const props = defineProps({
-  show: {
-    type: Boolean,
-    default: false
-  },
-  type: {
-    type: String,
-    default: 'info', // 'info' | 'success' | 'warning' | 'error'
-    validator: (value) => ['info', 'success', 'warning', 'error'].includes(value)
-  },
-  title: {
-    type: String,
-    default: 'Notice'
-  },
-  message: {
-    type: String,
-    default: ''
-  },
-  confirmText: {
-    type: String,
-    default: 'OK'
-  }
-})
-
+import { computed, ref } from 'vue'
+import { Dialog, DialogPanel, DialogTitle, DialogDescription } from '@headlessui/vue'
+import { ExclamationTriangleIcon, CheckCircleIcon, XCircleIcon, InformationCircleIcon } from '@heroicons/vue/24/outline'
+import { useI18n } from 'vue-i18n'
+const props = defineProps({ show: Boolean, type: { type: String, default: 'info' }, title: String, message: { type: String, default: '' }, confirmText: String, cancelText: String })
+const safeButton = ref(null)
+const { t } = useI18n({ useScope: 'local', fallbackLocale: 'en', messages: {
+  'zh-CN': { title: '提示', cancel: '取消', confirm: '确定' },
+  en: { title: 'Notice', cancel: 'Cancel', confirm: 'OK' }
+} })
+const icon = computed(() => ({ danger: ExclamationTriangleIcon, warning: ExclamationTriangleIcon, error: XCircleIcon, success: CheckCircleIcon }[props.type] || InformationCircleIcon))
+const tone = computed(() => ({ danger: 'bg-red-50 text-red-600 dark:bg-red-950/30 dark:text-red-400', error: 'bg-red-50 text-red-600 dark:bg-red-950/30 dark:text-red-400', success: 'bg-emerald-50 text-emerald-600 dark:bg-emerald-950/30 dark:text-emerald-400', warning: 'bg-amber-50 text-amber-600 dark:bg-amber-950/30 dark:text-amber-400' }[props.type] || 'bg-violet-50 text-violet-600 dark:bg-violet-950/30 dark:text-violet-400'))
 const emit = defineEmits(['update:show', 'close'])
-
-const iconContainerClass = computed(() => {
-  switch (props.type) {
-    case 'error':
-      return 'bg-red-50 dark:bg-red-900/30 text-red-500'
-    case 'success':
-      return 'bg-emerald-50 dark:bg-emerald-900/30 text-emerald-500'
-    case 'warning':
-      return 'bg-amber-50 dark:bg-amber-900/30 text-amber-500'
-    default:
-      return 'bg-blue-50 dark:bg-blue-900/30 text-blue-500'
-  }
-})
-
-const handleClose = () => {
-  emit('update:show', false)
-  emit('close')
-}
+function handleClose() { emit('update:show', false); emit('close') }
 </script>
-
-<style scoped>
-.modal-enter-active,
-.modal-leave-active {
-  transition: opacity 0.2s ease;
-}
-
-.modal-enter-active .relative,
-.modal-leave-active .relative {
-  transition: transform 0.3s ease;
-}
-
-.modal-enter-from,
-.modal-leave-to {
-  opacity: 0;
-}
-
-.modal-enter-from .relative {
-  transform: translateY(100%);
-}
-
-.modal-leave-to .relative {
-  transform: translateY(100%);
-}
-
-@media (min-width: 640px) {
-  .modal-enter-from .relative {
-    transform: translateY(20px) scale(0.95);
-  }
-  
-  .modal-leave-to .relative {
-    transform: translateY(20px) scale(0.95);
-  }
-}
-
-@keyframes slide-up {
-  from {
-    transform: translateY(100%);
-  }
-  to {
-    transform: translateY(0);
-  }
-}
-
-.animate-slide-up {
-  animation: slide-up 0.3s ease-out;
-}
-
-@media (min-width: 640px) {
-  .animate-slide-up {
-    animation: none;
-  }
-}
-</style>

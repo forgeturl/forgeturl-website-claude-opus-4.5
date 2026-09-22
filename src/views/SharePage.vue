@@ -1,7 +1,7 @@
 <template>
-  <div class="min-h-screen bg-gray-50">
+  <div class="min-h-screen bg-gray-50 dark:bg-slate-900">
     <!-- Navigation Bar -->
-    <nav class="bg-white/80 backdrop-blur-lg border-b border-gray-200/50 sticky top-0 z-10">
+    <nav class="bg-white/80 dark:bg-slate-900/80 backdrop-blur-lg border-b border-gray-200/50 dark:border-slate-700 sticky top-0 z-10">
       <div class="max-w-6xl mx-auto px-6 lg:px-8">
         <div class="flex justify-between items-center h-14">
           <!-- Logo -->
@@ -20,38 +20,13 @@
             </div>
             <!-- Brand text -->
             <span class="text-lg font-bold tracking-tight">
-              <span class="bg-gradient-to-r from-violet-600 via-purple-600 to-fuchsia-600 bg-clip-text text-transparent">Forget</span><span class="text-gray-800">URL</span>
+              <span class="bg-gradient-to-r from-violet-600 via-purple-600 to-fuchsia-600 bg-clip-text text-transparent">Forget</span><span class="text-gray-800 dark:text-slate-100">URL</span>
             </span>
           </router-link>
           
           <!-- Save Status -->
           <div class="flex items-center gap-3">
-            <div 
-              v-if="canEdit && (autoSave.showProgress.value || autoSave.showSavedMessage.value || autoSave.saveError.value)"
-              class="flex items-center gap-3 bg-white rounded-full px-3 py-1"
-            >
-              <!-- Saving indicator -->
-              <div v-if="autoSave.showProgress.value" class="flex items-center gap-2">
-                <div class="w-4 h-4 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin"></div>
-                <span class="text-xs text-gray-500">{{ t('page.saving') }}</span>
-              </div>
-              
-              <!-- Saved message -->
-              <div v-else-if="autoSave.showSavedMessage.value" class="flex items-center gap-1 text-emerald-600">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                </svg>
-                <span class="text-xs font-medium">{{ t('page.saved') }}</span>
-              </div>
-              
-              <!-- Error message -->
-              <div v-else-if="autoSave.saveError.value" class="flex items-center gap-1 text-red-600">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                <span class="text-xs font-medium">Save failed</span>
-              </div>
-            </div>
+            <SaveStatus :saving="autoSave.isSaving.value" :saved="autoSave.showSavedMessage.value" :error="autoSave.saveError.value" @retry="retrySave" />
 
             <span
               v-if="pageConf"
@@ -82,7 +57,7 @@
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
           </svg>
         </div>
-        <h3 class="text-lg font-medium text-gray-900 mb-2">{{ t('auth.loginRequired') }}</h3>
+        <h3 class="text-lg font-medium text-gray-900 dark:text-slate-100 mb-2">{{ t('auth.loginRequired') }}</h3>
         <p class="text-gray-500 mb-6">{{ t('auth.pleaseLogin') }}</p>
         <button @click="goToLogin" class="btn btn-primary">{{ t('auth.login') }}</button>
       </div>
@@ -94,7 +69,7 @@
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M6 18L18 6M6 6l12 12" />
           </svg>
         </div>
-        <h3 class="text-lg font-medium text-gray-900 mb-2">{{ t('page.loadFailed') }}</h3>
+        <h3 class="text-lg font-medium text-gray-900 dark:text-slate-100 mb-2">{{ t('page.loadFailed') }}</h3>
         <p class="text-gray-500 mb-6">{{ error }}</p>
         <button @click="loadPage" class="btn btn-secondary">{{ t('page.retry') }}</button>
       </div>
@@ -118,10 +93,12 @@
               v-model="searchQuery"
               type="text"
               :placeholder="t('page.searchPlaceholder')"
-              class="w-full pl-12 pr-10 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent transition-all text-gray-900 placeholder-gray-400"
+              :aria-label="t('page.searchPlaceholder')"
+              class="w-full pl-12 pr-10 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent transition-all text-gray-900 placeholder-gray-400 dark:bg-slate-800 dark:text-slate-100 dark:border-slate-600 dark:focus:ring-violet-500"
             />
             <button
               v-if="searchQuery"
+              :aria-label="t('modal.clear')"
               @click="clearSearch"
               class="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-400 hover:text-gray-600 transition-colors"
             >
@@ -136,16 +113,18 @@
         </div>
 
         <!-- Header -->
-        <div class="flex items-start justify-between mb-8">
+        <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between mb-8">
           <div class="flex-1">
-            <h1 class="text-3xl font-bold text-gray-900 mb-2">{{ page.title }}</h1>
-            <p v-if="page.brief" class="text-gray-500">{{ page.brief }}</p>
+            <h1 class="text-3xl font-bold text-gray-900 dark:text-slate-100 mb-2">{{ page.title }}</h1>
+            <p v-if="page.brief" class="text-gray-500 dark:text-slate-400">{{ page.brief }}</p>
           </div>
           
           <!-- Search Button -->
-          <div class="flex items-center gap-1.5 ml-6">
+          <div class="flex items-center gap-1.5 sm:ml-6">
             <button
-              @click="toggleSearch"
+              :aria-label="t('page.searchPlaceholder')"
+                :aria-expanded="showSearchBar"
+                @click="toggleSearch"
               data-search-button
               class="btn-compact btn-secondary flex items-center justify-center w-8 h-8 focus:ring-0 focus:ring-offset-0"
               :class="{ 'bg-gray-900 text-white hover:bg-gray-800': showSearchBar }"
@@ -164,12 +143,14 @@
             :key="collection.__idx"
             :collection="collection"
             :collectionIndex="index"
+              :page-key="page?.page_id"
             :canEdit="canEdit"
             :searchQuery="searchQuery"
-            @update-title="(title) => updateCollectionTitle(index, title)"
-            @update-link="(linkIndex, link) => updateLink(index, linkIndex, link)"
+            :transfer-label="t('collection.duplicateCollection')"
+            @update-title="(title, done) => updateCollectionTitle(index, title, done)"
+            @update-link="(linkIndex, link, done) => updateLink(index, linkIndex, link, done)"
             @links-changed="(links) => updateCollectionLinks(index, links)"
-            @copy-collection="copyCollection(index)"
+            @transfer-collection="copyCollection(index)"
           />
         </div>
 
@@ -183,6 +164,10 @@
 </template>
 
 <script setup>
+import SaveStatus from '@/components/SaveStatus.vue'
+import { persistPageMutation, appendLinks } from '@/utils/pageMutation'
+import { onBeforeRouteLeave, onBeforeRouteUpdate } from 'vue-router'
+import { persistLinkEdit } from '@/utils/linkEditor'
 import { ref, computed, onMounted, onUnmounted, watch, nextTick } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
@@ -279,7 +264,7 @@ const canEdit = computed(() => pageConf.value?.can_edit || false)
 const localCollections = ref([])
 
 // Auto save functionality
-const autoSave = useAutoSave(async (payload) => {
+const savePageSnapshot = async (payload) => {
   const result = await updatePage(payload)
   const nextVersion = resolveNextPageVersion(result?.version, payload.version)
 
@@ -289,7 +274,27 @@ const autoSave = useAutoSave(async (payload) => {
   }
 
   return { ...(result || {}), version: nextVersion }
+}
+const autoSave = useAutoSave(savePageSnapshot)
+
+const saveMutation = (mutate) => persistPageMutation({
+  getPage: () => page.value, getCollections: () => localCollections.value,
+  commit: (draft) => {
+    page.value.title = draft.title; page.value.brief = draft.brief
+    page.value.collections = JSON.parse(JSON.stringify(draft.collections))
+    localCollections.value = ensureCollectionsIdx(draft.collections)
+  },
+  flush: autoSave.flush, save: savePageSnapshot, mutate
 })
+const completeMutation = async (mutate, done) => {
+  try { await saveMutation(mutate); done?.() } catch (error) { done?.(error) }
+}
+const retrySave = async () => { try { await autoSave.flush() } catch { /* status retains the error */ } }
+const guardPageLeave = async () => {
+  try { await autoSave.flush(); return true } catch { return false }
+}
+onBeforeRouteLeave(guardPageLeave)
+onBeforeRouteUpdate(guardPageLeave)
 
 const queueAutoSave = () => {
   if (!page.value || !canEdit.value) return
@@ -328,7 +333,9 @@ const goToLogin = () => {
 }
 
 // Load page
+let pageRequest = 0
 const loadPage = async () => {
+  const request = ++pageRequest
   const pageId = route.params.pageId
   if (!pageId) {
     error.value = t('page.pageIdNotExist')
@@ -341,8 +348,9 @@ const loadPage = async () => {
 
   try {
     const data = await getPage(pageId)
-    page.value = data.page || data
+    if (request === pageRequest) page.value = data.page || data
   } catch (err) {
+    if (request !== pageRequest) return
     console.error('Load page error:', err)
     if (err.code === 40001) {
       needLogin.value = true
@@ -351,17 +359,17 @@ const loadPage = async () => {
       error.value = err.message || t('page.noAccessHint')
     }
   } finally {
-    loading.value = false
+    if (request === pageRequest) loading.value = false
   }
 }
 
 // ==================== Collection Operations ====================
 
 // Update collection title
-const updateCollectionTitle = (index, title) => {
-  localCollections.value[index].title = title
-  queueAutoSave()
-}
+const updateCollectionTitle = (index, title, done) => completeMutation(draft => {
+  if (!draft.collections[index]) throw new Error('Folder is no longer available')
+  draft.collections[index].title = title
+}, done)
 
 // Update collection links
 const updateCollectionLinks = (index, links) => {
@@ -370,9 +378,16 @@ const updateCollectionLinks = (index, links) => {
 }
 
 // Update link
-const updateLink = (collectionIndex, linkIndex, link) => {
-  localCollections.value[collectionIndex].links[linkIndex] = link
-  queueAutoSave()
+const updateLink = async (collectionIndex, linkIndex, link, done) => {
+  try {
+    await persistLinkEdit({
+      getPage: () => page.value, getCollections: () => localCollections.value,
+      collectionIndex, linkIndex, link, flush: autoSave.flush, save: savePageSnapshot
+    })
+    done?.()
+  } catch (error) {
+    done?.(error)
+  }
 }
 
 // Copy collection
@@ -385,9 +400,7 @@ const copyCollection = (index) => {
   queueAutoSave()
 }
 
-onMounted(() => {
-  loadPage()
-})
+watch(() => route.params.pageId, loadPage, { immediate: true })
 
 // Cleanup event listener on unmount
 onUnmounted(() => {

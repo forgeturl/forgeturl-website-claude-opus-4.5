@@ -8,35 +8,8 @@
     @delete-page="handleDeletePage"
     @logout="handleLogout"
   >
-    <!-- Save status (Fixed at top-right) -->
-    <div 
-      v-if="canEdit && (autoSave.showProgress.value || autoSave.showSavedMessage.value || autoSave.saveError.value)"
-      class="fixed top-4 right-4 z-40 flex items-center gap-3 bg-white rounded-full shadow-lg px-4 py-2 border border-gray-100"
-    >
-      <!-- Saving indicator -->
-      <div v-if="autoSave.showProgress.value" class="flex items-center gap-3">
-        <div class="w-4 h-4 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin"></div>
-        <span class="text-xs text-gray-500 whitespace-nowrap">{{ t('page.saving') }}</span>
-      </div>
-      
-      <!-- Saved message -->
-      <div v-else-if="autoSave.showSavedMessage.value" class="flex items-center gap-2 text-emerald-600">
-        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-        </svg>
-        <span class="text-xs font-medium">{{ t('page.saved') }}</span>
-      </div>
-      
-      <!-- Error message -->
-      <div v-else-if="autoSave.saveError.value" class="flex items-center gap-2 text-red-600">
-        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-        </svg>
-        <span class="text-xs font-medium">{{ autoSave.saveError.value }}</span>
-      </div>
-    </div>
+    <SaveStatus :saving="autoSave.isSaving.value" :saved="autoSave.showSavedMessage.value" :error="autoSave.saveError.value" @retry="retrySave" />
 
-    <!-- Main Content Area -->
     <div class="p-4 relative">
       <!-- Drag Delete Zone -->
       <DragDeleteZone
@@ -79,10 +52,12 @@
               v-model="searchQuery"
               type="text"
               :placeholder="t('page.searchPlaceholder')"
-              class="w-full pl-12 pr-10 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent transition-all text-gray-900 placeholder-gray-400"
+              :aria-label="t('page.searchPlaceholder')"
+              class="w-full pl-12 pr-10 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent transition-all text-gray-900 placeholder-gray-400 dark:bg-slate-800 dark:text-slate-100 dark:border-slate-600 dark:focus:ring-violet-500"
             />
             <button
               v-if="searchQuery"
+              :aria-label="t('modal.clear')"
               @click="clearSearch"
               class="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-400 hover:text-gray-600 transition-colors"
             >
@@ -99,8 +74,8 @@
         <!-- Header -->
         <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between mb-4 gap-3">
           <div class="flex-1">
-            <h1 class="text-3xl font-bold text-gray-900 mb-2">{{ page.title }}</h1>
-            <p v-if="page.brief" class="text-gray-500">{{ page.brief }}</p>
+            <h1 class="text-3xl font-bold text-gray-900 dark:text-slate-100 mb-2">{{ page.title }}<button v-if="canEdit" type="button" class="ml-2 inline-flex size-8 items-center justify-center rounded-lg align-middle text-slate-400 hover:bg-violet-50 hover:text-violet-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-violet-500 dark:hover:bg-slate-700" :aria-label="t('modal.editPageInfo')" @click="showEditPageModal = true"><PencilSquareIcon class="size-4" /></button></h1>
+            <p v-if="page.brief" class="text-gray-500 dark:text-slate-400">{{ page.brief }}</p>
           </div>
 
           <!-- Action Buttons -->
@@ -130,7 +105,9 @@
               </div>
             </div>
             <button
-              @click="toggleSearch"
+              :aria-label="t('page.searchPlaceholder')"
+                :aria-expanded="showSearchBar"
+                @click="toggleSearch"
               data-search-button
               class="btn-compact btn-secondary flex items-center justify-center w-8 h-8 focus:ring-0 focus:ring-offset-0"
               :class="{ 'bg-gray-900 text-white hover:bg-gray-800': showSearchBar }"
@@ -141,7 +118,7 @@
             </button>
             <button
               v-if="canEdit"
-              @click="showAddLinkModal = true"
+              :aria-label="t('modal.addLink')" @click="showAddLinkModal = true"
               class="btn-compact btn-secondary flex items-center justify-center gap-1.5 h-8 w-8 sm:w-auto"
             >
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -151,7 +128,7 @@
             </button>
             <button
               v-if="canEdit"
-              @click="showAddCollectionModal = true"
+              :aria-label="t('page.collection')" @click="showAddCollectionModal = true"
               class="btn-compact btn-secondary flex items-center justify-center gap-1.5 h-8 w-8 sm:w-auto"
             >
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
@@ -161,7 +138,7 @@
             </button>
             <button
               v-if="page.is_self"
-              @click="showShareModal = true"
+              :aria-label="t('page.share')" @click="showShareModal = true"
               class="btn-compact btn-secondary flex items-center justify-center gap-1.5 h-8 w-8 sm:w-auto"
             >
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -199,10 +176,11 @@
               :key="collection.__idx"
               :collection="collection"
               :collectionIndex="index"
+              :page-key="page?.page_id"
               :canEdit="canEdit"
               :searchQuery="searchQuery"
-              @update-title="(title) => updateCollectionTitle(index, title)"
-              @update-link="(linkIndex, link) => updateLink(index, linkIndex, link)"
+              @update-title="(title, done) => updateCollectionTitle(index, title, done)"
+              @update-link="(linkIndex, link, done) => updateLink(index, linkIndex, link, done)"
               @links-changed="(links) => updateCollectionLinks(index, links)"
               @link-drag-start="(info) => handleLinkDragStart(index, info)"
               @link-drag-end="(evt) => handleLinkDragEnd(evt)"
@@ -218,6 +196,7 @@
             :key="index"
             :collection="collection"
             :collectionIndex="index"
+              :page-key="page?.page_id"
             :canEdit="false"
             :searchQuery="searchQuery"
           />
@@ -231,13 +210,16 @@
 
     <!-- Share Modal -->
     <ShareModal
+      :before-action="autoSave.flush"
       v-if="page"
       v-model:show="showShareModal"
       :page="page"
     />
 
     <!-- Add Link Modal -->
+    <EditPageModal v-if="page" v-model:show="showEditPageModal" :title="page.title" :brief="page.brief" @save="handleSavePageInfo" />
     <AddLinkModal
+      :draft-scope="page?.page_id || ''"
       v-model:show="showAddLinkModal"
       :collections="localCollections"
       :onImportBookmarks="handleImportBookmarks"
@@ -282,6 +264,12 @@
 </template>
 
 <script setup>
+import EditPageModal from '@/components/EditPageModal.vue'
+import { PencilSquareIcon } from '@heroicons/vue/24/outline'
+import SaveStatus from '@/components/SaveStatus.vue'
+import { persistPageMutation, appendLinks } from '@/utils/pageMutation'
+import { onBeforeRouteLeave, onBeforeRouteUpdate } from 'vue-router'
+import { persistLinkEdit } from '@/utils/linkEditor'
 import { ref, computed, onMounted, onUnmounted, watch, nextTick } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
@@ -320,6 +308,7 @@ const { t } = useI18n()
 const pageId = computed(() => route.params.pageId)
 const page = computed(() => pageStore.currentPage)
 const loading = ref(false)
+const showEditPageModal = ref(false)
 const error = ref('')
 const showShareModal = ref(false)
 const showCreateModal = ref(false)
@@ -468,7 +457,7 @@ const dragCollectionIdx = ref(null)
 const dragLinkIdx = ref(null)
 
 // Can edit check
-const canEdit = computed(() => page.value?.page_conf?.can_edit)
+const canEdit = computed(() => !loading.value && page.value?.page_id === pageId.value && Array.isArray(page.value?.collections) && page.value?.page_conf?.can_edit)
 
 // Local collections for editing (reactive copy)
 const localCollections = ref([])
@@ -478,6 +467,27 @@ const localCollections = ref([])
 const autoSave = useAutoSave(async (payload) => {
   return pageStore.updatePage(payload)
 })
+
+const saveMutation = (mutate) => persistPageMutation({
+  getPage: () => page.value, getCollections: () => localCollections.value,
+  commit: (draft) => {
+    page.value.title = draft.title; page.value.brief = draft.brief
+    page.value.collections = JSON.parse(JSON.stringify(draft.collections))
+    localCollections.value = ensureCollectionsIdx(draft.collections)
+  },
+  flush: autoSave.flush, save: pageStore.updatePage, mutate
+})
+const completeMutation = async (mutate, done) => {
+  try { await saveMutation(mutate); done?.() } catch (error) { done?.(error) }
+}
+const handleSavePageInfo = ({ title, brief }, done) => completeMutation(draft => { draft.title = title; draft.brief = brief }, done)
+const retrySave = async () => { try { await autoSave.flush() } catch { /* status retains the error */ } }
+const guardPageLeave = async () => {
+  if (transferringCollection.value) return false
+  try { await autoSave.flush(); return !transferringCollection.value } catch { return false }
+}
+onBeforeRouteLeave(guardPageLeave)
+onBeforeRouteUpdate(guardPageLeave)
 
 const queueAutoSave = () => {
   if (!page.value) return
@@ -502,7 +512,9 @@ watch(() => page.value, (newPage) => {
 }, { immediate: true })
 
 // Load page
+let pageRequest = 0
 const loadPage = async () => {
+  const request = ++pageRequest
   const id = pageId.value
   if (!id) {
     error.value = t('page.pageIdNotExist')
@@ -515,10 +527,11 @@ const loadPage = async () => {
   try {
     await pageStore.fetchPage(id)
   } catch (err) {
+    if (request !== pageRequest) return
     console.error('Load page error:', err)
     error.value = err.message || t('page.failedToLoadPage')
   } finally {
-    loading.value = false
+    if (request === pageRequest) loading.value = false
   }
 }
 
@@ -538,6 +551,7 @@ const handleDeletePage = async (id) => {
   if (!confirmed) return
   
   try {
+    await autoSave.flush()
     await pageStore.deletePage(id)
     if (id === pageId.value) {
       router.push('/')
@@ -550,6 +564,7 @@ const handleDeletePage = async (id) => {
 
 // Handle logout
 const handleLogout = async () => {
+  if (!await guardPageLeave()) return
   await logout()
 }
 
@@ -641,23 +656,16 @@ const handleDragDelete = async () => {
 // ==================== Collection Operations ====================
 
 // Add collection from modal
-const handleAddCollection = ({ name, position }) => {
-  const newCollection = createEmptyCollection(name, [])
-  
-  if (position === 'head') {
-    localCollections.value.unshift(newCollection)
-  } else {
-    localCollections.value.push(newCollection)
-  }
-  
-  queueAutoSave()
-}
+const handleAddCollection = ({ name, position }, done) => completeMutation(draft => {
+  const collection = createEmptyCollection(name, [])
+  position === 'head' ? draft.collections.unshift(collection) : draft.collections.push(collection)
+}, done)
 
 // Update collection title
-const updateCollectionTitle = (index, title) => {
-  localCollections.value[index].title = title
-  queueAutoSave()
-}
+const updateCollectionTitle = (index, title, done) => completeMutation(draft => {
+  if (!draft.collections[index]) throw new Error('Folder is no longer available')
+  draft.collections[index].title = title
+}, done)
 
 const openCollectionTransfer = (index) => {
   transferCollectionIndex.value = index
@@ -665,29 +673,39 @@ const openCollectionTransfer = (index) => {
 }
 
 const handleCollectionTransfer = async ({ operation, targetPageId }) => {
+  if (transferringCollection.value) return
   const index = transferCollectionIndex.value
   const original = localCollections.value[index]
-  if (!original || !page.value) return
+  const sourcePageId = page.value?.page_id
+  const sourceCollectionId = original?.__idx
+  if (!sourcePageId || !sourceCollectionId || !targetPageId || !['copy', 'move'].includes(operation)) return
 
   transferringCollection.value = true
   try {
-    if (targetPageId === pageId.value) {
+    if (targetPageId === sourcePageId) {
       if (operation !== 'copy') return
-      const copy = cloneCollectionWithNewIds(original)
-      copy.title = original.title ? `${original.title} ${t('collection.copy')}` : t('collection.copy')
-      localCollections.value.splice(index + 1, 0, copy)
-      queueAutoSave()
+      await saveMutation(draft => {
+        const source = draft.collections[index]
+        if (source?.__idx !== sourceCollectionId) throw new Error(t('collection.transferFailed'))
+        const copy = cloneCollectionWithNewIds(source)
+        copy.title = source.title ? `${source.title} ${t('collection.copy')}` : t('collection.copy')
+        draft.collections.splice(index + 1, 0, copy)
+      })
     } else {
       await autoSave.flush()
+      if (page.value?.page_id !== sourcePageId || localCollections.value[index]?.__idx !== sourceCollectionId) {
+        throw new Error(t('collection.transferFailed'))
+      }
       await pageStore.transferCollection({
-        sourcePageId: pageId.value,
+        sourcePageId,
         targetPageId,
         sourceCollectionIndex: index,
         operation,
         sourceVersion: page.value.version
       })
-      if (operation === 'move') {
-        localCollections.value.splice(index, 1)
+      if (operation === 'move' && page.value?.page_id === sourcePageId) {
+        const currentIndex = localCollections.value.findIndex(collection => collection.__idx === sourceCollectionId)
+        if (currentIndex !== -1) localCollections.value.splice(currentIndex, 1)
       }
     }
 
@@ -718,9 +736,16 @@ const handleCollectionsChange = () => {
 // ==================== Link Operations ====================
 
 // Update link
-const updateLink = (collectionIndex, linkIndex, link) => {
-  localCollections.value[collectionIndex].links[linkIndex] = link
-  queueAutoSave()
+const updateLink = async (collectionIndex, linkIndex, link, done) => {
+  try {
+    await persistLinkEdit({
+      getPage: () => page.value, getCollections: () => localCollections.value,
+      collectionIndex, linkIndex, link, flush: autoSave.flush, save: pageStore.updatePage
+    })
+    done?.()
+  } catch (error) {
+    done?.(error)
+  }
 }
 
 // Delete link
@@ -730,58 +755,21 @@ const deleteLink = (collectionIndex, linkIndex) => {
 }
 
 // Handle add new link from modal
-const handleAddNewLink = ({ link, collectionIndex, newCollectionName }) => {
-  ensureLinkIdx(link)
-  if (collectionIndex === -1 && newCollectionName) {
-    localCollections.value.push(createEmptyCollection(newCollectionName, [link]))
-  } else if (collectionIndex >= 0) {
-    if (!localCollections.value[collectionIndex].links) {
-      localCollections.value[collectionIndex].links = []
-    }
-    localCollections.value[collectionIndex].links.push(link)
-  }
-  queueAutoSave()
-}
+const handleAddNewLink = ({ link, collectionIndex, newCollectionName }, done) => completeMutation(draft => {
+  appendLinks(draft.collections, { links: [ensureLinkIdx({ ...link })], collectionIndex, newCollectionName }, createEmptyCollection)
+}, done)
 
 // Handle batch add links from modal
-const handleBatchAddLinks = ({ links, collectionIndex, newCollectionName }) => {
-  console.log('handleBatchAddLinks called with:', { links, collectionIndex, newCollectionName })
-  links.forEach(ensureLinkIdx)
-  if (collectionIndex === -1 && newCollectionName) {
-    localCollections.value.push(createEmptyCollection(newCollectionName, links))
-  } else if (collectionIndex >= 0) {
-    if (!localCollections.value[collectionIndex].links) {
-      localCollections.value[collectionIndex].links = []
-    }
-    localCollections.value[collectionIndex].links.push(...links)
-  }
-  queueAutoSave()
-}
+const handleBatchAddLinks = ({ links, collectionIndex, newCollectionName }, done) => completeMutation(draft => {
+  appendLinks(draft.collections, { links: links.map(link => ensureLinkIdx({ ...link })), collectionIndex, newCollectionName }, createEmptyCollection)
+}, done)
 
 // Handle import bookmarks from modal
-const handleImportBookmarks = ({ folders }) => {
-  console.log('handleImportBookmarks called with folders:', folders)
-  
-  folders.forEach(folder => {
-    const existingIndex = localCollections.value.findIndex(
-      c => c.title?.toLowerCase() === folder.title?.toLowerCase()
-    )
-    
-    if (existingIndex >= 0) {
-      if (!localCollections.value[existingIndex].links) {
-        localCollections.value[existingIndex].links = []
-      }
-      folder.links.forEach(ensureLinkIdx)
-      localCollections.value[existingIndex].links.push(...folder.links)
-    } else {
-      localCollections.value.push(createEmptyCollection(folder.title, folder.links))
-    }
-  })
-  
-  console.log('localCollections after import:', localCollections.value)
-  console.log('Queueing immediate auto save')
-  queueAutoSave()
-}
+const handleImportBookmarks = ({ folders }) => saveMutation(draft => {
+  const nonEmpty = (folders || []).filter(folder => folder.links?.length)
+  if (!nonEmpty.length) throw new Error('No bookmarks to import')
+  for (const folder of nonEmpty) draft.collections.push(createEmptyCollection(folder.title || t('modal.importedFolder'), folder.links))
+})
 
 
 // Watch for route changes

@@ -116,11 +116,12 @@
         </div>
       </div>
     </div>
-
+    <button v-if="canEdit" type="button" class="ml-3 flex size-7 shrink-0 items-center justify-center rounded-md text-slate-400 hover:bg-violet-50 hover:text-violet-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-violet-500 dark:hover:bg-slate-700 dark:hover:text-violet-300" :aria-label="`${t('modal.editLink')} ${link.title || ''}`" :title="t('modal.editLink')" @click.stop="emit('edit')"><PencilSquareIcon class="size-3.5" /></button>
   </div>
 </template>
 
 <script setup>
+import { PencilSquareIcon } from '@heroicons/vue/24/outline'
 import { ref, computed, nextTick } from 'vue'
 import { useI18n } from 'vue-i18n'
 

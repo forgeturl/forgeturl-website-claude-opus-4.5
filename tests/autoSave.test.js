@@ -81,4 +81,78 @@ test('flush waits for the active save before a cross-page operation', async () =
   await flushPromise
   assert.equal(completed, true)
   assert.equal(autoSave.isDirty.value, false)
+  autoSave.dispose()
+})
+
+test('a failed active save rejects flush and preserves the latest snapshot for one explicit retry', async () => {
+  let rejectFirst
+  const first = new Promise((_, reject) => { rejectFirst = reject })
+  const calls = []
+  const autoSave = useAutoSave(async payload => {
+    calls.push(payload)
+    if (calls.length === 1) await first
+    return { version: payload.version + 1 }
+  })
+  autoSave.markDirty({ page_id: 'A', version: 0, title: 'first' })
+  await waitUntil(() => calls.length === 1)
+  autoSave.markDirty({ page_id: 'A', version: 0, title: 'latest' })
+  const flushing = autoSave.flush()
+  rejectFirst(new Error('offline'))
+  await assert.rejects(flushing, /offline/)
+  assert.equal(calls.length, 1)
+  assert.equal(autoSave.isDirty.value, true)
+  assert.equal(autoSave.saveError.value, 'offline')
+  await autoSave.flush()
+  assert.equal(calls.length, 2)
+  assert.equal(calls[1].title, 'latest')
+  assert.equal(calls[1].version, 0)
+  assert.equal(autoSave.isDirty.value, false)
+  assert.equal(autoSave.saveError.value, null)
+  autoSave.dispose()
+})
+
+test('synchronous transport exceptions do not wedge the retry queue', async () => {
+  let attempts = 0
+  const autoSave = useAutoSave(payload => {
+    if (++attempts === 1) throw new Error('synchronous failure')
+    return { version: payload.version + 1 }
+  })
+  autoSave.markDirty({ page_id: 'A', version: 0 })
+  await assert.rejects(autoSave.flush(), /synchronous failure/)
+  await autoSave.flush()
+  assert.equal(attempts, 2)
+  assert.equal(autoSave.isDirty.value, false)
+  autoSave.dispose()
+})
+
+test('refresh is protected until queued writes finish and the listener is removed on dispose', async () => {
+  const listeners = new Map()
+  const originalWindow = globalThis.window
+  globalThis.window = {
+    addEventListener: (name, listener) => listeners.set(name, listener),
+    removeEventListener: (name, listener) => { if (listeners.get(name) === listener) listeners.delete(name) }
+  }
+  let release
+  const gate = new Promise(resolve => { release = resolve })
+  const autoSave = useAutoSave(async () => { await gate; return { version: 1 } })
+  const attemptUnload = () => {
+    let prevented = false
+    const event = { preventDefault: () => { prevented = true } }
+    listeners.get('beforeunload')?.(event)
+    return prevented
+  }
+  try {
+    assert.equal(attemptUnload(), false)
+    autoSave.markDirty({ page_id: 'A', version: 0 })
+    assert.equal(attemptUnload(), true)
+    release()
+    await autoSave.flush()
+    assert.equal(attemptUnload(), false)
+    autoSave.dispose()
+    assert.equal(listeners.has('beforeunload'), false)
+  } finally {
+    autoSave.dispose()
+    if (originalWindow === undefined) delete globalThis.window
+    else globalThis.window = originalWindow
+  }
 })

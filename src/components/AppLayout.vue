@@ -22,6 +22,8 @@
       
       <!-- Mobile Menu Button -->
       <button
+        :aria-expanded="mobileMenuOpen"
+        :aria-label="t('space.pages')"
         @click="mobileMenuOpen = !mobileMenuOpen"
         class="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-700 text-gray-600 dark:text-slate-400 transition-colors"
       >
@@ -67,7 +69,6 @@
             <div
               v-for="page in pages"
               :key="page.page_id"
-              @click="$emit('select-page', page.page_id); mobileMenuOpen = false"
               class="group flex items-center justify-between px-3 py-2.5 rounded-lg cursor-pointer transition-colors"
               :class="[
                 currentPageId === page.page_id 
@@ -75,7 +76,7 @@
                   : 'text-gray-600 dark:text-slate-400 hover:bg-gray-50 dark:hover:bg-slate-700/50 hover:text-gray-900 dark:hover:text-slate-200'
               ]"
             >
-              <span class="truncate text-sm">{{ page.title || t('space.unnamedPage') }}</span>
+              <button type="button" class="min-w-0 flex-1 truncate text-left text-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-violet-500" :aria-current="currentPageId === page.page_id ? 'page' : undefined" @click="$emit('select-page', page.page_id); mobileMenuOpen = false">{{ page.title || t('space.unnamedPage') }}</button>
               <button
                 v-if="page.is_self"
                 @click.stop="$emit('delete-page', page.page_id)"
@@ -242,7 +243,6 @@
           <div
             v-for="(page, index) in pages"
             :key="page.page_id"
-            @click="$emit('select-page', page.page_id)"
             class="group flex items-center rounded-lg cursor-pointer transition-colors"
             :class="[
               sidebarCollapsed ? 'justify-center px-0 py-2' : 'justify-between px-3 py-2',
@@ -252,16 +252,18 @@
             ]"
             :title="sidebarCollapsed ? (page.title || t('space.unnamedPage')) : ''"
           >
+            <button type="button" class="min-w-0 flex-1 truncate text-left focus-visible:outline focus-visible:outline-2 focus-visible:outline-violet-500" :aria-label="page.title || t('space.unnamedPage')" :aria-current="currentPageId === page.page_id ? 'page' : undefined" @click="$emit('select-page', page.page_id)">
             <!-- Collapsed: Show number -->
             <span v-if="sidebarCollapsed" class="text-sm font-medium w-8 h-8 flex items-center justify-center">
               {{ index + 1 }}
             </span>
             <!-- Expanded: Show title -->
             <span v-else class="truncate text-sm">{{ page.title || t('space.unnamedPage') }}</span>
+            </button>
             <button
               v-if="!sidebarCollapsed && page.is_self"
               @click.stop="$emit('delete-page', page.page_id)"
-              class="p-1 rounded opacity-0 group-hover:opacity-100 hover:bg-gray-200 dark:hover:bg-slate-600 text-gray-400 dark:text-slate-500 hover:text-red-500 dark:hover:text-red-400 transition-all"
+              class="p-1 rounded opacity-60 group-hover:opacity-100 focus:opacity-100 hover:bg-gray-200 dark:hover:bg-slate-600 text-gray-400 dark:text-slate-500 hover:text-red-500 dark:hover:text-red-400 transition-all"
               :title="t('space.deletePage')"
             >
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

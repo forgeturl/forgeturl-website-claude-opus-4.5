@@ -1,1169 +1,251 @@
 <template>
-  <Teleport to="body">
-    <Transition name="modal">
-      <div
-        v-if="show"
-        class="fixed inset-0 z-50 flex items-end sm:items-center justify-center"
-        @click.self="handleClose"
-      >
-        <!-- Backdrop -->
-        <div class="absolute inset-0 bg-black/40 dark:bg-black/60 backdrop-blur-sm" @click="handleClose"></div>
-        
-        <!-- Modal Content -->
-        <div class="relative bg-white dark:bg-slate-800 w-full sm:w-[560px] sm:rounded-2xl rounded-t-2xl shadow-2xl dark:shadow-black/30 max-h-[90vh] overflow-hidden animate-slide-up transition-colors duration-300">
-          <!-- Handle bar for mobile -->
-          <div class="sm:hidden flex justify-center pt-3 pb-2">
-            <div class="w-10 h-1 bg-gray-300 dark:bg-slate-600 rounded-full"></div>
-          </div>
-
-          <!-- Header with Tabs -->
-          <div class="px-6 py-4 border-b border-gray-100 dark:border-slate-700">
-            <div class="flex items-center justify-between">
-              <!-- Tab Switcher -->
-              <div class="flex bg-gray-100 dark:bg-slate-700 rounded-lg p-1">
-                <button
-                  @click="activeTab = 'single'"
-                  class="px-3 py-2 text-sm font-medium rounded-md transition-all"
-                  :class="activeTab === 'single' 
-                    ? 'bg-white dark:bg-slate-600 text-gray-900 dark:text-slate-100 shadow-sm' 
-                    : 'text-gray-500 dark:text-slate-400 hover:text-gray-700 dark:hover:text-slate-200'"
-                >
-                  {{ t('modal.addLink') }}
-                </button>
-                <button
-                  @click="activeTab = 'batch'"
-                  class="px-3 py-2 text-sm font-medium rounded-md transition-all"
-                  :class="activeTab === 'batch' 
-                    ? 'bg-white dark:bg-slate-600 text-gray-900 dark:text-slate-100 shadow-sm' 
-                    : 'text-gray-500 dark:text-slate-400 hover:text-gray-700 dark:hover:text-slate-200'"
-                >
-                  {{ t('modal.batchAdd') }}
-                </button>
-                <button
-                  @click="activeTab = 'import'"
-                  class="px-3 py-2 text-sm font-medium rounded-md transition-all"
-                  :class="activeTab === 'import' 
-                    ? 'bg-white dark:bg-slate-600 text-gray-900 dark:text-slate-100 shadow-sm' 
-                    : 'text-gray-500 dark:text-slate-400 hover:text-gray-700 dark:hover:text-slate-200'"
-                >
-                  {{ t('modal.import') }}
-                </button>
-              </div>
-              <button
-                @click="handleClose"
-                class="p-2 -mr-2 text-gray-400 dark:text-slate-500 hover:text-gray-600 dark:hover:text-slate-300 hover:bg-gray-100 dark:hover:bg-slate-700 rounded-lg transition-colors"
-              >
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
-            </div>
-          </div>
-
-          <!-- Body - Single Link Mode -->
-          <div v-show="activeTab === 'single'" ref="scrollContainerRef" class="px-6 py-5 space-y-5 overflow-y-auto max-h-[60vh]">
-            <!-- Title -->
-            <div class="flex items-center gap-4">
-              <label class="text-sm font-medium text-gray-700 dark:text-slate-300 w-12 flex-shrink-0">{{ t('modal.title') }}</label>
-              <input
-                v-model="form.title"
-                type="text"
-                :placeholder="t('modal.linkTitle')"
-                class="flex-1 px-4 py-2.5 border border-gray-200 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-gray-900 dark:focus:ring-violet-500 focus:border-transparent outline-none transition-all bg-white dark:bg-slate-700 text-gray-900 dark:text-slate-100 placeholder:text-gray-400 dark:placeholder:text-slate-500"
-                @input="handleTitleInput"
-              />
-            </div>
-
-            <!-- URL -->
-            <div class="flex items-center gap-4">
-              <label class="text-sm font-medium text-gray-700 dark:text-slate-300 w-12 flex-shrink-0">{{ t('modal.url') }}</label>
-              <input
-                v-model="form.url"
-                type="url"
-                :placeholder="t('modal.linkUrl')"
-                class="flex-1 px-4 py-2.5 border border-gray-200 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-gray-900 dark:focus:ring-violet-500 focus:border-transparent outline-none transition-all bg-white dark:bg-slate-700 text-gray-900 dark:text-slate-100 placeholder:text-gray-400 dark:placeholder:text-slate-500"
-              />
-            </div>
-
-            <!-- Optional Fields Buttons -->
-            <div v-if="!showTags || !showSubLinks" class="flex gap-2">
-              <button
-                v-if="!showTags"
-                @click="showTags = true"
-                class="px-3 py-2 text-sm text-gray-500 dark:text-slate-400 hover:text-gray-700 dark:hover:text-slate-200 hover:bg-gray-100 dark:hover:bg-slate-700 rounded-lg transition-colors flex items-center gap-1"
-              >
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-                </svg>
-                {{ t('modal.tags') }}
-              </button>
-              <button
-                v-if="!showSubLinks"
-                @click="expandSubLinks"
-                class="px-3 py-2 text-sm text-gray-500 dark:text-slate-400 hover:text-gray-700 dark:hover:text-slate-200 hover:bg-gray-100 dark:hover:bg-slate-700 rounded-lg transition-colors flex items-center gap-1"
-              >
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-                </svg>
-                {{ t('modal.subLinks') }}
-              </button>
-            </div>
-
-            <!-- Tags (shown when expanded) -->
-            <div v-if="showTags">
-              <div class="flex items-center justify-between mb-2">
-                <label class="block text-sm font-medium text-gray-700 dark:text-slate-300">{{ t('modal.tags') }} <span class="text-gray-400 dark:text-slate-500 font-normal">({{ t('modal.commaSeparated') }})</span></label>
-                <button
-                  @click="showTags = false; tagsInput = ''"
-                  class="p-1 text-gray-400 dark:text-slate-500 hover:text-gray-600 dark:hover:text-slate-300 rounded transition-colors"
-                >
-                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                  </svg>
-                </button>
-              </div>
-              <input
-                v-model="tagsInput"
-                type="text"
-                placeholder="tools, dev, design"
-                class="w-full px-4 py-3 border border-gray-200 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-gray-900 dark:focus:ring-violet-500 focus:border-transparent outline-none transition-all bg-white dark:bg-slate-700 text-gray-900 dark:text-slate-100 placeholder:text-gray-400 dark:placeholder:text-slate-500"
-              />
-            </div>
-
-            <!-- Sub Links (shown when expanded) -->
-            <div v-if="showSubLinks">
-              <div class="flex items-center justify-between mb-2">
-                <label class="block text-sm font-medium text-gray-700 dark:text-slate-300">{{ t('modal.subLinks') }}</label>
-                <button
-                  @click="showSubLinks = false; form.sub_links = []"
-                  class="p-1 text-gray-400 dark:text-slate-500 hover:text-gray-600 dark:hover:text-slate-300 rounded transition-colors"
-                >
-                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                  </svg>
-                </button>
-              </div>
-              <div class="space-y-3">
-                <div
-                  v-for="(subLink, index) in form.sub_links"
-                  :key="index"
-                  class="flex gap-2 items-start"
-                >
-                  <div class="flex-1 space-y-2">
-                    <input
-                      v-model="subLink.sub_title"
-                      type="text"
-                      :placeholder="t('modal.subLinkTitle')"
-                      class="w-full px-3 py-2 border border-gray-200 dark:border-slate-600 rounded-lg text-sm focus:ring-2 focus:ring-gray-900 dark:focus:ring-violet-500 focus:border-transparent outline-none transition-all bg-white dark:bg-slate-700 text-gray-900 dark:text-slate-100 placeholder:text-gray-400 dark:placeholder:text-slate-500"
-                    />
-                    <input
-                      v-model="subLink.sub_url"
-                      type="url"
-                      :placeholder="t('modal.subLinkUrl')"
-                      class="w-full px-3 py-2 border border-gray-200 dark:border-slate-600 rounded-lg text-sm focus:ring-2 focus:ring-gray-900 dark:focus:ring-violet-500 focus:border-transparent outline-none transition-all bg-white dark:bg-slate-700 text-gray-900 dark:text-slate-100 placeholder:text-gray-400 dark:placeholder:text-slate-500"
-                    />
-                  </div>
-                  <button
-                    @click="removeSubLink(index)"
-                    class="mt-2 p-2 text-gray-400 dark:text-slate-500 hover:text-red-500 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-colors"
-                  >
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                  </button>
-                </div>
-                <button
-                  @click="addSubLink"
-                  class="w-full py-3 border-2 border-dashed border-gray-200 dark:border-slate-600 rounded-xl text-gray-400 dark:text-slate-500 hover:border-gray-300 dark:hover:border-slate-500 hover:text-gray-500 dark:hover:text-slate-400 transition-colors text-sm"
-                >
-                  + {{ t('modal.addSubLink') }}
-                </button>
-              </div>
-            </div>
-
-            <!-- Collection Selection -->
-            <div>
-              <label class="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-2">{{ t('modal.addToCollection') }}</label>
-              <div class="grid grid-cols-3 gap-2">
-                <!-- Existing Collections -->
-                <div 
-                  v-for="(collection, index) in collections" 
-                  :key="index"
-                  @click="selectCollection(index)"
-                  class="flex flex-col items-center gap-1.5 p-3 border rounded-xl cursor-pointer transition-all text-center"
-                  :class="selectedCollectionIndex === index 
-                    ? 'border-gray-900 dark:border-violet-500 bg-gray-50 dark:bg-slate-700' 
-                    : 'border-gray-200 dark:border-slate-600 hover:border-gray-300 dark:hover:border-slate-500'"
-                >
-                  <div 
-                    class="w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all flex-shrink-0"
-                    :class="selectedCollectionIndex === index 
-                      ? 'border-gray-900 dark:border-violet-500 bg-gray-900 dark:bg-violet-600' 
-                      : 'border-gray-300 dark:border-slate-500'"
-                  >
-                    <svg 
-                      v-if="selectedCollectionIndex === index" 
-                      class="w-3 h-3 text-white" 
-                      fill="none" 
-                      stroke="currentColor" 
-                      viewBox="0 0 24 24"
-                    >
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7" />
-                    </svg>
-                  </div>
-                  <span class="text-gray-700 dark:text-slate-300 text-xs leading-tight line-clamp-2">{{ collection.title || t('collection.unnamed') }}</span>
-                </div>
-
-                <!-- Create New Collection Option -->
-                <div 
-                  @click="selectNewCollection"
-                  class="flex flex-col items-center gap-1.5 p-3 border rounded-xl cursor-pointer transition-all text-center"
-                  :class="isCreateNew 
-                    ? 'border-gray-900 dark:border-violet-500 bg-gray-50 dark:bg-slate-700' 
-                    : 'border-gray-200 dark:border-slate-600 hover:border-gray-300 dark:hover:border-slate-500'"
-                >
-                  <div 
-                    class="w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all flex-shrink-0"
-                    :class="isCreateNew 
-                      ? 'border-gray-900 dark:border-violet-500 bg-gray-900 dark:bg-violet-600' 
-                      : 'border-gray-300 dark:border-slate-500'"
-                  >
-                    <svg 
-                      v-if="isCreateNew" 
-                      class="w-3 h-3 text-white" 
-                      fill="none" 
-                      stroke="currentColor" 
-                      viewBox="0 0 24 24"
-                    >
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7" />
-                    </svg>
-                  </div>
-                  <span class="text-gray-700 dark:text-slate-300 text-xs leading-tight">+ {{ t('modal.newFolder') }}</span>
-                </div>
-              </div>
-
-              <!-- New Collection Name Input -->
-              <div v-if="isCreateNew" class="mt-3">
-                <input
-                  ref="newFolderInputRef"
-                  v-model="newCollectionName"
-                  type="text"
-                  :placeholder="t('modal.enterNewFolderName')"
-                  class="w-full px-4 py-3 border border-gray-200 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-gray-900 dark:focus:ring-violet-500 focus:border-transparent outline-none transition-all bg-white dark:bg-slate-700 text-gray-900 dark:text-slate-100 placeholder:text-gray-400 dark:placeholder:text-slate-500"
-                />
-              </div>
-            </div>
-          </div>
-
-          <!-- Body - Batch Add Mode -->
-          <div v-show="activeTab === 'batch'" ref="batchScrollContainerRef" class="px-6 py-5 space-y-5 overflow-y-auto max-h-[60vh]">
-            <!-- Collection Selection (First) -->
-            <div>
-              <label class="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-2">{{ t('modal.addToCollection') }}</label>
-              <div class="grid grid-cols-3 gap-2">
-                <!-- Existing Collections -->
-                <div 
-                  v-for="(collection, index) in collections" 
-                  :key="index"
-                  @click="selectBatchCollection(index)"
-                  class="flex flex-col items-center gap-1.5 p-3 border rounded-xl cursor-pointer transition-all text-center"
-                  :class="batchSelectedCollectionIndex === index 
-                    ? 'border-gray-900 dark:border-violet-500 bg-gray-50 dark:bg-slate-700' 
-                    : 'border-gray-200 dark:border-slate-600 hover:border-gray-300 dark:hover:border-slate-500'"
-                >
-                  <div 
-                    class="w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all flex-shrink-0"
-                    :class="batchSelectedCollectionIndex === index 
-                      ? 'border-gray-900 dark:border-violet-500 bg-gray-900 dark:bg-violet-600' 
-                      : 'border-gray-300 dark:border-slate-500'"
-                  >
-                    <svg 
-                      v-if="batchSelectedCollectionIndex === index" 
-                      class="w-3 h-3 text-white" 
-                      fill="none" 
-                      stroke="currentColor" 
-                      viewBox="0 0 24 24"
-                    >
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7" />
-                    </svg>
-                  </div>
-                  <span class="text-gray-700 dark:text-slate-300 text-xs leading-tight line-clamp-2">{{ collection.title || t('collection.unnamed') }}</span>
-                </div>
-
-                <!-- Create New Collection Option -->
-                <div 
-                  @click="selectBatchNewCollection"
-                  class="flex flex-col items-center gap-1.5 p-3 border rounded-xl cursor-pointer transition-all text-center"
-                  :class="isBatchCreateNew 
-                    ? 'border-gray-900 dark:border-violet-500 bg-gray-50 dark:bg-slate-700' 
-                    : 'border-gray-200 dark:border-slate-600 hover:border-gray-300 dark:hover:border-slate-500'"
-                >
-                  <div 
-                    class="w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all flex-shrink-0"
-                    :class="isBatchCreateNew 
-                      ? 'border-gray-900 dark:border-violet-500 bg-gray-900 dark:bg-violet-600' 
-                      : 'border-gray-300 dark:border-slate-500'"
-                  >
-                    <svg 
-                      v-if="isBatchCreateNew" 
-                      class="w-3 h-3 text-white" 
-                      fill="none" 
-                      stroke="currentColor" 
-                      viewBox="0 0 24 24"
-                    >
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7" />
-                    </svg>
-                  </div>
-                  <span class="text-gray-700 dark:text-slate-300 text-xs leading-tight">+ {{ t('modal.newFolder') }}</span>
-                </div>
-              </div>
-
-              <!-- New Collection Name Input -->
-              <div v-if="isBatchCreateNew" class="mt-3">
-                <input
-                  ref="batchNewFolderInputRef"
-                  v-model="batchNewCollectionName"
-                  type="text"
-                  :placeholder="t('modal.enterNewFolderName')"
-                  class="w-full px-4 py-3 border border-gray-200 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-gray-900 dark:focus:ring-violet-500 focus:border-transparent outline-none transition-all bg-white dark:bg-slate-700 text-gray-900 dark:text-slate-100 placeholder:text-gray-400 dark:placeholder:text-slate-500"
-                />
-              </div>
-            </div>
-
-            <!-- Batch Links Input -->
-            <div>
-              <label class="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-2">{{ t('modal.pasteLinks') }}</label>
-              <textarea
-                v-model="batchLinksInput"
-                placeholder="Paste multiple links here, separated by spaces or new lines...&#10;&#10;Example:&#10;https://google.com&#10;https://github.com&#10;https://twitter.com"
-                class="w-full h-32 px-4 py-3 border border-gray-200 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-gray-900 dark:focus:ring-violet-500 focus:border-transparent outline-none transition-all resize-none text-sm bg-white dark:bg-slate-700 text-gray-900 dark:text-slate-100 placeholder:text-gray-400 dark:placeholder:text-slate-500"
-                @input="parseBatchLinks"
-              ></textarea>
-            </div>
-
-            <!-- Parsed Links Preview -->
-            <div v-if="parsedLinks.length > 0">
-              <div class="flex items-center justify-between mb-2">
-                <label class="block text-sm font-medium text-gray-700 dark:text-slate-300">
-                  {{ t('modal.parsedLinks') }} 
-                  <span class="text-gray-400 dark:text-slate-500 font-normal">({{ parsedLinks.length }} {{ t('modal.linksCount') }})</span>
-                </label>
-                <button
-                  @click="clearBatchLinks"
-                  class="px-2 py-1 text-xs text-gray-500 dark:text-slate-400 hover:text-gray-700 dark:hover:text-slate-200 hover:bg-gray-100 dark:hover:bg-slate-700 rounded transition-colors"
-                >
-                  {{ t('modal.clearAll') }}
-                </button>
-              </div>
-              <div class="space-y-2 max-h-48 overflow-y-auto">
-                <div
-                  v-for="(link, index) in parsedLinks"
-                  :key="index"
-                  class="flex items-center gap-3 p-3 bg-gray-50 dark:bg-slate-700 rounded-lg group"
-                >
-                  <div class="flex-1 min-w-0">
-                    <input
-                      v-model="link.title"
-                      type="text"
-                      class="w-full text-sm font-medium text-gray-700 dark:text-slate-200 bg-transparent border-none outline-none focus:ring-0 p-0"
-                      :placeholder="t('modal.linkTitle')"
-                    />
-                    <p class="text-xs text-gray-400 dark:text-slate-500 truncate mt-0.5">{{ link.url }}</p>
-                  </div>
-                  <button
-                    @click="removeParsedLink(index)"
-                    class="p-1.5 text-gray-400 dark:text-slate-500 hover:text-red-500 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 rounded transition-colors opacity-0 group-hover:opacity-100"
-                  >
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Body - Import Mode -->
-          <div v-show="activeTab === 'import'" ref="importScrollContainerRef" class="px-6 py-5 space-y-5 overflow-y-auto max-h-[60vh]">
-            <!-- File Upload -->
-            <div>
-              <label class="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-2">{{ t('modal.selectBookmarksFile') }}</label>
-              <div 
-                class="border-2 border-dashed border-gray-200 dark:border-slate-600 rounded-xl p-6 text-center hover:border-gray-300 dark:hover:border-slate-500 transition-colors cursor-pointer"
-                @click="triggerFileInput"
-                @dragover.prevent="handleDragOver"
-                @dragleave.prevent="handleDragLeave"
-                @drop.prevent="handleFileDrop"
-                :class="{ 'border-blue-400 bg-blue-50 dark:border-blue-500 dark:bg-blue-900/20': isDragOver }"
-              >
-                <input
-                  ref="fileInputRef"
-                  type="file"
-                  accept=".html,.htm"
-                  class="hidden"
-                  @change="handleFileSelect"
-                />
-                <svg class="w-10 h-10 mx-auto text-gray-400 dark:text-slate-500 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
-                </svg>
-                <p class="text-sm text-gray-600 dark:text-slate-400 mb-1">
-                  <span class="font-medium text-gray-900 dark:text-slate-200">{{ t('modal.clickToUpload') }}</span> {{ t('modal.orDragAndDrop') }}
-                </p>
-                <p class="text-xs text-gray-400 dark:text-slate-500">{{ t('modal.chromeBookmarksFile') }}</p>
-              </div>
-              <p v-if="importFileName" class="mt-2 text-sm text-gray-600 dark:text-slate-400 flex items-center gap-2">
-                <svg class="w-4 h-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                </svg>
-                {{ importFileName }}
-              </p>
-            </div>
-
-            <!-- Import Preview -->
-            <div v-if="importFolders.length > 0">
-              <div class="flex items-center justify-between mb-2">
-                <label class="block text-sm font-medium text-gray-700 dark:text-slate-300">
-                  {{ t('modal.preview') }}
-                  <span class="text-gray-400 dark:text-slate-500 font-normal">({{ totalImportLinks }} {{ t('modal.linksCount') }} / {{ importFolders.length }} {{ t('modal.foldersCount') }})</span>
-                </label>
-                <button
-                  @click="clearImport"
-                  class="px-2 py-1 text-xs text-gray-500 dark:text-slate-400 hover:text-gray-700 dark:hover:text-slate-200 hover:bg-gray-100 dark:hover:bg-slate-700 rounded transition-colors"
-                >
-                  {{ t('modal.clear') }}
-                </button>
-              </div>
-              <div class="space-y-3 max-h-64 overflow-y-auto">
-                <div
-                  v-for="(folder, folderIndex) in importFolders"
-                  :key="folderIndex"
-                  class="border border-gray-200 dark:border-slate-600 rounded-lg overflow-hidden"
-                >
-                  <div 
-                    class="flex items-center justify-between px-3 py-2 bg-gray-50 dark:bg-slate-700 cursor-pointer"
-                    @click="toggleFolderExpand(folderIndex)"
-                  >
-                    <div class="flex items-center gap-2">
-                      <svg 
-                        class="w-4 h-4 text-gray-400 dark:text-slate-500 transition-transform"
-                        :class="{ 'rotate-90': expandedFolders.includes(folderIndex) }"
-                        fill="none" 
-                        stroke="currentColor" 
-                        viewBox="0 0 24 24"
-                      >
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-                      </svg>
-                      <svg class="w-4 h-4 text-yellow-500" fill="currentColor" viewBox="0 0 20 20">
-                        <path d="M2 6a2 2 0 012-2h5l2 2h5a2 2 0 012 2v6a2 2 0 01-2 2H4a2 2 0 01-2-2V6z" />
-                      </svg>
-                      <span class="text-sm font-medium text-gray-700 dark:text-slate-200">{{ folder.title }}</span>
-                    </div>
-                    <span class="text-xs text-gray-400 dark:text-slate-500">{{ folder.links.length }} links</span>
-                  </div>
-                  <div v-show="expandedFolders.includes(folderIndex)" class="px-3 py-2 space-y-1 dark:bg-slate-800">
-                    <div
-                      v-for="(link, linkIndex) in folder.links.slice(0, 10)"
-                      :key="linkIndex"
-                      class="flex items-center gap-2 text-xs text-gray-600 dark:text-slate-400 py-1"
-                    >
-                      <svg class="w-3 h-3 text-gray-400 dark:text-slate-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
-                      </svg>
-                      <span class="truncate">{{ link.title }}</span>
-                    </div>
-                    <div v-if="folder.links.length > 10" class="text-xs text-gray-400 dark:text-slate-500 py-1 pl-5">
-                      ... and {{ folder.links.length - 10 }} more links
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <!-- Import Info -->
-            <div v-if="importFolders.length === 0" class="text-center py-4 text-gray-400 dark:text-slate-500 text-sm">
-              <p>{{ t('modal.exportBookmarks') }}</p>
-              <p class="text-xs mt-1">Chrome → Bookmarks → Bookmark Manager → ⋮ → Export bookmarks</p>
-            </div>
-          </div>
-
-          <!-- Footer -->
-          <div class="px-6 py-4 bg-gray-50 dark:bg-slate-900/50 border-t border-gray-100 dark:border-slate-700 flex justify-end gap-3">
-            <button
-              @click="handleClose"
-              class="px-5 py-2.5 text-gray-600 dark:text-slate-400 hover:text-gray-800 dark:hover:text-slate-200 hover:bg-gray-100 dark:hover:bg-slate-700 rounded-xl transition-colors font-medium"
-            >
-              {{ t('modal.cancel') }}
-            </button>
-            <button
-              v-if="activeTab === 'single'"
-              @click="handleSave"
-              :disabled="!canSave"
-              class="px-5 py-2.5 bg-gray-900 dark:bg-violet-600 text-white rounded-xl hover:bg-gray-800 dark:hover:bg-violet-500 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {{ t('modal.add') }}
-            </button>
-            <button
-              v-else-if="activeTab === 'batch'"
-              @click="handleBatchSave"
-              :disabled="!canBatchSave"
-              class="px-5 py-2.5 bg-gray-900 dark:bg-violet-600 text-white rounded-xl hover:bg-gray-800 dark:hover:bg-violet-500 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {{ t('modal.addNLinks', { count: parsedLinks.length }) }}
-            </button>
-            <button
-              v-else-if="activeTab === 'import'"
-              @click="handleImport"
-              :disabled="!canImport"
-              class="px-5 py-2.5 bg-gray-900 dark:bg-violet-600 text-white rounded-xl hover:bg-gray-800 dark:hover:bg-violet-500 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {{ t('modal.importNLinks', { count: totalImportLinks }) }}
-            </button>
-          </div>
-        </div>
+  <EditDialog v-model:show="dialogOpen" :title="t('modal.addLink')" :description="lt('addEditor.description')" :dirty="dirty" :busy="busy" :error="error" :submit-label="submitLabel" :can-submit="canSubmit" width="820px" @submit="save" @discard="discardDraft" @closed="invalidateFileRead">
+    <div class="add-link-editor">
+      <div v-if="recovery" class="mb-5 rounded-xl bg-amber-50 p-4 text-sm dark:bg-amber-950/40" role="status">
+        <p class="font-medium">{{ lt('addEditor.foundDraft') }}</p>
+        <div class="mt-3 flex gap-4"><button type="button" class="font-medium text-violet-700 dark:text-violet-300" @click="restoreDraft">{{ lt('addEditor.restore') }}</button><button type="button" class="text-slate-500" @click="discardDraft">{{ lt('addEditor.discardDraft') }}</button></div>
       </div>
-    </Transition>
-  </Teleport>
+      <div v-if="savedNotice" class="mb-4 rounded-xl bg-emerald-50 p-3 text-sm text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300" role="status">{{ savedNotice }}</div>
+      <fieldset :disabled="Boolean(recovery)" class="min-w-0">
+      <div class="mb-4 grid grid-cols-3 gap-1 rounded-xl bg-slate-100 p-1 dark:bg-slate-900/60" role="tablist" :aria-label="t('modal.addLink')">
+        <button v-for="(tab, index) in tabs" :id="`add-link-tab-${tab.key}`" :key="tab.key" type="button" role="tab" :aria-selected="activeTab === tab.key" :aria-controls="`add-link-panel-${tab.key}`" :tabindex="activeTab === tab.key ? 0 : -1" class="flex min-w-0 items-center justify-center gap-2 rounded-lg px-2 py-2.5 text-sm font-medium transition" :class="activeTab === tab.key ? 'bg-white text-slate-900 shadow-sm dark:bg-slate-700 dark:text-white' : 'text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-white'" @click="activeTab = tab.key" @keydown="onTabKey($event, index)">
+          <component :is="tab.icon" class="hidden size-4 sm:block" />{{ t(tab.label) }}<span v-if="hasData(tab.key)" class="size-1.5 shrink-0 rounded-full bg-violet-500" :aria-label="lt('addEditor.draft')" />
+        </button>
+      </div>
+
+      <section v-show="activeTab === 'single'" id="add-link-panel-single" role="tabpanel" aria-labelledby="add-link-tab-single" class="space-y-3.5">
+        <label class="editor-field"><span>{{ t('modal.url') }} <span class="text-violet-500">*</span></span><div class="flex min-w-0 gap-2"><input v-model="single.url" data-add-url type="text" inputmode="url" autocomplete="url" class="editor-control min-w-0 flex-1" :placeholder="t('modal.linkUrl')" @input="updateSuggestedTitle" /><button type="button" class="editor-secondary shrink-0 !px-3" :aria-label="lt('addEditor.paste')" :title="lt('addEditor.paste')" @click="pasteUrl"><ClipboardDocumentIcon class="size-4" /></button></div></label>
+        <label class="editor-field"><span>{{ t('modal.title') }} <span class="font-normal text-slate-400">{{ lt('addEditor.optional') }}</span></span><input v-model="single.title" type="text" class="editor-control" :placeholder="t('modal.linkTitle')" @input="titleEdited = true" /></label>
+        <div>
+          <button type="button" class="flex items-center gap-1.5 text-sm font-medium text-slate-500 hover:text-violet-600 dark:text-slate-400" :aria-expanded="showTags" aria-controls="add-link-tags" @click="showTags = !showTags"><ChevronDownIcon class="size-4 transition-transform" :class="showTags ? 'rotate-180' : ''" />{{ t('modal.tags') }}<span v-if="tags" class="size-1.5 rounded-full bg-violet-500" /></button>
+          <label v-if="showTags" id="add-link-tags" class="editor-field mt-3"><span class="sr-only">{{ t('modal.tags') }}</span><input v-model="tags" class="editor-control" :placeholder="t('modal.tagsPlaceholder')" /></label>
+        </div>
+
+        <section class="border-t border-slate-100 pt-3 dark:border-slate-700">
+          <SubLinkTable ref="subLinksTable" v-model="single.sub_links" :disabled="busy || Boolean(recovery)" :reset-key="tableEpoch" />
+        </section>
+      </section>
+
+      <section v-show="activeTab === 'batch'" id="add-link-panel-batch" role="tabpanel" aria-labelledby="add-link-tab-batch" class="space-y-4">
+        <label class="editor-field"><span>{{ t('modal.pasteLinks') }}</span><textarea v-model="batchText" rows="5" class="editor-control resize-y leading-6" :placeholder="lt('addEditor.batchPlaceholder')" @input="parseBatch" /><span class="text-xs font-normal leading-5 text-slate-500 dark:text-slate-400">{{ lt('addEditor.batchHint') }}</span></label>
+        <div v-if="batchText.trim() && !batchLinks.length" class="rounded-xl bg-amber-50 p-3 text-sm text-amber-700 dark:bg-amber-950/30 dark:text-amber-300" role="status">{{ lt('addEditor.noBatchLinks') }}</div>
+        <div v-if="batchLinks.length">
+          <div class="mb-3 flex items-center justify-between text-sm"><h3 class="font-semibold">{{ t('modal.parsedLinks') }} <span class="ml-1 text-slate-400">{{ batchLinks.length }}</span></h3><button type="button" class="text-slate-500 hover:text-red-600" @click="clearBatch">{{ t('modal.clearAll') }}</button></div>
+          <div class="space-y-2"><div v-for="(link, index) in batchLinks" :key="link.url" class="flex items-center gap-3 rounded-xl border border-slate-200 p-3 dark:border-slate-700"><span class="w-5 shrink-0 text-center text-xs tabular-nums text-slate-400">{{ index + 1 }}</span><div class="min-w-0 flex-1"><input v-model="link.title" class="w-full rounded bg-transparent px-1 text-sm font-medium text-slate-800 outline-none focus:ring-2 focus:ring-violet-400 dark:text-slate-100" :aria-label="`${t('modal.title')} ${index + 1}`" /><p class="mt-1 truncate px-1 text-xs text-slate-500 dark:text-slate-400" :title="link.url">{{ link.url }}</p></div><button type="button" class="add-icon-button hover:!text-red-500" :aria-label="`${lt('addEditor.remove')} ${link.title}`" @click="removeBatchLink(index)"><XMarkIcon /></button></div></div>
+        </div>
+      </section>
+
+      <section v-show="activeTab === 'import'" id="add-link-panel-import" role="tabpanel" aria-labelledby="add-link-tab-import" class="space-y-4">
+        <input ref="fileInput" type="file" accept=".html,.htm" class="sr-only" tabindex="-1" :aria-label="t('modal.selectBookmarksFile')" @change="selectFile" />
+        <button type="button" class="w-full rounded-2xl border-2 border-dashed px-5 py-8 text-center transition-colors" :class="dragOver ? 'border-violet-400 bg-violet-50 dark:bg-violet-950/30' : 'border-slate-200 hover:border-violet-300 dark:border-slate-600'" @click="fileInput?.click()" @dragover.prevent="dragOver = true" @dragleave.prevent="dragOver = false" @drop.prevent="dropFile"><ArrowUpTrayIcon class="mx-auto mb-3 size-8 text-violet-500" /><span class="block text-sm font-semibold">{{ readingFile ? lt('addEditor.reading') : t('modal.clickToUpload') }}</span><span class="mt-2 block text-xs leading-5 text-slate-500 dark:text-slate-400">{{ t('modal.orDragAndDrop') }} · HTML</span></button>
+        <div v-if="fileName" class="flex min-w-0 items-center gap-2 rounded-xl bg-slate-50 p-3 text-sm dark:bg-slate-900/50"><DocumentTextIcon class="size-4 shrink-0 text-violet-500" /><span class="min-w-0 flex-1 truncate" :title="fileName">{{ fileName }}</span><button type="button" class="add-icon-button" :aria-label="t('modal.clear')" @click="clearImport"><XMarkIcon /></button></div>
+        <div v-if="importFolders.length" class="space-y-2"><p class="mb-3 text-sm font-medium">{{ lt('addEditor.importSummary', { links: totalImportLinks, folders: importFolders.length }) }}</p><details v-for="(folder, index) in importFolders" :key="index" class="rounded-xl border border-slate-200 px-4 dark:border-slate-700" :open="index === 0"><summary class="cursor-pointer py-3 text-sm font-medium">{{ folder.title }} <span class="ml-2 font-normal text-slate-400">{{ folder.links.length }}</span></summary><div class="space-y-2 border-t border-slate-100 py-3 dark:border-slate-700"><p v-for="(link, linkIndex) in folder.links.slice(0, 8)" :key="linkIndex" class="truncate text-xs text-slate-500 dark:text-slate-400" :title="link.url">{{ link.title }}</p><p v-if="folder.links.length > 8" class="text-xs text-slate-400">{{ lt('addEditor.moreLinks', { count: folder.links.length - 8 }) }}</p></div></details></div>
+        <p v-else class="text-xs leading-6 text-slate-500 dark:text-slate-400">{{ lt('addEditor.importHint') }}</p>
+      </section>
+
+      <section v-if="activeTab !== 'import'" class="mt-4 border-t border-slate-100 pt-3 dark:border-slate-700">
+        <label class="editor-field"><span class="flex items-center gap-2"><FolderIcon class="size-4 text-slate-400" />{{ t('modal.addToCollection') }}</span><select v-model="currentTarget" class="editor-control" :aria-label="t('modal.addToCollection')"><option v-for="(collection, index) in collections" :key="collection.__idx || index" :value="index">{{ collection.title || t('collection.unnamed') }}</option><option :value="-1">+ {{ t('modal.newFolder') }}</option></select></label>
+        <label v-if="currentTarget === -1" class="editor-field mt-3"><span class="sr-only">{{ t('modal.enterNewFolderName') }}</span><input v-model="currentFolderName" class="editor-control" :placeholder="t('modal.enterNewFolderName')" /></label>
+      </section>
+      </fieldset>
+    </div>
+    <template #status><span>{{ saving ? lt('addEditor.saving') : dirty ? lt(draftSaved ? 'addEditor.draftSaved' : 'addEditor.unsaved') : lt('addEditor.safeHint') }}</span></template>
+  </EditDialog>
 </template>
 
 <script setup>
-import { ref, computed, watch, nextTick } from 'vue'
+import { computed, nextTick, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { ArrowUpTrayIcon, ChevronDownIcon, ClipboardDocumentIcon, DocumentTextIcon, FolderIcon, LinkIcon, QueueListIcon, XMarkIcon } from '@heroicons/vue/24/outline'
+import EditDialog from './EditDialog.vue'
+import SubLinkTable from './SubLinkTable.vue'
+import { useAuthStore } from '@/stores/auth'
+import { bookmarkFoldersFromDocument, newLinkPayload, parseBatchLinkText, suggestedLinkTitle } from '@/utils/addLink'
 
-const props = defineProps({
-  show: {
-    type: Boolean,
-    default: false
-  },
-  collections: {
-    type: Array,
-    default: () => []
-  },
-  onImportBookmarks: {
-    type: Function,
-    default: null
-  }
-})
-
-const { t } = useI18n()
-const emit = defineEmits(['update:show', 'add', 'batch-add', 'import-bookmarks'])
-
-// Tab state
+const props = defineProps({ show: Boolean, collections: { type: Array, default: () => [] }, onImportBookmarks: { type: Function, default: null }, draftScope: { type: String, default: '' } })
+const emit = defineEmits(['update:show', 'add', 'batch-add'])
+const { t } = useI18n({ useScope: 'global' })
+const { t: lt } = useI18n({ useScope: 'local', fallbackLocale: 'en', messages: {
+  'zh-CN': { addEditor: {
+    description: '收好一个链接，也整理好与它相关的入口。', optional: '选填', paste: '从剪贴板粘贴', draft: '有未保存内容',
+    remove: '移除',
+    batchPlaceholder: '每行一个网址，或粘贴包含网址的文字\nhttps://example.com\nhttps://example.org', batchHint: '自动去重；添加前可以修改每条链接的标题。', noBatchLinks: '未识别到有效的 http 或 https 网址，请检查粘贴内容。',
+    reading: '正在读取…', importSummary: '{folders} 个文件夹 · {links} 条链接', moreLinks: '还有 {count} 条链接', importHint: '在浏览器的书签管理器中导出 HTML 文件。导入前会展示文件夹和链接预览；嵌套文件夹会合并到上一级。',
+    foundDraft: '这里有一份尚未添加的草稿。', restore: '恢复草稿', discardDraft: '丢弃草稿', draftSaved: '草稿已保留在此标签页', unsaved: '内容尚未保存', safeHint: '点击遮罩不会关闭编辑器', saving: '正在保存…',
+    saveFailed: '保存失败，请重试。', subUrlRequired: '请填写子链接的网址，或删除这条子链接。', clipboardFailed: '无法读取剪贴板，请直接粘贴到网址输入框。',
+    fileType: '请选择 HTML 格式的书签文件。', emptyImport: '文件中没有找到可导入的 http 或 https 书签。', fileFailed: '读取文件失败，请重新选择。',
+    remainingDraft: '已保存。其他添加方式中还有未保存内容，已为你保留。', importUnavailable: '暂时无法导入，请稍后重试。'
+  } },
+  en: { addEditor: {
+    description: 'Save a link and keep its related destinations together.', optional: 'optional', paste: 'Paste from clipboard', draft: 'Unsaved content',
+    remove: 'Remove',
+    batchPlaceholder: 'One URL per line, or paste text containing URLs\nhttps://example.com\nhttps://example.org', batchHint: 'Duplicates are removed. You can edit each title before adding.', noBatchLinks: 'No valid http or https URLs found. Check the pasted text.',
+    reading: 'Reading file…', importSummary: '{folders} folders · {links} links', moreLinks: '{count} more links', importHint: 'Export an HTML file from your browser’s bookmark manager. Preview folders and links before importing. Nested folders are flattened into their parent.',
+    foundDraft: 'An unfinished draft is available.', restore: 'Restore draft', discardDraft: 'Discard draft', draftSaved: 'Draft kept in this browser tab', unsaved: 'Changes not saved', safeHint: 'Clicking outside keeps this editor open', saving: 'Saving…',
+    saveFailed: 'Could not save. Please try again.', subUrlRequired: 'Enter a URL for this sub-link or remove it.', clipboardFailed: 'Could not read clipboard. Paste directly into the URL field.',
+    fileType: 'Choose an HTML bookmarks file.', emptyImport: 'No http or https bookmarks were found in this file.', fileFailed: 'Could not read this file. Please select it again.',
+    remainingDraft: 'Saved. Your unsaved content in the other modes is still here.', importUnavailable: 'Import is unavailable. Please try again later.'
+  } }
+} })
+const auth = useAuthStore()
+const tabs = [{ key: 'single', label: 'modal.addLink', icon: LinkIcon }, { key: 'batch', label: 'modal.batchAdd', icon: QueueListIcon }, { key: 'import', label: 'modal.import', icon: ArrowUpTrayIcon }]
+const freshLink = () => ({ title: '', url: '', sub_links: [] })
+const dialogOpen = computed({ get: () => props.show, set: value => emit('update:show', value) })
 const activeTab = ref('single')
-
-// Form data for single add
-const form = ref({
-  title: '',
-  url: '',
-  tags: [],
-  photo_url: '',
-  sub_links: []
-})
-
-const tagsInput = ref('')
-const selectedCollectionIndex = ref(0)
-const isCreateNew = ref(false)
-const newCollectionName = ref('')
-
-// Batch add state
-const batchLinksInput = ref('')
-const parsedLinks = ref([])
-const batchSelectedCollectionIndex = ref(0)
-const isBatchCreateNew = ref(false)
-const batchNewCollectionName = ref('')
-
-// Import state
-const importFolders = ref([])
-const importFileName = ref('')
-const expandedFolders = ref([])
-const fileInputRef = ref(null)
-const importScrollContainerRef = ref(null)
-const isDragOver = ref(false)
-
-// Optional fields visibility
+const single = ref(freshLink())
+const tags = ref('')
 const showTags = ref(false)
-const showSubLinks = ref(false)
+const titleEdited = ref(false)
+const target = ref(0)
+const folderName = ref('')
+const batchText = ref('')
+const batchLinks = ref([])
+const batchTarget = ref(0)
+const batchFolderName = ref('')
+const subLinksTable = ref(null)
+const tableEpoch = ref(0)
+const fileInput = ref(null)
+const fileName = ref('')
+const importFolders = ref([])
+const dragOver = ref(false)
+const readingFile = ref(false)
+const saving = ref(false)
+const error = ref('')
+const savedNotice = ref('')
+const draftSaved = ref(false)
+const recovery = ref(null)
+const draftKey = ref('')
+let fileReadGeneration = 0
+let initializing = false
 
-// Refs for auto-scroll
-const scrollContainerRef = ref(null)
-const newFolderInputRef = ref(null)
-const batchScrollContainerRef = ref(null)
-const batchNewFolderInputRef = ref(null)
+const busy = computed(() => saving.value || readingFile.value)
+const totalImportLinks = computed(() => importFolders.value.reduce((total, folder) => total + folder.links.length, 0))
+const currentTarget = computed({ get: () => activeTab.value === 'single' ? target.value : batchTarget.value, set: value => { if (activeTab.value === 'single') target.value = value; else batchTarget.value = value } })
+const currentFolderName = computed({ get: () => activeTab.value === 'single' ? folderName.value : batchFolderName.value, set: value => { if (activeTab.value === 'single') folderName.value = value; else batchFolderName.value = value } })
+function hasData(mode) {
+  if (mode === 'single') return Boolean(single.value.title || single.value.url || tags.value || folderName.value || single.value.sub_links.some(item => item.sub_title || item.sub_url))
+  if (mode === 'batch') return Boolean(batchText.value || batchLinks.value.length || batchFolderName.value)
+  return Boolean(fileName.value || importFolders.value.length)
+}
+const dirty = computed(() => tabs.some(tab => hasData(tab.key)))
+const validTarget = computed(() => currentTarget.value === -1 ? Boolean(currentFolderName.value.trim()) : Boolean(props.collections[currentTarget.value]))
+const canSubmit = computed(() => !busy.value && (activeTab.value === 'single' ? Boolean(single.value.url.trim()) && validTarget.value : activeTab.value === 'batch' ? batchLinks.value.length > 0 && validTarget.value : totalImportLinks.value > 0))
+const submitLabel = computed(() => activeTab.value === 'single' ? t('modal.add') : activeTab.value === 'batch' ? t('modal.addNLinks', { count: batchLinks.value.length }) : t('modal.importNLinks', { count: totalImportLinks.value }))
+const draft = computed(() => ({ activeTab: activeTab.value, single: single.value, tags: tags.value, titleEdited: titleEdited.value, target: target.value, folderName: folderName.value, batchText: batchText.value, batchLinks: batchLinks.value, batchTarget: batchTarget.value, batchFolderName: batchFolderName.value, fileName: fileName.value, importFolders: importFolders.value, collections: props.collections.map(item => item.title) }))
 
-// Track if user has manually edited the title
-const userEditedTitle = ref(false)
-
-// Check if a string is a valid URL
-const isValidUrl = (str) => {
+function defaultTarget() { return props.collections.length ? 0 : -1 }
+function invalidateFileRead() { fileReadGeneration++; readingFile.value = false }
+function clearSingle() { tableEpoch.value++; single.value = freshLink(); tags.value = ''; titleEdited.value = false; showTags.value = false; target.value = defaultTarget(); folderName.value = '' }
+function clearBatch() { batchText.value = ''; batchLinks.value = [] }
+function clearImport() { invalidateFileRead(); fileName.value = ''; importFolders.value = []; dragOver.value = false; if (fileInput.value) fileInput.value.value = '' }
+function deleteStoredDraft() { try { if (draftKey.value) sessionStorage.removeItem(draftKey.value) } catch { /* storage may be disabled */ } draftSaved.value = false }
+function discardDraft() { recovery.value = null; deleteStoredDraft() }
+function keepDraft() {
+  if (initializing || !props.show || !draftKey.value) return
+  if (!dirty.value) { if (!recovery.value) deleteStoredDraft(); return }
+  try { sessionStorage.setItem(draftKey.value, JSON.stringify(draft.value)); draftSaved.value = true } catch { draftSaved.value = false }
+}
+watch(draft, keepDraft, { deep: true, flush: 'sync' })
+watch(() => props.show, open => {
+  if (!open) { invalidateFileRead(); return }
+  initializing = true
+  clearSingle(); clearBatch(); clearImport(); batchTarget.value = defaultTarget(); batchFolderName.value = ''
+  activeTab.value = 'single'; error.value = ''; savedNotice.value = ''; recovery.value = null; draftSaved.value = false
+  draftKey.value = props.draftScope ? `forgeturl:add-draft:${JSON.stringify([auth.user?.uid || 'guest', props.draftScope])}` : ''
   try {
-    const url = new URL(str)
-    return url.protocol === 'http:' || url.protocol === 'https:'
-  } catch {
-    return false
-  }
+    const stored = JSON.parse(draftKey.value && sessionStorage.getItem(draftKey.value) || 'null')
+    if (isValidDraft(stored)) recovery.value = stored
+  } catch { /* invalid or unavailable storage */ }
+  initializing = false
+}, { immediate: true })
+function isValidDraft(value) {
+  return value && value.single && typeof value.single.title === 'string' && typeof value.single.url === 'string' && Array.isArray(value.single.sub_links) && value.single.sub_links.every(item => typeof item.sub_title === 'string' && typeof item.sub_url === 'string') && typeof value.tags === 'string' && typeof value.batchText === 'string' && Array.isArray(value.batchLinks) && value.batchLinks.every(item => typeof item.title === 'string' && typeof item.url === 'string') && Array.isArray(value.importFolders) && value.importFolders.every(folder => typeof folder.title === 'string' && Array.isArray(folder.links) && folder.links.every(link => typeof link.title === 'string' && typeof link.url === 'string'))
 }
-
-// Check clipboard for URL and auto-fill
-const checkClipboardForUrl = async () => {
+function restoreDraft() {
+  const value = recovery.value
+  if (!value) return
+  initializing = true
+  tableEpoch.value++
+  single.value = { ...value.single, sub_links: value.single.sub_links.map(item => ({ ...item, _editorId: crypto.randomUUID() })) }
+  tags.value = value.tags; showTags.value = Boolean(value.tags); titleEdited.value = Boolean(value.titleEdited)
+  folderName.value = value.folderName || ''; batchFolderName.value = value.batchFolderName || ''; batchText.value = value.batchText; batchLinks.value = value.batchLinks; importFolders.value = value.importFolders; fileName.value = value.fileName || ''
+  const sameCollections = JSON.stringify(value.collections) === JSON.stringify(props.collections.map(item => item.title))
+  target.value = sameCollections && (value.target === -1 || props.collections[value.target]) ? value.target : defaultTarget()
+  batchTarget.value = sameCollections && (value.batchTarget === -1 || props.collections[value.batchTarget]) ? value.batchTarget : defaultTarget()
+  activeTab.value = tabs.some(tab => tab.key === value.activeTab) ? value.activeTab : 'single'
+  recovery.value = null
+  initializing = false; keepDraft()
+}
+function updateSuggestedTitle() { if (!titleEdited.value) single.value.title = single.value.url.trim() ? suggestedLinkTitle(single.value.url.trim()) : '' }
+async function pasteUrl() {
+  const previous = single.value.url
+  const generation = fileReadGeneration
   try {
-    // Check if clipboard API is available
-    if (!navigator.clipboard || !navigator.clipboard.readText) {
-      return
-    }
-    
-    const clipboardText = await navigator.clipboard.readText()
-    const trimmedText = clipboardText?.trim()
-    
-    // If clipboard contains a valid URL, auto-fill it
-    if (trimmedText && isValidUrl(trimmedText)) {
-      form.value.url = trimmedText
-    }
-  } catch {
-    // Silently fail if clipboard access is denied or not available
-    // This is expected behavior when user denies permission
-  }
+    const value = await navigator.clipboard.readText()
+    if (props.show && !busy.value && generation === fileReadGeneration && single.value.url === previous) { single.value.url = value.trim(); updateSuggestedTitle(); error.value = '' }
+  } catch { if (props.show && generation === fileReadGeneration) error.value = lt('addEditor.clipboardFailed') }
 }
-
-// Reset form when modal opens
-watch(() => props.show, (newShow) => {
-  if (newShow) {
-    // Reset single add form
-    form.value = {
-      title: '',
-      url: '',
-      tags: [],
-      photo_url: '',
-      sub_links: []
-    }
-    tagsInput.value = ''
-    selectedCollectionIndex.value = props.collections.length > 0 ? 0 : -1
-    isCreateNew.value = props.collections.length === 0
-    newCollectionName.value = ''
-    userEditedTitle.value = false
-    showTags.value = false
-    showSubLinks.value = false
-    
-    // Reset batch add form
-    batchLinksInput.value = ''
-    parsedLinks.value = []
-    batchSelectedCollectionIndex.value = props.collections.length > 0 ? 0 : -1
-    isBatchCreateNew.value = props.collections.length === 0
-    batchNewCollectionName.value = ''
-    
-    // Reset import form
-    importFolders.value = []
-    importFileName.value = ''
-    expandedFolders.value = []
-    isDragOver.value = false
-    
-    // Reset tab to single
-    activeTab.value = 'single'
-    
-    // Check clipboard for URL after form reset
-    checkClipboardForUrl()
-  }
-})
-
-// Extract domain name from URL
-const extractDomainName = (url) => {
+function parseBatch() { batchLinks.value = parseBatchLinkText(batchText.value, batchLinks.value) }
+function removeBatchLink(index) { batchLinks.value.splice(index, 1); batchText.value = batchLinks.value.map(link => link.url).join('\n') }
+async function onTabKey(event, index) {
+  if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return
+  event.preventDefault()
+  const next = event.key === 'Home' ? 0 : event.key === 'End' ? tabs.length - 1 : (index + (event.key === 'ArrowRight' ? 1 : -1) + tabs.length) % tabs.length
+  activeTab.value = tabs[next].key
+  await nextTick(); document.getElementById(`add-link-tab-${tabs[next].key}`)?.focus()
+}
+function selectFile(event) { const file = event.target.files?.[0]; event.target.value = ''; if (file) readFile(file) }
+function dropFile(event) { dragOver.value = false; if (!busy.value && event.dataTransfer?.files?.[0]) readFile(event.dataTransfer.files[0]) }
+async function readFile(file) {
+  if (busy.value) return
+  if (!/\.html?$/i.test(file.name)) { error.value = lt('addEditor.fileType'); return }
+  const generation = ++fileReadGeneration
+  readingFile.value = true; error.value = ''
   try {
-    const urlObj = new URL(url)
-    let hostname = urlObj.hostname
-    // Remove www. prefix
-    hostname = hostname.replace(/^www\./, '')
-    // Remove common TLDs to get the core name
-    const parts = hostname.split('.')
-    if (parts.length >= 2) {
-      // Return the main domain part (e.g., 'watermarkremoversora' from 'watermarkremoversora.com')
-      return parts[0]
+    const html = await file.text()
+    if (!props.show || generation !== fileReadGeneration) return
+    const folders = bookmarkFoldersFromDocument(new DOMParser().parseFromString(html, 'text/html'), t('modal.importedFolder'))
+    if (!folders.length) { error.value = lt('addEditor.emptyImport'); return }
+    importFolders.value = folders; fileName.value = file.name
+  } catch { if (generation === fileReadGeneration) error.value = lt('addEditor.fileFailed') }
+  finally { if (generation === fileReadGeneration) readingFile.value = false }
+}
+function emitSave(event, payload) { return new Promise((resolve, reject) => emit(event, payload, failure => failure ? reject(failure) : resolve())) }
+async function save() {
+  if (!canSubmit.value || saving.value) return
+  error.value = ''; savedNotice.value = ''
+  const mode = activeTab.value
+  if (mode === 'single') {
+    const incomplete = single.value.sub_links.find(item => item.sub_title.trim() && !item.sub_url.trim())
+    if (incomplete) { error.value = lt('addEditor.subUrlRequired'); await nextTick(); subLinksTable.value?.focusField(incomplete._editorId, 'sub_url'); return }
+  }
+  saving.value = true
+  try {
+    if (mode === 'single') await emitSave('add', { link: newLinkPayload(single.value, tags.value), collectionIndex: target.value, newCollectionName: target.value === -1 ? folderName.value.trim() : null })
+    else if (mode === 'batch') await emitSave('batch-add', { links: batchLinks.value.map(link => newLinkPayload(link)), collectionIndex: batchTarget.value, newCollectionName: batchTarget.value === -1 ? batchFolderName.value.trim() : null })
+    else {
+      if (!props.onImportBookmarks) throw new Error(lt('addEditor.importUnavailable'))
+      await props.onImportBookmarks({ folders: importFolders.value.map(folder => ({ title: folder.title, links: folder.links.map(link => newLinkPayload(link)) })) })
     }
-    return hostname
-  } catch {
-    return ''
-  }
-}
-
-// Auto-fill title from URL when title is empty and user hasn't edited it
-watch(() => form.value.url, (newUrl) => {
-  if (newUrl && !form.value.title && !userEditedTitle.value) {
-    const domainName = extractDomainName(newUrl)
-    if (domainName) {
-      form.value.title = domainName
-    }
-  }
-})
-
-// Can save check for single add
-const canSave = computed(() => {
-  const hasUrl = form.value.url.trim().length > 0
-  const hasValidTarget = !isCreateNew.value || newCollectionName.value.trim().length > 0
-  return hasUrl && hasValidTarget
-})
-
-// Can save check for batch add
-const canBatchSave = computed(() => {
-  const hasLinks = parsedLinks.value.length > 0
-  const hasValidTarget = !isBatchCreateNew.value || batchNewCollectionName.value.trim().length > 0
-  return hasLinks && hasValidTarget
-})
-
-// Can import check
-const canImport = computed(() => {
-  return importFolders.value.length > 0 && totalImportLinks.value > 0
-})
-
-// Total import links count
-const totalImportLinks = computed(() => {
-  return importFolders.value.reduce((sum, folder) => sum + folder.links.length, 0)
-})
-
-// Handle title input - mark as user edited
-const handleTitleInput = () => {
-  userEditedTitle.value = true
-}
-
-const selectCollection = (index) => {
-  selectedCollectionIndex.value = index
-  isCreateNew.value = false
-}
-
-const selectNewCollection = () => {
-  selectedCollectionIndex.value = -1
-  isCreateNew.value = true
-  
-  // Auto scroll to bottom and focus input after DOM updates
-  nextTick(() => {
-    if (scrollContainerRef.value) {
-      scrollContainerRef.value.scrollTo({
-        top: scrollContainerRef.value.scrollHeight,
-        behavior: 'smooth'
-      })
-    }
-    // Focus the input after scroll animation
-    setTimeout(() => {
-      if (newFolderInputRef.value) {
-        newFolderInputRef.value.focus()
-      }
-    }, 150)
-  })
-}
-
-// Batch collection selection
-const selectBatchCollection = (index) => {
-  batchSelectedCollectionIndex.value = index
-  isBatchCreateNew.value = false
-}
-
-const selectBatchNewCollection = () => {
-  batchSelectedCollectionIndex.value = -1
-  isBatchCreateNew.value = true
-  
-  // Auto scroll and focus input after DOM updates
-  nextTick(() => {
-    setTimeout(() => {
-      if (batchNewFolderInputRef.value) {
-        batchNewFolderInputRef.value.focus()
-      }
-    }, 150)
-  })
-}
-
-// Parse batch links from input
-const parseBatchLinks = () => {
-  const input = batchLinksInput.value.trim()
-  if (!input) {
-    parsedLinks.value = []
-    return
-  }
-  
-  // Split by whitespace and newlines
-  const urlRegex = /https?:\/\/[^\s]+/gi
-  const matches = input.match(urlRegex) || []
-  
-  // Create unique links with auto-generated titles
-  const seenUrls = new Set()
-  parsedLinks.value = matches
-    .filter(url => {
-      const normalized = url.toLowerCase()
-      if (seenUrls.has(normalized)) return false
-      seenUrls.add(normalized)
-      return true
-    })
-    .map(url => ({
-      url: url,
-      title: extractDomainName(url) || url,
-      tags: [],
-      photo_url: '',
-      sub_links: []
-    }))
-}
-
-// Remove a parsed link
-const removeParsedLink = (index) => {
-  parsedLinks.value.splice(index, 1)
-}
-
-// Clear all batch links
-const clearBatchLinks = () => {
-  batchLinksInput.value = ''
-  parsedLinks.value = []
-}
-
-const addSubLink = () => {
-  form.value.sub_links.push({
-    sub_title: '',
-    sub_url: ''
-  })
-}
-
-// Expand sub links section and auto-add one empty sub link
-const expandSubLinks = () => {
-  showSubLinks.value = true
-  // Auto-add one empty sub link if there are none
-  if (form.value.sub_links.length === 0) {
-    addSubLink()
-  }
-}
-
-const removeSubLink = (index) => {
-  form.value.sub_links.splice(index, 1)
-}
-
-const handleClose = () => {
-  emit('update:show', false)
-}
-
-const handleSave = () => {
-  if (!canSave.value) return
-
-  // Parse tags
-  const tags = tagsInput.value
-    .split(',')
-    .map(tag => tag.trim())
-    .filter(tag => tag.length > 0)
-
-  // Filter empty sub links
-  const subLinks = form.value.sub_links.filter(
-    sl => sl.sub_title || sl.sub_url
-  )
-
-  const link = {
-    title: form.value.title || form.value.url,
-    url: form.value.url,
-    tags,
-    photo_url: '',
-    sub_links: subLinks
-  }
-
-  emit('add', {
-    link,
-    collectionIndex: isCreateNew.value ? -1 : selectedCollectionIndex.value,
-    newCollectionName: isCreateNew.value ? (newCollectionName.value || t('modal.newFolder')) : null
-  })
-
-  handleClose()
-}
-
-// Handle batch save
-const handleBatchSave = () => {
-  console.log('handleBatchSave called, canBatchSave:', canBatchSave.value)
-  if (!canBatchSave.value) return
-
-  const payload = {
-    links: parsedLinks.value.map(link => ({
-      title: link.title || link.url,
-      url: link.url,
-      tags: [],
-      photo_url: '',
-      sub_links: []
-    })),
-    collectionIndex: isBatchCreateNew.value ? -1 : batchSelectedCollectionIndex.value,
-    newCollectionName: isBatchCreateNew.value ? (batchNewCollectionName.value || t('modal.newFolder')) : null
-  }
-  
-  console.log('Emitting batch-add with payload:', payload)
-  
-  // Emit batch-add event with all parsed links
-  emit('batch-add', payload)
-  
-  console.log('batch-add event emitted')
-
-  handleClose()
-}
-
-// ==================== Import Functions ====================
-
-// Trigger file input click
-const triggerFileInput = () => {
-  fileInputRef.value?.click()
-}
-
-// Handle file selection
-const handleFileSelect = (event) => {
-  const file = event.target.files?.[0]
-  if (file) {
-    processBookmarkFile(file)
-  }
-}
-
-// Handle drag over
-const handleDragOver = () => {
-  isDragOver.value = true
-}
-
-// Handle drag leave
-const handleDragLeave = () => {
-  isDragOver.value = false
-}
-
-// Handle file drop
-const handleFileDrop = (event) => {
-  isDragOver.value = false
-  const file = event.dataTransfer?.files?.[0]
-  if (file && (file.name.endsWith('.html') || file.name.endsWith('.htm'))) {
-    processBookmarkFile(file)
-  }
-}
-
-// Process bookmark file
-const processBookmarkFile = (file) => {
-  importFileName.value = file.name
-  const reader = new FileReader()
-  reader.onload = (e) => {
-    const content = e.target?.result
-    if (content) {
-      parseBookmarksHtml(content)
-    }
-  }
-  reader.readAsText(file)
-}
-
-// Parse Chrome bookmarks HTML
-const parseBookmarksHtml = (html) => {
-  const parser = new DOMParser()
-  const doc = parser.parseFromString(html, 'text/html')
-  
-  // Find all DL elements (bookmark lists)
-  const folders = new Map()
-  const noFolderLinks = []
-  
-  // Get the main bookmarks list (usually the first DL after H1)
-  const mainDL = doc.querySelector('DL')
-  if (!mainDL) {
-    importFolders.value = []
-    return
-  }
-  
-  // Special folder names that should be skipped (their contents will be processed as top-level)
-  const rootFolderNames = ['书签栏', 'Bookmarks Bar', 'Bookmarks bar', '其他书签', 'Other Bookmarks', 'Other bookmarks']
-  
-  // Process the bookmarks structure recursively
-  // Returns true if this is a root-level folder (like "书签栏")
-  const processFolder = (dlElement, currentFolderName = null, isUnderRoot = false) => {
-    const items = dlElement.children
-    
-    for (let i = 0; i < items.length; i++) {
-      const item = items[i]
-      
-      if (item.tagName === 'DT') {
-        // Check if it's a folder (has H3) or a link (has A)
-        const h3 = item.querySelector(':scope > H3')
-        const anchor = item.querySelector(':scope > A')
-        const nestedDL = item.querySelector(':scope > DL')
-        
-        if (h3 && nestedDL) {
-          // This is a folder
-          const folderName = h3.textContent?.trim() || 'Unnamed Folder'
-          
-          // Check if this is a root folder (like "书签栏")
-          if (rootFolderNames.includes(folderName)) {
-            // This is a root folder, process its contents as top-level
-            // Links directly under this folder will go to "New Folder"
-            processFolder(nestedDL, null, true)
-          } else if (isUnderRoot || currentFolderName === null) {
-            // This is a direct child folder under the root (like "文件夹1", "文件夹2", etc.)
-            // Create a new folder entry and process its contents
-            if (!folders.has(folderName)) {
-              folders.set(folderName, [])
-            }
-            processFolder(nestedDL, folderName, false)
-          } else {
-            // This is a nested folder inside another folder
-            // Continue using the parent folder name (flatten nested structure)
-            processFolder(nestedDL, currentFolderName, false)
-          }
-        } else if (anchor) {
-          // This is a link
-          const url = anchor.getAttribute('href')
-          const title = anchor.textContent?.trim() || url
-          
-          // Skip chrome:// URLs and other internal URLs
-          if (url && (url.startsWith('http://') || url.startsWith('https://'))) {
-            const link = {
-              title: title,
-              url: url,
-              tags: [],
-              photo_url: '',
-              sub_links: []
-            }
-            
-            if (currentFolderName) {
-              // Add to the current folder
-              if (!folders.has(currentFolderName)) {
-                folders.set(currentFolderName, [])
-              }
-              folders.get(currentFolderName).push(link)
-            } else if (isUnderRoot) {
-              // Link directly under root folder (like "书签栏"), add to "New Folder"
-              noFolderLinks.push(link)
-            } else {
-              // No folder at all, add to default folder
-              noFolderLinks.push(link)
-            }
-          }
-        }
-      }
-    }
-  }
-  
-  processFolder(mainDL, null, false)
-  
-  // Convert to array format
-  const result = []
-  
-  // Add folders with their links
-  folders.forEach((links, folderName) => {
-    if (links.length > 0) {
-      result.push({
-        title: folderName,
-        links: links
-      })
-    }
-  })
-  
-  // Add links without folder to "New Folder"
-  if (noFolderLinks.length > 0) {
-    result.push({
-      title: 'New Folder',
-      links: noFolderLinks
-    })
-  }
-  
-  importFolders.value = result
-  
-  // Expand first folder by default
-  if (result.length > 0) {
-    expandedFolders.value = [0]
-  }
-}
-
-// Toggle folder expand/collapse
-const toggleFolderExpand = (index) => {
-  const idx = expandedFolders.value.indexOf(index)
-  if (idx >= 0) {
-    expandedFolders.value.splice(idx, 1)
-  } else {
-    expandedFolders.value.push(index)
-  }
-}
-
-// Clear import
-const clearImport = () => {
-  importFolders.value = []
-  importFileName.value = ''
-  expandedFolders.value = []
-  if (fileInputRef.value) {
-    fileInputRef.value.value = ''
-  }
-}
-
-// Handle import
-const handleImport = () => {
-  console.log('handleImport called, canImport:', canImport.value)
-  console.log('props:', props)
-  console.log('props.onImportBookmarks:', props.onImportBookmarks)
-  console.log('typeof props.onImportBookmarks:', typeof props.onImportBookmarks)
-
-  if (!canImport.value) return
-
-  const payload = {
-    folders: importFolders.value.map(folder => ({
-      title: folder.title,
-      links: folder.links.map(link => ({
-        title: link.title || link.url,
-        url: link.url,
-        tags: [],
-        photo_url: '',
-        sub_links: []
-      }))
-    }))
-  }
-  
-  console.log('Import payload:', payload)
-  // 实现和 handleBatchSave 类似的结构
-  
-  // Use callback prop instead of event (more reliable)
-  if (props.onImportBookmarks) {
-    console.log('Calling onImportBookmarks callback')
-    props.onImportBookmarks(payload)
-  } else {
-    console.log('No onImportBookmarks callback provided')
-  }
-
-  handleClose()
+    initializing = true
+    if (mode === 'single') clearSingle()
+    else if (mode === 'batch') { clearBatch(); batchFolderName.value = ''; batchTarget.value = defaultTarget() }
+    else clearImport()
+    recovery.value = null
+    initializing = false
+    if (dirty.value) { activeTab.value = tabs.find(tab => hasData(tab.key)).key; savedNotice.value = lt('addEditor.remainingDraft'); keepDraft() }
+    else { deleteStoredDraft(); emit('update:show', false) }
+  } catch (failure) { error.value = failure?.message || lt('addEditor.saveFailed') }
+  finally { saving.value = false }
 }
 </script>
 
 <style scoped>
-.modal-enter-active,
-.modal-leave-active {
-  transition: opacity 0.2s ease;
-}
-
-.modal-enter-active .relative,
-.modal-leave-active .relative {
-  transition: transform 0.3s ease;
-}
-
-.modal-enter-from,
-.modal-leave-to {
-  opacity: 0;
-}
-
-.modal-enter-from .relative {
-  transform: translateY(100%);
-}
-
-.modal-leave-to .relative {
-  transform: translateY(100%);
-}
-
-@media (min-width: 640px) {
-  .modal-enter-from .relative {
-    transform: translateY(20px) scale(0.95);
-  }
-  
-  .modal-leave-to .relative {
-    transform: translateY(20px) scale(0.95);
-  }
-}
-
-@keyframes slide-up {
-  from {
-    transform: translateY(100%);
-  }
-  to {
-    transform: translateY(0);
-  }
-}
-
-.animate-slide-up {
-  animation: slide-up 0.3s ease-out;
-}
-
-@media (min-width: 640px) {
-  .animate-slide-up {
-    animation: none;
-  }
-}
+.add-link-editor { min-width: 0; }
+.add-link-editor :is(button, input, select, textarea):focus-visible { outline: 2px solid #8b5cf6; outline-offset: 2px; }
+.add-icon-button { display: inline-flex; flex: 0 0 auto; width: 32px; height: 32px; align-items: center; justify-content: center; border-radius: 8px; color: #64748b; }
+.add-icon-button:hover { background: rgb(148 163 184 / 12%); }
+.add-icon-button:disabled { opacity: .25; cursor: not-allowed; }
+.add-icon-button svg { width: 16px; height: 16px; }
+@media (max-width: 420px) { .add-icon-button { width: 28px; } }
 </style>
-

@@ -1,188 +1,75 @@
 <template>
-  <Teleport to="body">
-    <Transition name="modal">
-      <div
-        v-if="show"
-        class="fixed inset-0 z-50 flex items-end sm:items-center justify-center"
-        @click.self="handleClose"
-      >
-        <!-- Backdrop -->
-        <div class="absolute inset-0 bg-black/40 dark:bg-black/60 backdrop-blur-sm" @click="handleClose"></div>
-        
-        <!-- Modal Content -->
-        <div class="relative bg-white dark:bg-slate-800 w-full sm:w-[400px] sm:rounded-2xl rounded-t-2xl shadow-2xl dark:shadow-black/30 overflow-hidden animate-slide-up transition-colors duration-300">
-          <!-- Handle bar for mobile -->
-          <div class="sm:hidden flex justify-center pt-3 pb-2">
-            <div class="w-10 h-1 bg-gray-300 dark:bg-slate-600 rounded-full"></div>
-          </div>
-
-          <!-- Header -->
-          <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100 dark:border-slate-700">
-            <h3 class="text-lg font-semibold text-gray-900 dark:text-slate-100">{{ t('modal.newCollection') }}</h3>
-            <button
-              @click="handleClose"
-              class="p-2 -mr-2 text-gray-400 dark:text-slate-500 hover:text-gray-600 dark:hover:text-slate-300 hover:bg-gray-100 dark:hover:bg-slate-700 rounded-lg transition-colors"
-            >
-              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
-          </div>
-
-          <!-- Body -->
-          <div class="px-6 py-5 space-y-5">
-            <!-- Collection Name -->
-            <div>
-              <label class="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-2">{{ t('modal.collectionName') }}</label>
-              <input
-                ref="inputRef"
-                v-model="collectionName"
-                type="text"
-                :placeholder="t('modal.enterCollectionName')"
-                class="w-full px-4 py-3 border border-gray-200 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-gray-900 dark:focus:ring-violet-500 focus:border-transparent outline-none transition-all bg-white dark:bg-slate-700 text-gray-900 dark:text-slate-100 placeholder:text-gray-400 dark:placeholder:text-slate-500"
-                @keyup.enter="handleConfirm"
-              />
-            </div>
-
-            <!-- Position Selection -->
-            <div>
-              <label class="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-2">{{ t('modal.position') }}</label>
-              <div class="flex gap-3">
-                <button
-                  @click="position = 'head'"
-                  class="flex-1 py-3 px-4 border rounded-xl text-sm font-medium transition-all"
-                  :class="position === 'head' 
-                    ? 'border-gray-900 dark:border-violet-500 bg-gray-900 dark:bg-violet-600 text-white' 
-                    : 'border-gray-200 dark:border-slate-600 text-gray-600 dark:text-slate-400 hover:border-gray-300 dark:hover:border-slate-500'"
-                >
-                  {{ t('modal.addToHead') }}
-                </button>
-                <button
-                  @click="position = 'tail'"
-                  class="flex-1 py-3 px-4 border rounded-xl text-sm font-medium transition-all"
-                  :class="position === 'tail' 
-                    ? 'border-gray-900 dark:border-violet-500 bg-gray-900 dark:bg-violet-600 text-white' 
-                    : 'border-gray-200 dark:border-slate-600 text-gray-600 dark:text-slate-400 hover:border-gray-300 dark:hover:border-slate-500'"
-                >
-                  {{ t('modal.addToTail') }}
-                </button>
-              </div>
-            </div>
-          </div>
-
-          <!-- Footer -->
-          <div class="px-6 py-4 bg-gray-50 dark:bg-slate-900/50 border-t border-gray-100 dark:border-slate-700 flex justify-end gap-3">
-            <button
-              @click="handleClose"
-              class="px-5 py-2.5 text-gray-600 dark:text-slate-400 hover:text-gray-800 dark:hover:text-slate-200 hover:bg-gray-100 dark:hover:bg-slate-700 rounded-xl transition-colors font-medium"
-            >
-              {{ t('modal.cancel') }}
-            </button>
-            <button
-              @click="handleConfirm"
-              class="px-5 py-2.5 bg-gray-900 dark:bg-violet-600 text-white rounded-xl hover:bg-gray-800 dark:hover:bg-violet-500 transition-colors font-medium"
-            >
-              {{ t('modal.create') }}
-            </button>
-          </div>
+  <EditDialog
+    :show="show"
+    :title="t('modal.newCollection')"
+    :description="copy.description"
+    :dirty="!!collectionName || position !== 'tail'"
+    :busy="saving"
+    :error="error"
+    :submit-label="t(saving ? 'modal.creating' : 'modal.create')"
+    @update:show="emit('update:show', $event)"
+    @submit="handleConfirm"
+  >
+    <div class="space-y-6">
+      <label class="editor-field">
+        <span>{{ t('modal.collectionName') }}</span>
+        <input v-model="collectionName" class="editor-control" autofocus :placeholder="t('modal.newCollection')" />
+      </label>
+      <fieldset>
+        <legend class="mb-3 text-sm font-medium text-slate-700 dark:text-slate-200">{{ t('modal.position') }}</legend>
+        <div class="grid grid-cols-2 gap-3">
+          <label v-for="option in ['head', 'tail']" :key="option" class="relative flex cursor-pointer flex-col items-start gap-3 rounded-xl border p-4 transition-colors" :class="position === option ? 'border-violet-400 bg-violet-50 text-violet-700 dark:border-violet-500 dark:bg-violet-950/30 dark:text-violet-200' : 'border-slate-200 text-slate-600 hover:border-slate-300 dark:border-slate-700 dark:text-slate-300'">
+            <input v-model="position" type="radio" name="collection-position" :value="option" class="absolute right-4 top-4 size-4 accent-violet-600" />
+            <ArrowUpOnSquareIcon v-if="option === 'head'" class="size-6" /><ArrowDownOnSquareIcon v-else class="size-6" />
+            <span class="text-sm font-medium">{{ t(option === 'head' ? 'modal.addToHead' : 'modal.addToTail') }}</span>
+          </label>
         </div>
-      </div>
-    </Transition>
-  </Teleport>
+        <p class="mt-3 text-xs leading-5 text-slate-500 dark:text-slate-400">{{ copy.positionHint }}</p>
+      </fieldset>
+    </div>
+  </EditDialog>
 </template>
 
 <script setup>
-import { ref, watch, nextTick } from 'vue'
+import { computed, ref, watch } from 'vue'
+import { ArrowDownOnSquareIcon, ArrowUpOnSquareIcon } from '@heroicons/vue/24/outline'
 import { useI18n } from 'vue-i18n'
+import EditDialog from './EditDialog.vue'
 
-const props = defineProps({
-  show: {
-    type: Boolean,
-    default: false
-  }
-})
-
+const props = defineProps({ show: { type: Boolean, default: false } })
 const emit = defineEmits(['update:show', 'confirm'])
-
-const { t } = useI18n()
+const { t, locale } = useI18n()
 const collectionName = ref('')
 const position = ref('tail')
-const inputRef = ref(null)
-
-// Reset and focus when modal opens
-watch(() => props.show, (newShow) => {
-  if (newShow) {
-    collectionName.value = ''
-    position.value = 'tail'
-    nextTick(() => {
-      inputRef.value?.focus()
-    })
-  }
+const saving = ref(false)
+const error = ref('')
+const copy = computed(() => locale.value.startsWith('zh') ? {
+  description: '把相关链接放在一起，让页面保持有序。', positionHint: '选择新合集在页面中的位置，之后也可以调整。'
+} : {
+  description: 'Keep related links together and your page organized.', positionHint: 'Choose where to place the collection. You can reorder it later.'
 })
 
-const handleClose = () => {
-  emit('update:show', false)
-}
+watch(() => props.show, open => {
+  if (!open) return
+  collectionName.value = ''
+  position.value = 'tail'
+  saving.value = false
+  error.value = ''
+}, { immediate: true })
 
-const handleConfirm = () => {
-  emit('confirm', {
-    name: collectionName.value || t('modal.newCollection'),
-    position: position.value
+function handleConfirm() {
+  if (saving.value) return
+  saving.value = true
+  error.value = ''
+  emit('confirm', { name: collectionName.value.trim() || t('modal.newCollection'), position: position.value }, err => {
+    saving.value = false
+    if (err) {
+      error.value = err.message || t('linkEditor.saveFailed')
+      return
+    }
+    collectionName.value = ''
+    position.value = 'tail'
+    emit('update:show', false)
   })
-  handleClose()
 }
 </script>
-
-<style scoped>
-.modal-enter-active,
-.modal-leave-active {
-  transition: opacity 0.2s ease;
-}
-
-.modal-enter-active .relative,
-.modal-leave-active .relative {
-  transition: transform 0.3s ease;
-}
-
-.modal-enter-from,
-.modal-leave-to {
-  opacity: 0;
-}
-
-.modal-enter-from .relative {
-  transform: translateY(100%);
-}
-
-.modal-leave-to .relative {
-  transform: translateY(100%);
-}
-
-@media (min-width: 640px) {
-  .modal-enter-from .relative {
-    transform: translateY(20px) scale(0.95);
-  }
-  
-  .modal-leave-to .relative {
-    transform: translateY(20px) scale(0.95);
-  }
-}
-
-@keyframes slide-up {
-  from {
-    transform: translateY(100%);
-  }
-  to {
-    transform: translateY(0);
-  }
-}
-
-.animate-slide-up {
-  animation: slide-up 0.3s ease-out;
-}
-
-@media (min-width: 640px) {
-  .animate-slide-up {
-    animation: none;
-  }
-}
-</style>

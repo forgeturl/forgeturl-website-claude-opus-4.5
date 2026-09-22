@@ -1,316 +1,52 @@
 <template>
-  <Teleport to="body">
-    <Transition name="modal">
-      <div
-        v-if="show"
-        class="fixed inset-0 z-50 overflow-y-auto"
-        @click.self="close"
-      >
-        <!-- Backdrop -->
-        <div class="fixed inset-0 bg-black/40 dark:bg-black/60 transition-opacity" @click="close"></div>
-
-        <!-- Modal -->
-        <div class="flex min-h-full items-center justify-center p-4">
-          <div
-            class="relative bg-white dark:bg-slate-800 rounded-2xl shadow-xl dark:shadow-2xl dark:shadow-black/30 max-w-lg w-full animate-slide-up transition-colors duration-300"
-            @click.stop
-          >
-            <!-- Header -->
-            <div class="flex items-center justify-between px-6 py-5 border-b border-gray-100 dark:border-slate-700">
-              <h3 class="text-xl font-semibold text-gray-900 dark:text-slate-100">{{ t('modal.sharePage') }}</h3>
-              <button
-                @click="close"
-                class="p-1.5 hover:bg-gray-100 dark:hover:bg-slate-700 rounded-lg transition-colors text-gray-400 dark:text-slate-500 hover:text-gray-600 dark:hover:text-slate-300"
-              >
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
-            </div>
-
-            <!-- Content -->
-            <div class="p-6 space-y-4">
-              <!-- Read-only Link -->
-              <div class="border border-gray-200 dark:border-slate-700 rounded-xl p-4">
-                <div class="flex items-center gap-3 mb-2">
-                  <div class="w-8 h-8 bg-gray-100 dark:bg-slate-700 rounded-lg flex items-center justify-center">
-                    <svg class="w-4 h-4 text-gray-600 dark:text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                    </svg>
-                  </div>
-                  <div>
-                    <h4 class="font-medium text-gray-900 dark:text-slate-100">{{ t('modal.readOnlyLink') }}</h4>
-                    <p class="text-sm text-gray-500 dark:text-slate-400">{{ t('modal.readOnlyDesc') }}</p>
-                  </div>
-                </div>
-                
-                <div v-if="page.readonly_page_id" class="flex gap-2 mt-3">
-                  <input
-                    :value="getShareUrl('readonly', page.readonly_page_id)"
-                    readonly
-                    class="flex-1 px-3 py-2 bg-gray-50 dark:bg-slate-700 border border-gray-200 dark:border-slate-600 rounded-lg text-sm text-gray-600 dark:text-slate-300 focus:outline-none"
-                  />
-                  <button
-                    @click="copyLink('readonly', page.readonly_page_id)"
-                    class="px-4 py-2 bg-white dark:bg-slate-700 border border-gray-200 dark:border-slate-600 rounded-lg text-sm font-medium text-gray-700 dark:text-slate-200 hover:bg-gray-50 dark:hover:bg-slate-600 transition-colors flex items-center gap-2"
-                  >
-                    <svg v-if="copiedType !== 'readonly'" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" />
-                    </svg>
-                    <svg v-else class="w-4 h-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                    </svg>
-                    {{ t('modal.copy') }}
-                  </button>
-                  <button
-                    @click="removeLink('readonly')"
-                    :disabled="removing"
-                    class="px-3 py-2 bg-white dark:bg-slate-700 border border-red-200 dark:border-red-800 rounded-lg text-sm font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 transition-colors flex items-center gap-1 disabled:opacity-50"
-                    :title="t('modal.deleteThisLink')"
-                  >
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                    </svg>
-                  </button>
-                </div>
-                <button
-                  v-else
-                  @click="generateLink('readonly')"
-                  :disabled="generating"
-                  class="w-full mt-3 px-4 py-2 bg-gray-100 dark:bg-slate-700 text-gray-700 dark:text-slate-200 rounded-lg text-sm font-medium hover:bg-gray-200 dark:hover:bg-slate-600 transition-colors disabled:opacity-50"
-                >
-                  {{ generating ? t('modal.generating') : t('modal.generateReadOnly') }}
-                </button>
-              </div>
-
-              <!-- Edit Link -->
-              <div class="border border-gray-200 dark:border-slate-700 rounded-xl p-4">
-                <div class="flex items-center gap-3 mb-2">
-                  <div class="w-8 h-8 bg-gray-100 dark:bg-slate-700 rounded-lg flex items-center justify-center">
-                    <svg class="w-4 h-4 text-gray-600 dark:text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                    </svg>
-                  </div>
-                  <div>
-                    <h4 class="font-medium text-gray-900 dark:text-slate-100">{{ t('modal.editLink') }}</h4>
-                    <p class="text-sm text-gray-500 dark:text-slate-400">{{ t('modal.editLinkDesc') }}</p>
-                  </div>
-                </div>
-                
-                <div v-if="page.edit_page_id" class="flex gap-2 mt-3">
-                  <input
-                    :value="getShareUrl('edit', page.edit_page_id)"
-                    readonly
-                    class="flex-1 px-3 py-2 bg-gray-50 dark:bg-slate-700 border border-gray-200 dark:border-slate-600 rounded-lg text-sm text-gray-600 dark:text-slate-300 focus:outline-none"
-                  />
-                  <button
-                    @click="copyLink('edit', page.edit_page_id)"
-                    class="px-4 py-2 bg-white dark:bg-slate-700 border border-gray-200 dark:border-slate-600 rounded-lg text-sm font-medium text-gray-700 dark:text-slate-200 hover:bg-gray-50 dark:hover:bg-slate-600 transition-colors flex items-center gap-2"
-                  >
-                    <svg v-if="copiedType !== 'edit'" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" />
-                    </svg>
-                    <svg v-else class="w-4 h-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                    </svg>
-                    {{ t('modal.copy') }}
-                  </button>
-                  <button
-                    @click="removeLink('edit')"
-                    :disabled="removing"
-                    class="px-3 py-2 bg-white dark:bg-slate-700 border border-red-200 dark:border-red-800 rounded-lg text-sm font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 transition-colors flex items-center gap-1 disabled:opacity-50"
-                    :title="t('modal.deleteThisLink')"
-                  >
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                    </svg>
-                  </button>
-                </div>
-                <button
-                  v-else
-                  @click="generateLink('edit')"
-                  :disabled="generating"
-                  class="w-full mt-3 px-4 py-2 bg-gray-100 dark:bg-slate-700 text-gray-700 dark:text-slate-200 rounded-lg text-sm font-medium hover:bg-gray-200 dark:hover:bg-slate-600 transition-colors disabled:opacity-50"
-                >
-                  {{ generating ? t('modal.generating') : t('modal.generateEditLink') }}
-                </button>
-              </div>
-
-              <!-- Super Link -->
-              <div class="border border-gray-200 dark:border-slate-700 rounded-xl p-4">
-                <div class="flex items-center gap-3 mb-2">
-                  <div class="w-8 h-8 bg-gray-100 dark:bg-slate-700 rounded-lg flex items-center justify-center">
-                    <svg class="w-4 h-4 text-gray-600 dark:text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-                    </svg>
-                  </div>
-                  <div>
-                    <h4 class="font-medium text-gray-900 dark:text-slate-100">{{ t('modal.superLink') }}</h4>
-                    <p class="text-sm text-gray-500 dark:text-slate-400">{{ t('modal.superLinkDesc') }}</p>
-                  </div>
-                </div>
-                
-                <div v-if="page.admin_page_id" class="flex gap-2 mt-3">
-                  <input
-                    :value="getShareUrl('admin', page.admin_page_id)"
-                    readonly
-                    class="flex-1 px-3 py-2 bg-gray-50 dark:bg-slate-700 border border-gray-200 dark:border-slate-600 rounded-lg text-sm text-gray-600 dark:text-slate-300 focus:outline-none"
-                  />
-                  <button
-                    @click="copyLink('admin', page.admin_page_id)"
-                    class="px-4 py-2 bg-white dark:bg-slate-700 border border-gray-200 dark:border-slate-600 rounded-lg text-sm font-medium text-gray-700 dark:text-slate-200 hover:bg-gray-50 dark:hover:bg-slate-600 transition-colors flex items-center gap-2"
-                  >
-                    <svg v-if="copiedType !== 'admin'" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" />
-                    </svg>
-                    <svg v-else class="w-4 h-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                    </svg>
-                    {{ t('modal.copy') }}
-                  </button>
-                  <button
-                    @click="removeLink('admin')"
-                    :disabled="removing"
-                    class="px-3 py-2 bg-white dark:bg-slate-700 border border-red-200 dark:border-red-800 rounded-lg text-sm font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 transition-colors flex items-center gap-1 disabled:opacity-50"
-                    :title="t('modal.deleteThisLink')"
-                  >
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                    </svg>
-                  </button>
-                </div>
-                <button
-                  v-else
-                  @click="generateLink('admin')"
-                  :disabled="generating"
-                  class="w-full mt-3 px-4 py-2 bg-gray-100 dark:bg-slate-700 text-gray-700 dark:text-slate-200 rounded-lg text-sm font-medium hover:bg-gray-200 dark:hover:bg-slate-600 transition-colors disabled:opacity-50"
-                >
-                  {{ generating ? t('modal.generating') : t('modal.generateSuperLink') }}
-                </button>
-              </div>
-
-              <!-- Error Message -->
-              <div v-if="error" class="p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg text-red-600 dark:text-red-400 text-sm">
-                {{ error }}
-              </div>
-            </div>
-
-            <!-- Footer -->
-            <div class="px-6 py-4 border-t border-gray-100 dark:border-slate-700 flex justify-end">
-              <button
-                @click="close"
-                class="px-4 py-2 text-sm font-medium text-gray-600 dark:text-slate-400 hover:text-gray-900 dark:hover:text-slate-200 transition-colors"
-              >
-                {{ t('modal.close') }}
-              </button>
-            </div>
-          </div>
-        </div>
+  <EditDialog :show="show" :title="t('modal.sharePage')" :description="page.title" :show-cancel="false" :busy="busy" :error="error" :submit-label="t('modal.close')" width="600px" @update:show="$emit('update:show', $event)" @submit="$emit('update:show', false)">
+    <section v-for="item in modes" :key="item.type" class="overflow-hidden rounded-xl border border-slate-200 dark:border-slate-700">
+      <button type="button" class="flex w-full items-center gap-3 p-4 text-left focus-visible:outline focus-visible:outline-2 focus-visible:outline-violet-500" :aria-expanded="expanded === item.type" @click="expanded = expanded === item.type ? '' : item.type">
+        <component :is="item.icon" class="size-5 shrink-0 text-violet-500" /><div class="min-w-0 flex-1"><h4 class="text-sm font-semibold">{{ t(item.title) }}</h4><p class="mt-1 text-xs leading-5 text-slate-500 dark:text-slate-400">{{ t(item.description) }}</p></div><span v-if="page[item.field]" class="text-xs text-emerald-600 dark:text-emerald-400">{{ local('enabled') }}</span><ChevronUpIcon v-if="expanded === item.type" class="size-4" /><ChevronDownIcon v-else class="size-4" />
+      </button>
+      <div v-if="expanded === item.type" class="space-y-3 border-t border-slate-100 bg-slate-50/60 p-4 dark:border-slate-700 dark:bg-slate-900/20">
+        <template v-if="page[item.field]">
+          <label class="editor-field"><span class="sr-only">{{ t(item.title) }}</span><input class="editor-control" :value="getShareUrl(page[item.field])" readonly @focus="$event.target.select()" /></label>
+          <div v-if="revokeType !== item.type" class="flex flex-wrap items-center gap-2"><button type="button" class="editor-secondary" @click="copyLink(item.type, page[item.field])"><CheckIcon v-if="copiedType === item.type" class="size-4 text-emerald-600" /><ClipboardDocumentIcon v-else class="size-4" />{{ copiedType === item.type ? local('copied') : t('modal.copy') }}</button><button type="button" class="ml-auto rounded-lg px-3 py-2 text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-950/30" @click="revokeType = item.type">{{ local('revoke') }}</button></div>
+          <div v-else class="space-y-2"><p class="text-sm text-slate-600 dark:text-slate-300">{{ local('revokeHint') }}</p><div class="flex justify-end gap-2"><button type="button" class="editor-secondary" @click="revokeType = ''">{{ t('modal.cancel') }}</button><button type="button" class="rounded-lg bg-red-600 px-3 py-2 text-sm text-white disabled:opacity-50" @click="removeLink(item.type)">{{ local('confirmRevoke') }}</button></div></div>
+        </template>
+        <button v-else type="button" class="editor-primary" @click="generateLink(item.type)"><LinkIcon class="size-4" />{{ t(item.generate) }}</button>
       </div>
-    </Transition>
-  </Teleport>
+    </section>
+  </EditDialog>
 </template>
-
 <script setup>
-import { ref } from 'vue'
+import { ref, watch, onUnmounted } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { EyeIcon, PencilSquareIcon, ShieldCheckIcon, ChevronUpIcon, ChevronDownIcon, ClipboardDocumentIcon, CheckIcon, LinkIcon } from '@heroicons/vue/24/outline'
+import EditDialog from './EditDialog.vue'
 import { usePageStore } from '@/stores/page'
-
-const props = defineProps({
-  show: {
-    type: Boolean,
-    default: false
-  },
-  page: {
-    type: Object,
-    required: true
-  }
-})
-
-const emit = defineEmits(['update:show'])
-
+const props = defineProps({ show:Boolean, page:{type:Object,required:true}, beforeAction:Function })
+defineEmits(['update:show'])
 const { t } = useI18n()
-const pageStore = usePageStore()
-
-const generating = ref(false)
-const removing = ref(false)
-const error = ref('')
-const copiedType = ref('')
-
-const close = () => {
-  emit('update:show', false)
-  error.value = ''
+const { t: local } = useI18n({ useScope:'local', fallbackLocale:'en', messages:{ 'zh-CN':{enabled:'已开启',copied:'已复制',revoke:'停用链接',revokeHint:'停用后，持有此链接的人将无法再通过它访问页面。',confirmRevoke:'确认停用'}, en:{enabled:'Active',copied:'Copied',revoke:'Disable link',revokeHint:'People with this link will no longer be able to access the page through it.',confirmRevoke:'Disable link'} } })
+const modes = [
+  {type:'readonly',field:'readonly_page_id',title:'modal.readOnlyLink',description:'modal.readOnlyDesc',generate:'modal.generateReadOnly',icon:EyeIcon},
+  {type:'edit',field:'edit_page_id',title:'modal.editLink',description:'modal.editLinkDesc',generate:'modal.generateEditLink',icon:PencilSquareIcon},
+  {type:'admin',field:'admin_page_id',title:'modal.superLink',description:'modal.superLinkDesc',generate:'modal.generateSuperLink',icon:ShieldCheckIcon}
+]
+const pageStore = usePageStore(), busy = ref(false), error = ref(''), expanded = ref('readonly'), copiedType = ref(''), revokeType = ref('')
+let copiedTimer
+watch(() => props.show, open => { if (open) { error.value=''; copiedType.value=''; revokeType.value=''; expanded.value='readonly' } })
+const getShareUrl = id => `${window.location.origin}/share/${id}`
+async function act(action) {
+  if (busy.value) return
+  busy.value=true; error.value=''
+  try { await props.beforeAction?.(); await action(); revokeType.value='' } catch (err) { error.value=err.message || t('modal.failedToGenerate') } finally { busy.value=false }
 }
-
-const getShareUrl = (type, pageId) => {
-  const origin = window.location.origin
-  return `${origin}/share/${pageId}`
-}
-
-const generateLink = async (type) => {
-  error.value = ''
-  generating.value = true
-
+const generateLink = type => act(() => pageStore.addPageLink(props.page.page_id,type))
+const removeLink = type => act(() => pageStore.removePageLink(props.page.page_id,type))
+async function copyLink(type,id) {
+  error.value=''
   try {
-    await pageStore.addPageLink(props.page.page_id, type)
-  } catch (err) {
-    console.error('Generate link error:', err)
-    error.value = err.message || t('modal.failedToGenerate')
-  } finally {
-    generating.value = false
-  }
+    await navigator.clipboard.writeText(getShareUrl(id))
+    copiedType.value=type; clearTimeout(copiedTimer); copiedTimer=setTimeout(() => {copiedType.value=''},2000)
+  } catch (err) { error.value=err.message || 'Copy failed. Select the link and copy it manually.' }
 }
-
-const removeLink = async (type) => {
-  error.value = ''
-  removing.value = true
-
-  try {
-    await pageStore.removePageLink(props.page.page_id, type)
-  } catch (err) {
-    console.error('Remove link error:', err)
-    error.value = err.message || t('modal.failedToDelete')
-  } finally {
-    removing.value = false
-  }
-}
-
-const copyLink = async (type, pageId) => {
-  const url = getShareUrl(type, pageId)
-  
-  try {
-    await navigator.clipboard.writeText(url)
-    copiedType.value = type
-    setTimeout(() => {
-      copiedType.value = ''
-    }, 2000)
-  } catch (err) {
-    console.error('Copy failed:', err)
-    // Fallback
-    const input = document.createElement('input')
-    input.value = url
-    document.body.appendChild(input)
-    input.select()
-    document.execCommand('copy')
-    document.body.removeChild(input)
-    
-    copiedType.value = type
-    setTimeout(() => {
-      copiedType.value = ''
-    }, 2000)
-  }
-}
+onUnmounted(() => clearTimeout(copiedTimer))
 </script>
-
-<style scoped>
-.modal-enter-active,
-.modal-leave-active {
-  transition: opacity 0.2s ease;
-}
-
-.modal-enter-from,
-.modal-leave-to {
-  opacity: 0;
-}
-</style>

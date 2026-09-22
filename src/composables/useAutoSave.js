@@ -1,4 +1,4 @@
-import { ref, computed, onUnmounted } from 'vue'
+import { ref, computed, onUnmounted, getCurrentInstance } from 'vue'
 
 /**
  * 立即自动保存。
@@ -18,6 +18,13 @@ export function useAutoSave(saveFn) {
   let activeSavePromise = null
   let savedMessageTimer = null
   let uiDisposed = false
+
+  const beforeUnload = (event) => {
+    if (!isDirty.value && !isSaving.value) return
+    event.preventDefault()
+    event.returnValue = ''
+  }
+  if (typeof window !== 'undefined') window.addEventListener('beforeunload', beforeUnload)
 
   const hideSavedMessage = () => {
     if (savedMessageTimer) {
@@ -68,7 +75,7 @@ export function useAutoSave(saveFn) {
           isDirty.value = pendingSaves.size > 0
         } catch (err) {
           console.error('Auto save error:', err)
-          saveError.value = err.message || 'Save failed'
+          saveError.value = err?.message || String(err || 'Save failed')
           isDirty.value = true
 
           // Keep the latest snapshot for an explicit retry on the next edit.
@@ -92,7 +99,10 @@ export function useAutoSave(saveFn) {
 
   const executeSave = () => {
     if (!activeSavePromise) {
-      activeSavePromise = runSaveLoop()
+      // Schedule the loop after assigning its promise. A synchronous transport
+      // error must not leave a completed promise installed forever.
+      isSaving.value = true
+      activeSavePromise = Promise.resolve().then(runSaveLoop)
     }
     return activeSavePromise
   }
@@ -116,11 +126,10 @@ export function useAutoSave(saveFn) {
   }
 
   const flush = async () => {
-    if (activeSavePromise) {
-      await activeSavePromise
-    }
-    if (pendingSaves.size > 0) {
+    while (activeSavePromise || pendingSaves.size > 0) {
+      if (!activeSavePromise) saveError.value = null
       await executeSave()
+      if (saveError.value) throw new Error(saveError.value)
     }
     if (saveError.value) {
       throw new Error(saveError.value)
@@ -132,9 +141,10 @@ export function useAutoSave(saveFn) {
     // self-contained snapshots and can safely finish without the component UI.
     uiDisposed = true
     hideSavedMessage()
+    if (typeof window !== 'undefined') window.removeEventListener('beforeunload', beforeUnload)
   }
 
-  onUnmounted(dispose)
+  if (getCurrentInstance()) onUnmounted(dispose)
 
   const saveStatusText = computed(() => {
     if (saveError.value) return saveError.value
