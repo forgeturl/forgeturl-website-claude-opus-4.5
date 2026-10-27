@@ -138,7 +138,7 @@
               </button>
               <button
                 v-if="canEdit"
-                :aria-label="t('modal.addLink')" @click="showAddLinkModal = true"
+                :aria-label="t('modal.addLink')" @click="openAddLink()"
                 class="btn-compact btn-secondary flex items-center justify-center gap-1.5 h-8 w-8 sm:w-auto"
               >
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -233,6 +233,7 @@
               @link-drag-start="(info) => handleLinkDragStart(index, info)"
               @link-drag-end="handleLinkDragEnd"
               @transfer-collection="openCollectionTransfer(index)"
+              @add-link="openAddLink(collection.__idx)"
             />
           </template>
         </draggable>
@@ -278,6 +279,7 @@
       :draft-scope="selectedPage?.page_id || ''"
       v-model:show="showAddLinkModal"
       :collections="localCollections"
+      :locked-collection-id="addLinkCollectionId"
       @add="handleAddNewLink"
       @batch-add="handleBatchAddLinks"
       :onImportBookmarks="handleImportBookmarks"
@@ -373,6 +375,11 @@ const { handleLogout: logout } = useAuth()
 const showCreateModal = ref(false)
 const showShareModal = ref(false)
 const showAddLinkModal = ref(false)
+const addLinkCollectionId = ref(null)
+const openAddLink = (collectionId = null) => {
+  addLinkCollectionId.value = collectionId
+  showAddLinkModal.value = true
+}
 const showAddCollectionModal = ref(false)
 const showCollectionTransferModal = ref(false)
 const transferCollectionIndex = ref(-1)
@@ -877,13 +884,13 @@ const updateLink = async (collectionIndex, linkIndex, link, done) => {
 }
 
 // Handle add new link from modal
-const handleAddNewLink = ({ link, collectionIndex, newCollectionName }, done) => completeMutation(draft => {
-  appendLinks(draft.collections, { links: [ensureLinkIdx({ ...link })], collectionIndex, newCollectionName }, createEmptyCollection)
+const handleAddNewLink = ({ link, collectionIndex, collectionId, newCollectionName }, done) => completeMutation(draft => {
+  appendLinks(draft.collections, { links: [ensureLinkIdx({ ...link })], collectionIndex, collectionId, newCollectionName }, createEmptyCollection)
 }, done)
 
 // Handle batch add links from modal
-const handleBatchAddLinks = ({ links, collectionIndex, newCollectionName }, done) => completeMutation(draft => {
-  appendLinks(draft.collections, { links: links.map(link => ensureLinkIdx({ ...link })), collectionIndex, newCollectionName }, createEmptyCollection)
+const handleBatchAddLinks = ({ links, collectionIndex, collectionId, newCollectionName }, done) => completeMutation(draft => {
+  appendLinks(draft.collections, { links: links.map(link => ensureLinkIdx({ ...link })), collectionIndex, collectionId, newCollectionName }, createEmptyCollection)
 }, done)
 
 // Handle import bookmarks from modal
