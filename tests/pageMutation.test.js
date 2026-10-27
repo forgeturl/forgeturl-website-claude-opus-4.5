@@ -27,3 +27,12 @@ test('refuses writes when only a page brief has been loaded',async()=>{
 test('adding links cannot silently succeed against a missing target',()=>{
  assert.throws(()=>appendLinks([],{links:[{}],collectionIndex:3},()=>{}),/Select/)
 })
+test('locked additions follow the collection identity after reordering and reject a missing collection',()=>{
+ const collections=[{__idx:'second',links:[]},{__idx:'first',links:[]}]
+ const links=[{url:'https://one.example'},{url:'https://two.example'}]
+ appendLinks(collections,{links,collectionIndex:0,collectionId:'first'},()=>{})
+ assert.deepEqual(collections[0].links,[])
+ assert.deepEqual(collections[1].links,links)
+ assert.throws(()=>appendLinks(collections,{links,collectionIndex:0,collectionId:'missing',newCollectionName:'unexpected'},()=>({})),/Select/)
+ assert.equal(collections.length,2)
+})

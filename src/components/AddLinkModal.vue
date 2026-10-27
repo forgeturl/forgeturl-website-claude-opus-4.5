@@ -41,11 +41,12 @@
         <div v-if="fileName" class="flex min-w-0 items-center gap-2 rounded-xl bg-slate-50 p-3 text-sm dark:bg-slate-900/50"><DocumentTextIcon class="size-4 shrink-0 text-violet-500" /><span class="min-w-0 flex-1 truncate" :title="fileName">{{ fileName }}</span><button type="button" class="add-icon-button" :aria-label="t('modal.clear')" @click="clearImport"><XMarkIcon /></button></div>
         <div v-if="importFolders.length" class="space-y-2"><p class="mb-3 text-sm font-medium">{{ lt('addEditor.importSummary', { links: totalImportLinks, folders: importFolders.length }) }}</p><details v-for="(folder, index) in importFolders" :key="index" class="rounded-xl border border-slate-200 px-4 dark:border-slate-700" :open="index === 0"><summary class="cursor-pointer py-3 text-sm font-medium">{{ folder.title }} <span class="ml-2 font-normal text-slate-400">{{ folder.links.length }}</span></summary><div class="space-y-2 border-t border-slate-100 py-3 dark:border-slate-700"><p v-for="(link, linkIndex) in folder.links.slice(0, 8)" :key="linkIndex" class="truncate text-xs text-slate-500 dark:text-slate-400" :title="link.url">{{ link.title }}</p><p v-if="folder.links.length > 8" class="text-xs text-slate-400">{{ lt('addEditor.moreLinks', { count: folder.links.length - 8 }) }}</p></div></details></div>
         <p v-else class="text-xs leading-6 text-slate-500 dark:text-slate-400">{{ lt('addEditor.importHint') }}</p>
+        <p v-if="lockedCollectionId != null" class="text-xs leading-6 text-slate-500 dark:text-slate-400">{{ lt('addEditor.importIntoCollection') }}</p>
       </section>
 
-      <section v-if="activeTab !== 'import'" class="mt-4 border-t border-slate-100 pt-3 dark:border-slate-700">
-        <label class="editor-field"><span class="flex items-center gap-2"><FolderIcon class="size-4 text-slate-400" />{{ t('modal.addToCollection') }}</span><select v-model="currentTarget" class="editor-control" :aria-label="t('modal.addToCollection')"><option v-for="(collection, index) in collections" :key="collection.__idx || index" :value="index">{{ collection.title || t('collection.unnamed') }}</option><option :value="-1">+ {{ t('modal.newFolder') }}</option></select></label>
-        <label v-if="currentTarget === -1" class="editor-field mt-3"><span class="sr-only">{{ t('modal.enterNewFolderName') }}</span><input v-model="currentFolderName" class="editor-control" :placeholder="t('modal.enterNewFolderName')" /></label>
+      <section v-if="activeTab !== 'import' || lockedCollectionId != null" class="mt-4 border-t border-slate-100 pt-3 dark:border-slate-700">
+        <label class="editor-field"><span class="flex items-center gap-2"><FolderIcon class="size-4 text-slate-400" />{{ t('modal.addToCollection') }}</span><select v-model="currentTarget" class="editor-control disabled:cursor-not-allowed disabled:opacity-70" :disabled="lockedCollectionId != null" :aria-label="t('modal.addToCollection')"><option v-if="lockedCollectionId != null && lockedTarget < 0" :value="-1">{{ lt('addEditor.collectionUnavailable') }}</option><option v-for="(collection, index) in collections" :key="collection.__idx || index" :value="index">{{ collection.title || t('collection.unnamed') }}</option><option v-if="lockedCollectionId == null" :value="-1">+ {{ t('modal.newFolder') }}</option></select></label>
+        <label v-if="lockedCollectionId == null && currentTarget === -1" class="editor-field mt-3"><span class="sr-only">{{ t('modal.enterNewFolderName') }}</span><input v-model="currentFolderName" class="editor-control" :placeholder="t('modal.enterNewFolderName')" /></label>
       </section>
       </fieldset>
     </div>
@@ -62,7 +63,7 @@ import SubLinkTable from './SubLinkTable.vue'
 import { useAuthStore } from '@/stores/auth'
 import { bookmarkFoldersFromDocument, newLinkPayload, parseBatchLinkText, suggestedLinkTitle } from '@/utils/addLink'
 
-const props = defineProps({ show: Boolean, collections: { type: Array, default: () => [] }, onImportBookmarks: { type: Function, default: null }, draftScope: { type: String, default: '' } })
+const props = defineProps({ show: Boolean, collections: { type: Array, default: () => [] }, lockedCollectionId: { type: String, default: null }, onImportBookmarks: { type: Function, default: null }, draftScope: { type: String, default: '' } })
 const emit = defineEmits(['update:show', 'add', 'batch-add'])
 const { t } = useI18n({ useScope: 'global' })
 const { t: lt } = useI18n({ useScope: 'local', fallbackLocale: 'en', messages: {
@@ -74,7 +75,7 @@ const { t: lt } = useI18n({ useScope: 'local', fallbackLocale: 'en', messages: {
     foundDraft: '这里有一份尚未添加的草稿。', restore: '恢复草稿', discardDraft: '丢弃草稿', draftSaved: '草稿已保留在此标签页', unsaved: '内容尚未保存', safeHint: '点击遮罩不会关闭编辑器', saving: '正在保存…',
     saveFailed: '保存失败，请重试。', subUrlRequired: '请填写子链接的网址，或删除这条子链接。', clipboardFailed: '无法读取剪贴板，请直接粘贴到网址输入框。',
     fileType: '请选择 HTML 格式的书签文件。', emptyImport: '文件中没有找到可导入的 http 或 https 书签。', fileFailed: '读取文件失败，请重新选择。',
-    remainingDraft: '已保存。其他添加方式中还有未保存内容，已为你保留。', importUnavailable: '暂时无法导入，请稍后重试。'
+    remainingDraft: '已保存。其他添加方式中还有未保存内容，已为你保留。', importUnavailable: '暂时无法导入，请稍后重试。', importIntoCollection: '导入的所有书签将加入当前合集。', collectionUnavailable: '合集已不可用'
   } },
   en: { addEditor: {
     description: 'Save a link and keep its related destinations together.', optional: 'optional', paste: 'Paste from clipboard', draft: 'Unsaved content',
@@ -84,7 +85,7 @@ const { t: lt } = useI18n({ useScope: 'local', fallbackLocale: 'en', messages: {
     foundDraft: 'An unfinished draft is available.', restore: 'Restore draft', discardDraft: 'Discard draft', draftSaved: 'Draft kept in this browser tab', unsaved: 'Changes not saved', safeHint: 'Clicking outside keeps this editor open', saving: 'Saving…',
     saveFailed: 'Could not save. Please try again.', subUrlRequired: 'Enter a URL for this sub-link or remove it.', clipboardFailed: 'Could not read clipboard. Paste directly into the URL field.',
     fileType: 'Choose an HTML bookmarks file.', emptyImport: 'No http or https bookmarks were found in this file.', fileFailed: 'Could not read this file. Please select it again.',
-    remainingDraft: 'Saved. Your unsaved content in the other modes is still here.', importUnavailable: 'Import is unavailable. Please try again later.'
+    remainingDraft: 'Saved. Your unsaved content in the other modes is still here.', importUnavailable: 'Import is unavailable. Please try again later.', importIntoCollection: 'All imported bookmarks will be added to this collection.', collectionUnavailable: 'Collection unavailable'
   } }
 } })
 const auth = useAuthStore()
@@ -120,7 +121,8 @@ let initializing = false
 
 const busy = computed(() => saving.value || readingFile.value)
 const totalImportLinks = computed(() => importFolders.value.reduce((total, folder) => total + folder.links.length, 0))
-const currentTarget = computed({ get: () => activeTab.value === 'single' ? target.value : batchTarget.value, set: value => { if (activeTab.value === 'single') target.value = value; else batchTarget.value = value } })
+const lockedTarget = computed(() => props.lockedCollectionId == null ? -1 : props.collections.findIndex(item => item.__idx === props.lockedCollectionId))
+const currentTarget = computed({ get: () => props.lockedCollectionId != null ? lockedTarget.value : activeTab.value === 'single' ? target.value : batchTarget.value, set: value => { if (props.lockedCollectionId != null) return; if (activeTab.value === 'single') target.value = value; else batchTarget.value = value } })
 const currentFolderName = computed({ get: () => activeTab.value === 'single' ? folderName.value : batchFolderName.value, set: value => { if (activeTab.value === 'single') folderName.value = value; else batchFolderName.value = value } })
 function hasData(mode) {
   if (mode === 'single') return Boolean(single.value.title || single.value.url || tags.value || folderName.value || single.value.sub_links.some(item => item.sub_title || item.sub_url))
@@ -128,8 +130,8 @@ function hasData(mode) {
   return Boolean(fileName.value || importFolders.value.length)
 }
 const dirty = computed(() => tabs.some(tab => hasData(tab.key)))
-const validTarget = computed(() => currentTarget.value === -1 ? Boolean(currentFolderName.value.trim()) : Boolean(props.collections[currentTarget.value]))
-const canSubmit = computed(() => !busy.value && (activeTab.value === 'single' ? Boolean(single.value.url.trim()) && validTarget.value : activeTab.value === 'batch' ? batchLinks.value.length > 0 && validTarget.value : totalImportLinks.value > 0))
+const validTarget = computed(() => props.lockedCollectionId != null ? lockedTarget.value >= 0 : currentTarget.value === -1 ? Boolean(currentFolderName.value.trim()) : Boolean(props.collections[currentTarget.value]))
+const canSubmit = computed(() => !busy.value && (activeTab.value === 'single' ? Boolean(single.value.url.trim()) && validTarget.value : activeTab.value === 'batch' ? batchLinks.value.length > 0 && validTarget.value : totalImportLinks.value > 0 && (props.lockedCollectionId == null || validTarget.value)))
 const submitLabel = computed(() => activeTab.value === 'single' ? t('modal.add') : activeTab.value === 'batch' ? t('modal.addNLinks', { count: batchLinks.value.length }) : t('modal.importNLinks', { count: totalImportLinks.value }))
 const draft = computed(() => ({ activeTab: activeTab.value, single: single.value, tags: tags.value, titleEdited: titleEdited.value, target: target.value, folderName: folderName.value, batchText: batchText.value, batchLinks: batchLinks.value, batchTarget: batchTarget.value, batchFolderName: batchFolderName.value, fileName: fileName.value, importFolders: importFolders.value, collections: props.collections.map(item => item.title) }))
 
@@ -221,8 +223,9 @@ async function save() {
   }
   saving.value = true
   try {
-    if (mode === 'single') await emitSave('add', { link: newLinkPayload(single.value, tags.value), collectionIndex: target.value, newCollectionName: target.value === -1 ? folderName.value.trim() : null })
-    else if (mode === 'batch') await emitSave('batch-add', { links: batchLinks.value.map(link => newLinkPayload(link)), collectionIndex: batchTarget.value, newCollectionName: batchTarget.value === -1 ? batchFolderName.value.trim() : null })
+    if (mode === 'single') await emitSave('add', { link: newLinkPayload(single.value, tags.value), collectionIndex: currentTarget.value, collectionId: props.lockedCollectionId, newCollectionName: props.lockedCollectionId == null && currentTarget.value === -1 ? folderName.value.trim() : null })
+    else if (mode === 'batch') await emitSave('batch-add', { links: batchLinks.value.map(link => newLinkPayload(link)), collectionIndex: currentTarget.value, collectionId: props.lockedCollectionId, newCollectionName: props.lockedCollectionId == null && currentTarget.value === -1 ? batchFolderName.value.trim() : null })
+    else if (props.lockedCollectionId != null) await emitSave('batch-add', { links: importFolders.value.flatMap(folder => folder.links.map(link => newLinkPayload(link))), collectionIndex: currentTarget.value, collectionId: props.lockedCollectionId, newCollectionName: null })
     else {
       if (!props.onImportBookmarks) throw new Error(lt('addEditor.importUnavailable'))
       await props.onImportBookmarks({ folders: importFolders.value.map(folder => ({ title: folder.title, links: folder.links.map(link => newLinkPayload(link)) })) })

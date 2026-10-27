@@ -17,8 +17,12 @@ export async function persistPageMutation({ getPage, getCollections, commit, flu
   if (getPage()?.page_id === pageId) commit(draft)
 }
 
-export function appendLinks(collections, { links, collectionIndex, newCollectionName }, createCollection) {
+export function appendLinks(collections, { links, collectionIndex, collectionId, newCollectionName }, createCollection) {
   if (!links?.length) throw new Error('No links to save')
+  if (collectionId != null) {
+    collectionIndex = collections.findIndex(collection => collection.__idx === collectionId)
+    newCollectionName = null
+  }
   if (collectionIndex === -1 && newCollectionName?.trim()) {
     collections.push(createCollection(newCollectionName.trim(), links))
   } else if (collections[collectionIndex]) {

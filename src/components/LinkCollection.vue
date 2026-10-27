@@ -29,9 +29,12 @@
       </svg>
     </button>
 
-    <button v-if="canEdit" type="button" class="absolute right-2 top-2 flex size-7 items-center justify-center rounded-lg text-slate-400 hover:bg-violet-50 hover:text-violet-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-violet-500 dark:hover:bg-slate-700" :aria-label="t('modal.editFolderName')" @click="openTitleModal"><PencilSquareIcon class="size-4" /></button>
+    <div v-if="canEdit" class="absolute right-2 top-2 flex items-center">
+      <button type="button" class="flex size-7 items-center justify-center rounded-lg text-slate-400 hover:bg-violet-50 hover:text-violet-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-violet-500 dark:hover:bg-slate-700" :aria-label="t('modal.addLink')" :title="t('modal.addLink')" @click="emit('add-link')"><PlusIcon class="size-5" /></button>
+      <button type="button" class="flex size-7 items-center justify-center rounded-lg text-slate-400 hover:bg-violet-50 hover:text-violet-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-violet-500 dark:hover:bg-slate-700" :aria-label="t('modal.editFolderName')" :title="t('modal.editFolderName')" @click="openTitleModal"><PencilSquareIcon class="size-4" /></button>
+    </div>
     <!-- Collection Title -->
-    <div class="mb-3 px-6">
+    <div class="mb-3" :class="canEdit ? 'px-14' : 'px-6'">
       <h3 
         v-if="collection.title"
         class="text-base font-semibold text-gray-900 dark:text-slate-100 text-center"
@@ -140,7 +143,7 @@
 </template>
 
 <script setup>
-import { PencilSquareIcon } from '@heroicons/vue/24/outline'
+import { PencilSquareIcon, PlusIcon } from '@heroicons/vue/24/outline'
 import { ref, watch, computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import draggable from 'vuedraggable'
@@ -182,6 +185,7 @@ const emit = defineEmits([
   'links-changed',
   'link-drag-start',
   'link-drag-end',
+  'add-link',
   'transfer-collection'
 ])
 
