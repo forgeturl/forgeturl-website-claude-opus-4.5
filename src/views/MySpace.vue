@@ -344,6 +344,7 @@ import { useAuthStore } from '@/stores/auth'
 import { usePageStore } from '@/stores/page'
 import { useAuth } from '@/composables/useAuth'
 import { useAutoSave } from '@/composables/useAutoSave'
+import { completeLinkDrop } from '@/utils/linkDrag'
 import draggable from 'vuedraggable'
 import AppLayout from '@/components/AppLayout.vue'
 import CreatePageModal from '@/components/CreatePageModal.vue'
@@ -750,6 +751,8 @@ const handleLinkDragEnd = (evt) => {
       return
     }
   }
+
+  if (completeLinkDrop(localCollections.value, dragLinkIdx.value, evt)) queueAutoSave()
   
   isDragging.value = false
   dragType.value = null

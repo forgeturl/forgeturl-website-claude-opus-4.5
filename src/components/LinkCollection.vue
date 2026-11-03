@@ -1,7 +1,9 @@
 <template>
   <div 
     v-show="!shouldHide"
-    class="border border-gray-200 dark:border-slate-700 rounded-xl p-4 hover:border-gray-900 dark:hover:border-violet-500 transition-colors relative group bg-white dark:bg-slate-800"
+    :data-link-collection="canEdit ? collection.__idx : undefined"
+    @dragover="canEdit && $event.preventDefault()"
+    class="flex flex-col border border-gray-200 dark:border-slate-700 rounded-xl p-4 hover:border-gray-900 dark:hover:border-violet-500 transition-colors relative group bg-white dark:bg-slate-800"
   >
     <!-- Drag Handle for Collection (top-left, only in edit mode) -->
     <div 
@@ -81,7 +83,7 @@
       :scrollSensitivity="100"
       :scrollSpeed="80"
       :bubbleScroll="true"
-      class="links-draggable flex flex-wrap gap-x-10 gap-y-2 min-h-[60px] relative pl-5"
+      class="links-draggable flex flex-wrap grow content-start items-start gap-x-10 gap-y-2 min-h-[60px] relative -mx-4 -mb-4 pl-9 pr-4 pb-4"
       @change="handleLinksChange"
       @start="handleDragStart"
       @end="handleDragEnd"
