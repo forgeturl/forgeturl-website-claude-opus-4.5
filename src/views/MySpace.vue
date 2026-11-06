@@ -6,9 +6,15 @@
     @create-page="showCreateModal = true"
     @select-page="selectPage"
     @delete-page="handleDeletePage"
+    @remove-shared-page="handleRemoveSharedPage"
+    :removing-page-id="removingPageId"
     @logout="handleLogout"
   >
     <SaveStatus :saving="autoSave.isSaving.value" :saved="autoSave.showSavedMessage.value" :error="autoSave.saveError.value" @retry="retrySave" />
+    <div v-if="Object.keys(retainedDrafts).length" role="status" class="m-4 rounded-lg bg-amber-50 p-3 text-sm text-amber-900 dark:bg-amber-900/30 dark:text-amber-200">
+      {{ t('sharedSpace.draftRetained') }}
+      <button class="ml-2 underline" @click="downloadRetainedDrafts">{{ t('sharedSpace.downloadDraft') }}</button>
+    </div>
 
     <!-- Main Content Area -->
     <div class="p-4 relative transition-colors duration-300">
@@ -24,7 +30,11 @@
         <div class="animate-spin rounded-full h-10 w-10 border-2 border-gray-900 dark:border-violet-400 border-t-transparent"></div>
       </div>
 
-      <div v-else-if="pageLoadError" role="alert" class="py-16 text-center text-sm text-red-600"><p>{{ pageLoadError }}</p><button class="mt-4 rounded-lg border px-4 py-2" @click="selectPage(requestedPageId)">{{ t('page.retry') }}</button></div>
+      <div v-else-if="selectedPage?.is_not_found" role="alert" class="py-16 text-center text-sm text-gray-500 dark:text-slate-400">
+        <p>{{ t('sharedSpace.expired') }}</p>
+        <button v-if="isSharedEntry(selectedPage)" class="btn btn-secondary mt-4" :disabled="!!removingPageId" @click="handleRemoveSharedPage(selectedPage.page_id)">{{ t('sharedSpace.remove') }}</button>
+      </div>
+      <div v-else-if="pageLoadError" role="alert" class="py-16 text-center text-sm text-red-600"><p>{{ pageLoadError }}</p><button class="mt-4 rounded-lg border px-4 py-2" @click="spaceLoadFailed ? loadSpace() : selectPage(requestedPageId)">{{ t('page.retry') }}</button></div>
       <!-- Empty State - No Pages -->
       <div v-else-if="!pageStore.myPages.length" class="flex flex-col items-center justify-center py-24">
         <div class="w-16 h-16 bg-gray-100 dark:bg-slate-800 rounded-full flex items-center justify-center mb-6">
@@ -339,7 +349,8 @@ import { onBeforeRouteLeave, onBeforeRouteUpdate } from 'vue-router'
 import { persistLinkEdit } from '@/utils/linkEditor'
 import { ref, computed, onMounted, onUnmounted, watch, nextTick } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { useRouter } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
+import { isSharedEntry } from '@/utils/sharedPages'
 import { useAuthStore } from '@/stores/auth'
 import { usePageStore } from '@/stores/page'
 import { useAuth } from '@/composables/useAuth'
@@ -369,9 +380,19 @@ import {
 
 const { t } = useI18n()
 const router = useRouter()
+const route = useRoute()
 const authStore = useAuthStore()
 const pageStore = usePageStore()
 const { handleLogout: logout } = useAuth()
+const draftKey = `unavailable-shared-drafts:${authStore.user?.uid}`
+const retainedDrafts = ref({})
+try { retainedDrafts.value = JSON.parse(window.sessionStorage.getItem(draftKey) || '{}') } catch { /* no saved draft */ }
+const downloadRetainedDrafts = () => {
+  const url = URL.createObjectURL(new Blob([JSON.stringify(retainedDrafts.value, null, 2)], { type: 'application/json' }))
+  const link = document.createElement('a')
+  link.href = url; link.download = 'ForgetURL-unsaved-shared-pages.json'; link.click()
+  setTimeout(() => URL.revokeObjectURL(url), 1000)
+}
 
 const showCreateModal = ref(false)
 const showShareModal = ref(false)
@@ -388,8 +409,10 @@ const transferringCollection = ref(false)
 const showEditPageModal = ref(false)
 const savingPageInfo = ref(false)
 const selectedPageId = ref('')
+const removingPageId = ref('')
 const pageLoading = ref(false)
 const pageLoadError = ref('')
+const spaceLoadFailed = ref(false)
 const requestedPageId = ref('')
 let pageRequest = 0
 
@@ -627,7 +650,19 @@ const completeMutation = async (mutate, done) => {
 const retrySave = async () => { try { await autoSave.flush() } catch { /* status retains the error */ } }
 const guardPageLeave = async () => {
   if (transferringCollection.value) return false
-  try { await autoSave.flush(); return !transferringCollection.value } catch { return false }
+  try { await autoSave.flush(); return !transferringCollection.value }
+  catch {
+    if (!selectedPage.value?.is_not_found || !isSharedEntry(selectedPage.value)) return false
+    try {
+      await autoSave.retainPageDraft(selectedPageId.value, snapshot => {
+        const drafts = { ...retainedDrafts.value, [snapshot.page_id]: snapshot }
+        window.sessionStorage.setItem(draftKey, JSON.stringify(drafts))
+        retainedDrafts.value = drafts
+      })
+      await autoSave.flush()
+      return !transferringCollection.value
+    } catch { return false }
+  }
 }
 onBeforeRouteLeave(guardPageLeave)
 onBeforeRouteUpdate(guardPageLeave)
@@ -656,8 +691,12 @@ watch(() => selectedPage.value, (newPage) => {
     localCollections.value = ensureCollectionsIdx(
       JSON.parse(JSON.stringify(newPage.collections || []))
     )
-  }
+  } else localCollections.value = []
 }, { immediate: true })
+watch(() => selectedPage.value?.is_not_found, invalid => {
+  if (!invalid) return
+  localCollections.value = []
+})
 
 const selectPage = async (pageId) => {
   if (transferringCollection.value) return
@@ -666,17 +705,47 @@ const selectPage = async (pageId) => {
   requestedPageId.value = pageId
   pageLoading.value = true; pageLoadError.value = ''
   try {
-    await autoSave.flush()
+    if (!await guardPageLeave()) return
+    if (pageStore.myPages.find(page => page.page_id === pageId)?.is_not_found) {
+      selectedPageId.value = pageId
+      return
+    }
     const loaded = await pageStore.fetchPage(pageId)
     if (request !== pageRequest) return
     const index = pageStore.myPages.findIndex(p => p.page_id === pageId)
     if (index !== -1) pageStore.myPages[index] = { ...pageStore.myPages[index], ...loaded }
     selectedPageId.value = pageId
   } catch (error) {
-    if (request === pageRequest) pageLoadError.value = error.message || t('page.failedToLoadPage')
+    if (request === pageRequest) {
+      if (pageStore.myPages.find(page => page.page_id === pageId)?.is_not_found) selectedPageId.value = pageId
+      else pageLoadError.value = error.message || t('page.failedToLoadPage')
+    }
   } finally {
     if (request === pageRequest) pageLoading.value = false
   }
+}
+
+const handleRemoveSharedPage = async (pageId) => {
+  if (removingPageId.value || !isSharedEntry(pageStore.myPages.find(page => page.page_id === pageId))) return
+  const confirmed = await showConfirm(t('sharedSpace.removeHint'), {
+    title: t('sharedSpace.remove'), confirmText: t('sharedSpace.remove')
+  })
+  if (!confirmed) return
+  removingPageId.value = pageId
+  try {
+    if (!await guardPageLeave()) return
+    await pageStore.removeSharedPage(pageId)
+    pageLoadError.value = ''
+    if (requestedPageId.value === pageId) {
+      ++pageRequest; pageLoading.value = false; requestedPageId.value = ''
+    }
+    if (selectedPageId.value === pageId) {
+      selectedPageId.value = ''; localCollections.value = []
+      const next = pageStore.myPages[0]?.page_id
+      if (next) await selectPage(next)
+    }
+  } catch (error) { showAlert(error.message || t('sharedSpace.removeFailed'), 'error', t('confirm.error')) }
+  finally { removingPageId.value = '' }
 }
 
 const handleDeletePage = async (pageId) => {
@@ -903,17 +972,26 @@ const handleImportBookmarks = ({ folders }) => saveMutation(draft => {
   for (const folder of nonEmpty) draft.collections.push(createEmptyCollection(folder.title || t('modal.importedFolder'), folder.links))
 })
 
-onMounted(async () => {
+const loadSpace = async () => {
+  spaceLoadFailed.value = false; pageLoadError.value = ''
   try {
     await pageStore.fetchMySpace()
     if (pageStore.myPages.length > 0 && !selectedPageId.value) {
-      selectPage(pageStore.myPages[0].page_id)
+      const target = pageStore.myPages.find(page => page.page_id === route.query.page_id)
+      await selectPage(target?.page_id || pageStore.myPages[0].page_id)
     }
   } catch (error) {
     console.error('Failed to fetch space:', error)
+    spaceLoadFailed.value = true
+    pageLoadError.value = error.message || t('page.failedToLoadPage')
   } finally {
     initialized.value = true
   }
+}
+onMounted(loadSpace)
+
+watch(() => route.query.page_id, id => {
+  if (initialized.value && typeof id === 'string' && pageStore.myPages.some(page => page.page_id === id)) selectPage(id)
 })
 
 // Cleanup event listener on unmount

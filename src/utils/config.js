@@ -58,5 +58,6 @@ export const STORAGE_KEYS = {
     FORGET_COOKIE: 'x-forget-cookie',
     AVM_LOGIN: 'avm-login',
     AVM_PROVIDER: 'avm-provider',
-    AVM_REDIRECT_URI: 'avm-redirect-uri'
+    AVM_REDIRECT_URI: 'avm-redirect-uri',
+    LOGIN_REDIRECT: 'login-redirect'
 }

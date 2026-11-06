@@ -3,7 +3,7 @@
     <!-- Navigation Bar -->
     <nav class="bg-white/80 dark:bg-slate-900/80 backdrop-blur-lg border-b border-gray-200/50 dark:border-slate-700 sticky top-0 z-10">
       <div class="max-w-6xl mx-auto px-6 lg:px-8">
-        <div class="flex justify-between items-center h-14">
+        <div class="flex flex-wrap justify-between items-center gap-3 min-h-14 py-3">
           <!-- Logo -->
           <router-link to="/" class="group flex items-center gap-2.5 select-none">
             <!-- Logo Icon -->
@@ -39,6 +39,7 @@
               {{ pageConf.read_only ? t('page.readOnly') : pageConf.can_edit ? t('page.editable') : t('page.view') }}
             </span>
           </div>
+          <SharedSpaceAction v-if="/^[REA]/.test(String(route.params.pageId || ''))" class="w-full sm:w-auto sm:ml-auto" :page-id="String(route.params.pageId)" :page="page" :before-action="autoSave.flush" :unavailable="loading || !!error && !needLogin" />
         </div>
       </div>
     </nav>
@@ -176,6 +177,7 @@
 
 <script setup>
 import SaveStatus from '@/components/SaveStatus.vue'
+import SharedSpaceAction from '@/components/SharedSpaceAction.vue'
 import { persistPageMutation, appendLinks } from '@/utils/pageMutation'
 import { onBeforeRouteLeave, onBeforeRouteUpdate } from 'vue-router'
 import { persistLinkEdit } from '@/utils/linkEditor'

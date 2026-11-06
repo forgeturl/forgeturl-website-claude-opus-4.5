@@ -3,6 +3,7 @@
  */
 import { useRouter } from 'vue-router'
 import { validateAVMRedirect } from '@/utils/avmLogin'
+import { safeLoginRedirect } from '@/utils/loginRedirect'
 import { useAuthStore } from '@/stores/auth'
 import { getAuthUrl, authCallback } from '@/api/auth'
 import { storage, sessionStorage } from '@/utils/storage'
@@ -21,7 +22,8 @@ export function useAuth() {
             const isAVMLogin = sessionStorage.get(STORAGE_KEYS.AVM_LOGIN) === true
             // 微信登录：如果在主站(forgeturl.com)，需要先跳转到备案域名
             if (provider === 'wechat' && isMainDomain() && !isAVMLogin) {
-                window.location.href = `${WECHAT_LOGIN_DOMAIN}/?wechat_login=true`
+                const redirect = safeLoginRedirect(sessionStorage.get(STORAGE_KEYS.LOGIN_REDIRECT))
+                window.location.href = `${WECHAT_LOGIN_DOMAIN}/?wechat_login=true&redirect=${encodeURIComponent(redirect)}`
                 return
             }
 

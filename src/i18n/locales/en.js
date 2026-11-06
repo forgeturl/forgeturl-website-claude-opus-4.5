@@ -1,4 +1,23 @@
 export default {
+  sharedSpace: {
+    draftRetained: "The share expired. Unsaved changes are kept in this browser tab. Download them before closing it.",
+    downloadDraft: "Download unsaved changes",
+    add: "Add to my space",
+    login: "Log in to add",
+    adding: "Adding…",
+    checking: "Checking…",
+    added: "Added to my space",
+    open: "Open in my space",
+    editable: "Shared · Editable",
+    readOnly: "Shared · Read only",
+    expired: "Share is no longer available",
+    remove: "Remove from my space",
+    removeHint: "Only this shortcut will be removed from your space. The original page, sharing link and other users are unaffected.",
+    removeFailed: "Could not remove. Please retry.",
+    addFailed: "Could not add. Please retry.",
+    checkFailed: "Unable to check membership. You can retry adding safely; duplicates are prevented.",
+    loginExpired: "Your session expired. Log in to add this page."
+  },
   linkEditor: {
     "unsaved": "Unsaved",
     "close": "Close",

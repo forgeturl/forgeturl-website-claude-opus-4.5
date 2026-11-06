@@ -1,4 +1,23 @@
 export default {
+  sharedSpace: {
+    draftRetained: "分享已失效，未保存修改已保留在本浏览器标签页，关闭前请下载。",
+    downloadDraft: "下载未保存内容",
+    add: "加入我的空间",
+    login: "登录后加入",
+    adding: "正在加入…",
+    checking: "正在确认…",
+    added: "已加入我的空间",
+    open: "在我的空间打开",
+    editable: "共享 · 可编辑",
+    readOnly: "共享 · 只读",
+    expired: "分享已失效",
+    remove: "从我的空间移除",
+    removeHint: "仅移除你空间中的这个入口，原页面、分享链接和其他用户均不受影响。",
+    removeFailed: "移除失败，请重试",
+    addFailed: "加入失败，请重试",
+    checkFailed: "暂时无法确认加入状态，可重试加入；重复加入不会产生副本。",
+    loginExpired: "登录已过期，请登录后再加入"
+  },
   linkEditor: {
     "unsaved": "未保存",
     "close": "关闭",

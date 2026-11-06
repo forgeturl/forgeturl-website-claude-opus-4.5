@@ -156,3 +156,18 @@ test('refresh is protected until queued writes finish and the listener is remove
     else globalThis.window = originalWindow
   }
 })
+
+test('an unavailable page can leave only after its failed snapshot is retained successfully', async () => {
+  const autoSave = useAutoSave(async () => { throw new Error('share revoked') })
+  autoSave.markDirty({ page_id: 'Eabc', title: 'Unfinished work', version: 1, collections: [{ title: 'Draft', links: [] }] })
+  await assert.rejects(autoSave.flush(), /share revoked/)
+  await assert.rejects(autoSave.retainPageDraft('Eabc', () => { throw new Error('storage full') }), /storage full/)
+  assert.equal(autoSave.isDirty.value, true)
+  let retained
+  await autoSave.retainPageDraft('Eabc', snapshot => { retained = snapshot })
+  assert.equal(retained.title, 'Unfinished work')
+  assert.equal(retained.collections[0].title, 'Draft')
+  assert.equal(autoSave.isDirty.value, false)
+  await autoSave.flush()
+  autoSave.dispose()
+})

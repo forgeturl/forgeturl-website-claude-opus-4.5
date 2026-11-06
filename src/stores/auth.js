@@ -6,6 +6,7 @@ import { ref, computed } from 'vue'
 import { storage } from '@/utils/storage'
 import { STORAGE_KEYS } from '@/utils/config'
 import { logout as apiLogout, getUserInfo } from '@/api/auth'
+import { usePageStore } from '@/stores/page'
 
 export const useAuthStore = defineStore('auth', () => {
     // 状态
@@ -29,6 +30,7 @@ export const useAuthStore = defineStore('auth', () => {
 
     // 登录
     const login = (userInfo, userToken) => {
+        if (user.value?.uid !== userInfo.uid) usePageStore().clear()
         user.value = userInfo
         token.value = userToken
 
@@ -44,6 +46,7 @@ export const useAuthStore = defineStore('auth', () => {
         } catch (error) {
             console.error('Logout API error:', error)
         } finally {
+            usePageStore().clear()
             // 无论API调用是否成功，都清除本地状态
             user.value = null
             token.value = null

@@ -748,6 +748,8 @@
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useAuth } from '@/composables/useAuth'
+import { useRoute } from 'vue-router'
+import { safeLoginRedirect } from '@/utils/loginRedirect'
 import { avmLoginRequest } from '@/utils/avmLogin'
 import { useTheme } from '@/composables/useTheme'
 import { useLocale } from '@/composables/useLocale'
@@ -758,6 +760,7 @@ import { isWechatLoginDomain, STORAGE_KEYS } from '@/utils/config'
 import LanguageSwitcher from '@/components/LanguageSwitcher.vue'
 
 const { startAuth } = useAuth()
+const route = useRoute()
 const { isDark, toggleTheme } = useTheme()
 const { t } = useI18n()
 const { isZh } = useLocale()
@@ -798,6 +801,7 @@ const handleLogin = async (provider) => {
   showLoginDropdown.value = false
 
   try {
+    if (route.query.redirect) sessionStorage.set(STORAGE_KEYS.LOGIN_REDIRECT, safeLoginRedirect(route.query.redirect))
     await startAuth(provider)
   } catch (err) {
     console.error('Login error:', err)

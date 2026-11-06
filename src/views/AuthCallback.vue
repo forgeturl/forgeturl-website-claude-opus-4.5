@@ -35,7 +35,8 @@ import { ref, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
 import { useAuth } from '@/composables/useAuth'
-import { storage } from '@/utils/storage'
+import { storage, sessionStorage } from '@/utils/storage'
+import { safeLoginRedirect } from '@/utils/loginRedirect'
 import { STORAGE_KEYS, MAIN_DOMAIN, isWechatLoginDomain } from '@/utils/config'
 
 const { t } = useI18n()
@@ -59,6 +60,8 @@ onMounted(async () => {
     if (!userInfo) {
       return
     }
+    const redirect = safeLoginRedirect(route.query.redirect || sessionStorage.get(STORAGE_KEYS.LOGIN_REDIRECT))
+    sessionStorage.remove(STORAGE_KEYS.LOGIN_REDIRECT)
 
     // 微信登录特殊处理：如果当前在备案域名(forgeturl.brightguo.com)上完成的微信登录，
     // 需要携带token和用户信息跳转回主站(forgeturl.com)
@@ -66,12 +69,11 @@ onMounted(async () => {
       const token = storage.get(STORAGE_KEYS.TOKEN)
       const userEncoded = encodeURIComponent(btoa(encodeURIComponent(JSON.stringify(userInfo))))
       const tokenEncoded = encodeURIComponent(token)
-      window.location.href = `${MAIN_DOMAIN}/?wechat_token=${tokenEncoded}&wechat_user=${userEncoded}`
+      window.location.href = `${MAIN_DOMAIN}/?wechat_token=${tokenEncoded}&wechat_user=${userEncoded}&redirect=${encodeURIComponent(redirect)}`
       return
     }
 
     // 其他provider或非跨域场景，正常跳转
-    const redirect = route.query.redirect || '/my'
     router.replace(redirect)
   } catch (err) {
     console.error('Auth callback error:', err)

@@ -76,7 +76,8 @@
                   : 'text-gray-600 dark:text-slate-400 hover:bg-gray-50 dark:hover:bg-slate-700/50 hover:text-gray-900 dark:hover:text-slate-200'
               ]"
             >
-              <button type="button" class="min-w-0 flex-1 truncate text-left text-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-violet-500" :aria-current="currentPageId === page.page_id ? 'page' : undefined" @click="$emit('select-page', page.page_id); mobileMenuOpen = false">{{ page.title || t('space.unnamedPage') }}</button>
+              <button type="button" class="min-w-0 flex-1 truncate text-left text-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-violet-500" :aria-current="currentPageId === page.page_id ? 'page' : undefined" @click="$emit('select-page', page.page_id); mobileMenuOpen = false"><span class="block truncate">{{ page.title || t('space.unnamedPage') }}</span><span v-if="isSharedEntry(page)" class="block text-xs text-gray-400 dark:text-slate-400">{{ t(sharedPageLabel(page)) }}</span></button>
+              <button v-if="isSharedEntry(page)" :disabled="!!removingPageId" @click.stop="$emit('remove-shared-page', page.page_id); mobileMenuOpen = false" :aria-label="t('sharedSpace.remove')" :title="t('sharedSpace.remove')" class="p-1 text-gray-400 hover:text-red-500 disabled:opacity-40"><span aria-hidden="true">×</span></button>
               <button
                 v-if="page.is_self"
                 @click.stop="$emit('delete-page', page.page_id)"
@@ -258,8 +259,9 @@
               {{ index + 1 }}
             </span>
             <!-- Expanded: Show title -->
-            <span v-else class="truncate text-sm">{{ page.title || t('space.unnamedPage') }}</span>
+            <span v-else class="block truncate text-sm">{{ page.title || t('space.unnamedPage') }}<span v-if="isSharedEntry(page)" class="block text-xs text-gray-400 dark:text-slate-400">{{ t(sharedPageLabel(page)) }}</span></span>
             </button>
+            <button v-if="!sidebarCollapsed && isSharedEntry(page)" :disabled="!!removingPageId" @click.stop="$emit('remove-shared-page', page.page_id)" :aria-label="t('sharedSpace.remove')" :title="t('sharedSpace.remove')" class="p-1 text-gray-400 hover:text-red-500 disabled:opacity-40"><span aria-hidden="true">×</span></button>
             <button
               v-if="!sidebarCollapsed && page.is_self"
               @click.stop="$emit('delete-page', page.page_id)"
@@ -417,8 +419,10 @@ import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useTheme } from '@/composables/useTheme'
 import LanguageSwitcher from '@/components/LanguageSwitcher.vue'
+import { isSharedEntry, sharedPageLabel } from '@/utils/sharedPages'
 
 const props = defineProps({
+  removingPageId: { type: String, default: '' },
   pages: {
     type: Array,
     default: () => []
@@ -433,7 +437,7 @@ const props = defineProps({
   }
 })
 
-const emit = defineEmits(['create-page', 'select-page', 'delete-page', 'logout'])
+const emit = defineEmits(['create-page', 'select-page', 'delete-page', 'remove-shared-page', 'logout'])
 
 const { isDark, toggleTheme } = useTheme()
 const { t } = useI18n()

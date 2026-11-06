@@ -136,6 +136,21 @@ export function useAutoSave(saveFn) {
     }
   }
 
+  // A revoked share can never accept its pending save. The caller must retain
+  // the complete snapshot successfully before it may stop blocking navigation.
+  const retainPageDraft = async (pageId, retain) => {
+    if (activeSavePromise) await activeSavePromise
+    const snapshot = pendingSaves.get(pageId)
+    if (!snapshot) return
+    await retain(JSON.parse(JSON.stringify(snapshot)))
+    pendingSaves.delete(pageId)
+    for (let index = saveQueue.length - 1; index >= 0; index--) {
+      if (saveQueue[index] === pageId) saveQueue.splice(index, 1)
+    }
+    isDirty.value = pendingSaves.size > 0
+    saveError.value = null
+  }
+
   const dispose = () => {
     // Do not discard active or queued saves when navigating away. Payloads are
     // self-contained snapshots and can safely finish without the component UI.
@@ -165,6 +180,7 @@ export function useAutoSave(saveFn) {
     showProgress,
     markDirty,
     flush,
+    retainPageDraft,
     dispose
   }
 }

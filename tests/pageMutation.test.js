@@ -36,3 +36,14 @@ test('locked additions follow the collection identity after reordering and rejec
  assert.throws(()=>appendLinks(collections,{links,collectionIndex:0,collectionId:'missing',newCollectionName:'unexpected'},()=>({})),/Select/)
  assert.equal(collections.length,2)
 })
+
+test('an explicit save cannot commit its editor buffer after the share becomes unavailable', async () => {
+  let commit = false
+  const page = { page_id: 'Eabc', title: 'Shared', brief: '', version: 1, collections: [] }
+  await persistPageMutation({ getPage: () => page, getCollections: () => [], flush: async () => {},
+    mutate: draft => { draft.title = 'Edited' },
+    save: async () => { page.is_not_found = true; delete page.collections },
+    commit: () => { commit = true }
+  })
+  assert.equal(commit, false)
+})

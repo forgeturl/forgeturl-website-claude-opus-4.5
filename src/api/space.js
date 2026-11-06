@@ -94,12 +94,20 @@ export function deletePage(pageId) {
  * @param {Array<string>} pageIds - 页面ID数组
  * @returns {Promise} 返回保存后的页面ID顺序
  */
-export function savePageIds(pageIds) {
+export function savePageIds(pageIds, basePageIds) {
     return request({
         url: '/space/savePageIds',
         method: 'POST',
-        data: { page_ids: pageIds }
+        data: { page_ids: pageIds, base_page_ids: basePageIds, check_base: Array.isArray(basePageIds) }
     })
+}
+
+export function addSharedPage(pageId) {
+    return request({ url: '/space/addSharedPage', method: 'POST', data: { page_id: pageId } })
+}
+
+export function removeSharedPage(pageId) {
+    return request({ url: '/space/removeSharedPage', method: 'POST', data: { page_id: pageId } })
 }
 
 /**

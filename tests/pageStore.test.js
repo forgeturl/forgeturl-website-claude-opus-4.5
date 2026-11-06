@@ -166,3 +166,128 @@ test('move updates both page caches once even if their old collection arrays wer
   assert.deepEqual(state.myPages.value[0].collections.map(c => c.title), ['Remaining'])
   assert.equal(state.myPages.value[1].collections.length, 2)
 })
+
+test('joining uses the share ID, preserves editors, and keeps uncached server entries', async () => {
+  let joins = 0
+  const state = createPageState({
+    addSharedPage: async id => { assert.equal(id, 'Eshared'); joins++; return {
+      page_brief: { page_id: id, title: 'Shared', is_self: false, page_conf: { can_edit: true } },
+      page_ids: ['Oold', 'Rother', id], already_added: false
+    } },
+    getMySpace: async () => { throw new Error('offline') }
+  })
+  state.myPages.value = [page('Oold')]
+  const original = state.myPages.value[0]
+  state.currentPage.value = original
+  await state.addSharedPage('Eshared')
+  assert.equal(joins, 1)
+  assert.deepEqual(state.myPages.value.map(p => p.page_id), ['Oold', 'Rother', 'Eshared'])
+  assert.equal(state.myPages.value[0], original)
+  assert.equal(state.currentPage.value, original)
+  assert.equal(state.myPages.value[2].is_self, false)
+})
+
+test('failed join/removal leaves the previous space and selection untouched', async () => {
+  const state = createPageState({ addSharedPage: async () => { throw new Error('offline') }, removeSharedPage: async () => { throw new Error('offline') } })
+  state.myPages.value = [page('Eshared')]
+  const original = state.myPages.value[0]
+  state.currentPage.value = original
+  await assert.rejects(state.addSharedPage('Rnew'), /offline/)
+  await assert.rejects(state.removeSharedPage('Eshared'), /offline/)
+  assert.equal(state.myPages.value[0], original)
+  assert.equal(state.currentPage.value, original)
+})
+
+test('removing the last share accepts an empty space and invalidates pending hydration', async () => {
+  const gate = deferred()
+  const state = createPageState({ getPage: () => gate.promise, removeSharedPage: async () => ({ page_ids: [] }) })
+  state.myPages.value = [page('Eshared')]
+  state.currentPage.value = state.myPages.value[0]
+  const read = state.fetchPage('Eshared')
+  await state.removeSharedPage('Eshared')
+  gate.resolve({ page: page('Eshared') })
+  await assert.rejects(read)
+  assert.deepEqual(state.myPages.value, [])
+  assert.equal(state.currentPage.value, null)
+})
+
+test('revoked share clears both cached content and permissions and rejects a stale read', async () => {
+  const gate = deferred()
+  const state = createPageState({ getPage: () => gate.promise, getMySpace: async () => ({ page_briefs: [
+    { page_id: 'Eshared', is_not_found: true, page_conf: {} }, { page_id: 'Oother', page_conf: { can_edit: true } }
+  ] }) })
+  state.myPages.value = [{ ...page('Eshared'), page_conf: { can_edit: true } }, page('Oother')]
+  state.currentPage.value = { ...state.myPages.value[0] }
+  const read = state.fetchPage('Eshared')
+  await state.fetchMySpace()
+  assert.equal(state.myPages.value[0].collections, undefined)
+  assert.equal(state.currentPage.value.collections, undefined)
+  assert.equal(state.currentPage.value.page_conf.can_edit, undefined)
+  gate.resolve({ page: page('Eshared') })
+  await assert.rejects(read)
+  assert.equal(state.myPages.value[1].collections.length, 1)
+})
+
+test('membership writes are serialized and sorting sends its original space as a base', async () => {
+  const gate = deferred(), called = []
+  const state = createPageState({
+    addSharedPage: async id => { called.push(id); if (id === 'Eone') await gate.promise; return { page_brief: { page_id: id }, page_ids: id === 'Eone' ? ['Oold', id] : ['Oold', 'Eone', id] } },
+    savePageIds: async (ids, base) => { assert.deepEqual(base, ['Oold', 'Eone', 'Rtwo']); return { page_ids: ids } }
+  })
+  state.myPages.value = [page('Oold')]
+  const one = state.addSharedPage('Eone'), two = state.addSharedPage('Rtwo')
+  await new Promise(resolve => setImmediate(resolve))
+  assert.deepEqual(called, ['Eone'])
+  gate.resolve(); await Promise.all([one, two])
+  await state.savePageOrder(['Rtwo', 'Oold', 'Eone'])
+  assert.deepEqual(state.myPages.value.map(p => p.page_id), ['Rtwo', 'Oold', 'Eone'])
+})
+
+test('a missing share clears cached access, but transient network failures preserve content', async () => {
+  let failure = new Error('offline')
+  const state = createPageState({ getPage: async () => { throw failure } })
+  state.myPages.value = [{ ...page('Eshared'), page_conf: { can_edit: true } }]
+  await assert.rejects(state.fetchPage('Eshared'))
+  assert.equal(state.myPages.value[0].collections.length, 1)
+  failure = Object.assign(new Error('not found'), { code: 404 })
+  await assert.rejects(state.fetchPage('Eshared'))
+  assert.equal(state.myPages.value[0].collections, undefined)
+  assert.equal(state.myPages.value[0].is_not_found, true)
+})
+
+test('a delayed successful save cannot restore content after access was revoked', async () => {
+  const gate = deferred()
+  const state = createPageState({ updatePage: () => gate.promise, getMySpace: async () => ({ page_briefs: [{ page_id: 'Eabc', is_not_found: true, page_conf: {} }] }) })
+  state.myPages.value = [page('Eabc')]
+  const saving = state.updatePage({ ...page('Eabc'), mask: 7 })
+  await state.fetchMySpace()
+  gate.resolve({ version: 1 }); await saving
+  assert.equal(state.myPages.value[0].collections, undefined)
+  assert.equal(state.myPages.value[0].page_conf.can_edit, undefined)
+})
+
+test('queued sorting uses the list visible when requested and cannot rejoin a removed entry', async () => {
+  const gate = deferred()
+  const state = createPageState({
+    removeSharedPage: () => gate.promise,
+    savePageIds: async (ids, base) => {
+      assert.deepEqual(base, ['Oabc', 'Eabc'])
+      throw new Error('space changed')
+    }
+  })
+  state.myPages.value = [page('Oabc'), page('Eabc')]
+  const removing = state.removeSharedPage('Eabc')
+  const sorting = state.savePageOrder(['Eabc', 'Oabc'])
+  gate.resolve({ page_ids: ['Oabc'] }); await removing
+  await assert.rejects(sorting, /space changed/)
+  assert.deepEqual(state.myPages.value.map(p => p.page_id), ['Oabc'])
+})
+
+test('save rejected by a revoked share invalidates cached access immediately', async () => {
+  const state = createPageState({ updatePage: async () => { throw Object.assign(new Error('Not found'), { code: 404 }) } })
+  state.myPages.value = [{ ...page('Eabc'), page_conf: { can_edit: true } }]
+  await assert.rejects(state.updatePage({ ...page('Eabc'), mask: 7 }))
+  assert.equal(state.myPages.value[0].is_not_found, true)
+  assert.equal(state.myPages.value[0].collections, undefined)
+  assert.equal(state.myPages.value[0].page_conf.can_edit, undefined)
+})

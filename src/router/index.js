@@ -6,6 +6,8 @@ import { useAuthStore } from '@/stores/auth'
 import { storage } from '@/utils/storage'
 import { STORAGE_KEYS, MAIN_DOMAIN, isWechatLoginDomain } from '@/utils/config'
 import i18n from '@/i18n'
+import { safeLoginRedirect } from '@/utils/loginRedirect'
+import { sessionStorage } from '@/utils/storage'
 
 // 路由配置
 const routes = [
@@ -107,7 +109,8 @@ router.beforeEach((to, from, next) => {
             authStore.login(userInfo, token)
 
             // 跳转到我的空间，清除URL中的敏感参数
-            next({ path: '/my', replace: true })
+            sessionStorage.remove(STORAGE_KEYS.LOGIN_REDIRECT)
+            next({ path: safeLoginRedirect(to.query.redirect), replace: true })
             return
         } catch (err) {
             console.error('Failed to process wechat login token:', err)

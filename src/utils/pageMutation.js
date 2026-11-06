@@ -14,7 +14,8 @@ export async function persistPageMutation({ getPage, getCollections, commit, flu
   mutate(draft)
   await save({ page_id: pageId, title: draft.title, brief: draft.brief,
     collections: stripCollectionsForSave(draft.collections), version: page.version, mask: 7 })
-  if (getPage()?.page_id === pageId) commit(draft)
+  const current = getPage()
+  if (current?.page_id === pageId && !current.is_not_found && Array.isArray(current.collections)) commit(draft)
 }
 
 export function appendLinks(collections, { links, collectionIndex, collectionId, newCollectionName }, createCollection) {
