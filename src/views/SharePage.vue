@@ -122,6 +122,9 @@
           
           <!-- Search Button -->
           <div class="flex items-center gap-1.5 sm:ml-6">
+            <button v-if="pageConf?.can_edit && !authStore.isLoggedIn" class="btn-compact btn-primary" @click="goToLogin">
+              {{ t('sharedSpace.loginToEdit') }}
+            </button>
             <button
               :aria-label="t('page.searchPlaceholder')"
                 :aria-expanded="showSearchBar"
@@ -187,6 +190,7 @@ import { useI18n } from 'vue-i18n'
 import { getPage, updatePage } from '@/api/space'
 import { useAutoSave } from '@/composables/useAutoSave'
 import { resolveNextPageVersion } from '@/utils/pageVersion'
+import { useAuthStore } from '@/stores/auth'
 import LinkCollection from '@/components/LinkCollection.vue'
 import AddLinkModal from '@/components/AddLinkModal.vue'
 import {
@@ -200,6 +204,7 @@ import {
 const route = useRoute()
 const router = useRouter()
 const { t } = useI18n()
+const authStore = useAuthStore()
 
 const page = ref(null)
 const loading = ref(false)
@@ -273,8 +278,8 @@ const filteredCollectionsCount = computed(() => {
 // Page config
 const pageConf = computed(() => page.value?.page_conf)
 
-// Can edit - directly from page_conf
-const canEdit = computed(() => pageConf.value?.can_edit || false)
+// Link capability and the current login session must both permit editing.
+const canEdit = computed(() => !!pageConf.value?.can_edit && authStore.isLoggedIn)
 
 // Local collections for editing
 const localCollections = ref([])
@@ -288,6 +293,7 @@ const openAddLink = (collectionId) => {
 
 // Auto save functionality
 const savePageSnapshot = async (payload) => {
+  if (!authStore.isLoggedIn) throw Object.assign(new Error(t('auth.loginRequired')), { code: 40001 })
   const result = await updatePage(payload)
   const nextVersion = resolveNextPageVersion(result?.version, payload.version)
 
@@ -396,6 +402,7 @@ const updateCollectionTitle = (index, title, done) => completeMutation(draft => 
 
 // Update collection links
 const updateCollectionLinks = (index, links) => {
+  if (!canEdit.value) return
   localCollections.value[index].links = links
   queueAutoSave()
 }
@@ -424,6 +431,7 @@ const handleBatchAddLinks = ({ links, collectionIndex, collectionId, newCollecti
 
 // Copy collection
 const copyCollection = (index) => {
+  if (!canEdit.value) return
   const original = localCollections.value[index]
   const copy = cloneCollectionWithNewIds(original)
   copy.title = original.title ? `${original.title} ${t('collection.copy')}` : t('collection.copy')

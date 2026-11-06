@@ -4,6 +4,7 @@ export default {
     downloadDraft: "下载未保存内容",
     add: "加入我的空间",
     login: "登录后加入",
+    loginToEdit: "登录后编辑",
     adding: "正在加入…",
     checking: "正在确认…",
     added: "已加入我的空间",

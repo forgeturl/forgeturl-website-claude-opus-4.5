@@ -4,6 +4,7 @@ export default {
     downloadDraft: "Download unsaved changes",
     add: "Add to my space",
     login: "Log in to add",
+    loginToEdit: "Log in to edit",
     adding: "Adding…",
     checking: "Checking…",
     added: "Added to my space",
