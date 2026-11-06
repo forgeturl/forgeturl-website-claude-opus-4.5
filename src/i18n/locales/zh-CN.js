@@ -60,9 +60,10 @@ export default {
     backToHome: '首页'
   },
   home: {
+    productType: '在线书签管理工具',
     tagline: '保存链接，解放思绪',
     description:
-      '简洁优雅的书签管理工具。告别杂乱的浏览器收藏夹——用智能合集整理，秒速找到任意链接。',
+      '开源的在线书签管理工具。用页面和合集整理链接，搜索已保存的资料，并与他人分享收藏。',
     getStarted: '免费开始',
     learnMore: '了解更多',
     goToMySpace: '进入我的空间',
@@ -78,11 +79,11 @@ export default {
     smartCollections: '智能合集',
     smartCollectionsDesc: '用文件夹和标签整理链接，拖拽即可排序，一切井井有条。',
     instantSearch: '即时搜索',
-    instantSearchDesc: '对标题、网址和标签全文检索，毫秒级找到任意链接。',
+    instantSearchDesc: '在当前页面按书签标题、网址、标签和子链接搜索。',
     oneClickSharing: '一键分享',
     oneClickSharingDesc: '生成精美的分享页，把精心整理的合集分享给朋友或团队。',
     browserImport: '浏览器导入',
-    browserImportDesc: '一键从 Chrome、Firefox、Safari 等导入现有书签。',
+    browserImportDesc: '将浏览器书签导出为 HTML 文件，预览后导入合集。',
     crossDeviceSync: '跨设备同步',
     crossDeviceSyncDesc: '云端存储，随时随地从任意设备访问全部书签。',
     darkMode: '深色模式',
@@ -92,11 +93,11 @@ export default {
     title: '三步即可上手',
     subtitle: '无需复杂配置，马上开始收藏。',
     step1Title: '登录',
-    step1Desc: '使用 GitHub 账号登录，快捷省心。',
+    step1Desc: '使用 Google、GitHub 或微信账号登录。',
     step2Title: '创建页面',
     step2Desc: '创建书签页，按主题或项目整理链接。',
     step3Title: '添加书签',
-    step3Desc: '粘贴网址自动抓取信息，或批量导入已有书签。'
+    step3Desc: '添加网址和标题、批量粘贴链接，或导入浏览器书签 HTML 文件。'
   },
   auth: {
     getStarted: '开始使用',

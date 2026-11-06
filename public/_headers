@@ -1,0 +1,30 @@
+/app-shell
+  X-Robots-Tag: noindex, nofollow
+/app-shell.html
+  X-Robots-Tag: noindex, nofollow
+/my
+  X-Robots-Tag: noindex, nofollow
+/my/*
+  X-Robots-Tag: noindex, nofollow
+/login
+  X-Robots-Tag: noindex, nofollow
+/login/*
+  X-Robots-Tag: noindex, nofollow
+/page/*
+  X-Robots-Tag: noindex, nofollow
+/share/*
+  X-Robots-Tag: noindex, nofollow
+/auth/*
+  X-Robots-Tag: noindex, nofollow
+/404.html
+  X-Robots-Tag: noindex, nofollow
+https://forgeturl.brightguo.com/*
+  X-Robots-Tag: noindex, nofollow
+https://:project.workers.dev/*
+  X-Robots-Tag: noindex, nofollow
+https://:version.:project.workers.dev/*
+  X-Robots-Tag: noindex, nofollow
+/robots.txt
+  Content-Type: text/plain; charset=utf-8
+/sitemap.xml
+  Content-Type: application/xml; charset=utf-8

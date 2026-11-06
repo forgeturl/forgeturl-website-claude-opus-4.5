@@ -4,7 +4,7 @@
  */
 
 const getApiBaseUrl = () => {
-    const hostname = window.location.hostname
+    const hostname = typeof window === 'undefined' ? 'forgeturl.com' : window.location.hostname
 
     // 本地开发环境
     if (hostname === 'localhost' || hostname === '127.0.0.1') {

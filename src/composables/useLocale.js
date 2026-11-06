@@ -1,6 +1,7 @@
-import { computed, watch } from 'vue'
+import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { LOCALE_STORAGE_KEY, SUPPORTED_LOCALES } from '@/i18n/index.js'
+import { useRoute, useRouter } from 'vue-router'
 
 const LOCALE_META = [
   { code: 'en', label: 'English', short: 'EN' },
@@ -15,6 +16,8 @@ const LOCALE_META = [
 
 export function useLocale() {
   const { locale } = useI18n()
+  const route = useRoute()
+  const router = useRouter()
 
   const currentLocale = computed(() => locale.value)
 
@@ -33,18 +36,15 @@ export function useLocale() {
     } catch {
       // ignore
     }
-    if (typeof document !== 'undefined') {
-      document.documentElement.lang = code
+    if (route.path === '/' || route.path === '/zh/' || route.path === '/zh') {
+      const query = { ...route.query }
+      delete query.lang
+      if (code !== 'en' && code !== 'zh-CN') query.lang = code
+      router.replace({ path: code === 'zh-CN' ? '/zh/' : '/', query, hash: route.hash })
     }
   }
 
   const isZh = computed(() => locale.value.startsWith('zh'))
-
-  watch(locale, (val) => {
-    if (typeof document !== 'undefined') {
-      document.documentElement.lang = val
-    }
-  }, { immediate: true })
 
   return {
     currentLocale,

@@ -10,6 +10,9 @@ lerna-debug.log*
 node_modules
 dist
 dist-ssr
+.wrangler/
+.playwright-cli/
+output/playwright/
 *.local
 
 # Editor directories and files

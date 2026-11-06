@@ -60,8 +60,9 @@ export default {
     backToHome: 'Home'
   },
   home: {
+    productType: 'Online bookmark manager',
     tagline: 'Save links, free your mind',
-    description: 'A clean and elegant bookmark manager. Say goodbye to cluttered browser favorites — organize with smart collections and find anything in seconds.',
+    description: 'An open-source online bookmark manager. Organize links into pages and collections, search your saved resources, and share them with others.',
     getStarted: 'Get Started Free',
     learnMore: 'Learn More',
     goToMySpace: 'Go to My Space',
@@ -77,11 +78,11 @@ export default {
     smartCollections: 'Smart Collections',
     smartCollectionsDesc: 'Organize links with folders and tags. Drag and drop to reorder — keep everything tidy.',
     instantSearch: 'Instant Search',
-    instantSearchDesc: 'Full-text search across titles, URLs, and tags. Find any link in milliseconds.',
+    instantSearchDesc: 'Search the current page by bookmark title, URL, tags, and sub-links.',
     oneClickSharing: 'One-Click Sharing',
     oneClickSharingDesc: 'Generate beautiful share pages. Share your curated collections with friends or your team.',
     browserImport: 'Browser Import',
-    browserImportDesc: 'Import existing bookmarks from Chrome, Firefox, Safari, and more with one click.',
+    browserImportDesc: 'Export bookmarks from your browser as HTML, then preview and import the file into a collection.',
     crossDeviceSync: 'Cross-Device Sync',
     crossDeviceSyncDesc: 'Cloud-based storage. Access all your bookmarks from any device, anywhere.',
     darkMode: 'Dark Mode',
@@ -91,11 +92,11 @@ export default {
     title: 'Get started in 3 simple steps',
     subtitle: 'No complicated setup. Just start saving.',
     step1Title: 'Sign In',
-    step1Desc: 'Log in with your GitHub account. Quick and hassle-free.',
+    step1Desc: 'Sign in with Google, GitHub, or WeChat.',
     step2Title: 'Create a Page',
     step2Desc: 'Set up bookmark pages to organize links by topic or project.',
     step3Title: 'Add Bookmarks',
-    step3Desc: 'Paste a URL to auto-fetch details, or bulk import your existing bookmarks.'
+    step3Desc: 'Add a URL and title, paste links in batches, or import a browser bookmarks HTML file.'
   },
   auth: {
     getStarted: 'Get Started',

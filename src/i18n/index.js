@@ -7,12 +7,21 @@ import es from './locales/es.js'
 import pt from './locales/pt.js'
 import de from './locales/de.js'
 import fr from './locales/fr.js'
+import { publicLocale } from '../seo/site.js'
 
 const LOCALE_STORAGE_KEY = 'locale'
 
 const SUPPORTED_LOCALES = ['en', 'zh-CN', 'zh-TW', 'ja', 'es', 'pt', 'de', 'fr']
 
 function detectLocale() {
+  if (typeof window === 'undefined') return 'en'
+  if (typeof window !== 'undefined') {
+    const published = publicLocale(window.location.pathname)
+    if (published) {
+      const selected = new URLSearchParams(window.location.search).get('lang')
+      return SUPPORTED_LOCALES.includes(selected) ? selected : published
+    }
+  }
   try {
     const stored = localStorage.getItem(LOCALE_STORAGE_KEY)
     if (stored && SUPPORTED_LOCALES.includes(stored)) {
@@ -22,7 +31,7 @@ function detectLocale() {
     // ignore
   }
 
-  const browserLang = navigator.language || navigator.userLanguage || ''
+  const browserLang = typeof navigator === 'undefined' ? '' : navigator.language || navigator.userLanguage || ''
   return matchLocale(browserLang)
 }
 
@@ -43,9 +52,9 @@ function matchLocale(lang) {
   return 'en'
 }
 
-const i18n = createI18n({
+export const createSiteI18n = (locale = detectLocale()) => createI18n({
   legacy: false,
-  locale: detectLocale(),
+  locale,
   fallbackLocale: 'en',
   messages: {
     en,
@@ -58,6 +67,8 @@ const i18n = createI18n({
     fr
   }
 })
+
+const i18n = createSiteI18n()
 
 export { LOCALE_STORAGE_KEY, SUPPORTED_LOCALES }
 export default i18n

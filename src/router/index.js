@@ -8,9 +8,18 @@ import { STORAGE_KEYS, MAIN_DOMAIN, isWechatLoginDomain } from '@/utils/config'
 import i18n from '@/i18n'
 import { safeLoginRedirect } from '@/utils/loginRedirect'
 import { sessionStorage } from '@/utils/storage'
+import { watch } from 'vue'
+import { SUPPORTED_LOCALES } from '@/i18n'
+import { applySeo, publicLocale } from '@/seo/site.js'
 
 // 路由配置
 const routes = [
+    {
+        path: '/zh/',
+        name: 'HomeZh',
+        component: () => import('@/views/Home.vue'),
+        meta: { titleKey: 'pageTitles.home' }
+    },
     {
         path: '/',
         name: 'Home',
@@ -67,7 +76,7 @@ const routes = [
     {
         path: '/:pathMatch(.*)*',
         name: 'NotFound',
-        redirect: '/'
+        component: () => import('@/views/NotFound.vue')
     }
 ]
 
@@ -79,19 +88,6 @@ const router = createRouter({
 
 // 路由守卫
 router.beforeEach((to, from, next) => {
-    // 设置页面标题
-    const t = i18n.global.t
-    if (to.meta.titleKey) {
-        const translated = t(to.meta.titleKey)
-        if (translated.includes('ForgetURL')) {
-            document.title = translated
-        } else {
-            document.title = `${translated} - ForgetURL`
-        }
-    } else {
-        document.title = t('pageTitles.home')
-    }
-
     // 处理微信跨域登录回传的token
     // 当用户在 forgeturl.brightguo.com 完成微信登录后，会被重定向回
     // forgeturl.com/?wechat_token=xxx&wechat_user=base64(userInfo)
@@ -142,6 +138,24 @@ router.beforeEach((to, from, next) => {
 
     next()
 })
+
+router.afterEach((to, from, failure) => {
+    if (failure) return
+    const published = publicLocale(to.path)
+    if (published) {
+        i18n.global.locale.value = SUPPORTED_LOCALES.includes(to.query.lang) ? to.query.lang : published
+    }
+    updateRouteSeo(to)
+})
+
+function updateRouteSeo(to) {
+    applySeo(to.path, i18n.global.locale.value)
+    if (!publicLocale(to.path) && to.meta.titleKey) {
+        document.title = `${i18n.global.t(to.meta.titleKey)} - ForgetURL`
+    }
+}
+
+watch(i18n.global.locale, () => updateRouteSeo(router.currentRoute.value))
 
 export default router
 

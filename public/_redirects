@@ -1,0 +1,9 @@
+/en / 301
+/en/ / 301
+/my /app-shell 200
+/my/ /app-shell 200
+/page/* /app-shell 200
+/share/* /app-shell 200
+/auth/callback/* /app-shell 200
+/login /app-shell 200
+/login/ /app-shell 200

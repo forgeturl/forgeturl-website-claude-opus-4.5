@@ -11,7 +11,7 @@
     <nav class="fixed top-0 left-0 right-0 z-30 px-4 py-2.5 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-gray-200/50 dark:border-slate-700/50">
       <div class="max-w-6xl mx-auto flex items-center justify-between">
         <!-- Logo (left) -->
-        <router-link to="/" class="flex items-center gap-2">
+        <router-link :to="homeLink" class="flex items-center gap-2">
           <div class="w-8 h-8 bg-gradient-to-br from-violet-500 to-fuchsia-500 rounded-lg flex items-center justify-center shadow-lg shadow-purple-500/20">
             <svg class="w-4 h-4 text-white" viewBox="0 0 24 24" fill="none">
               <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
@@ -27,9 +27,9 @@
         <!-- Center Navigation -->
         <div class="hidden md:flex items-center gap-1">
           <router-link
-            to="/"
+            :to="homeLink"
             class="px-3 py-1.5 text-sm font-medium rounded-lg transition-all duration-200"
-            :class="$route.path === '/' ? 'text-violet-600 dark:text-violet-400 bg-violet-50 dark:bg-violet-900/30' : 'text-gray-600 dark:text-slate-300 hover:text-gray-900 dark:hover:text-slate-100 hover:bg-gray-100 dark:hover:bg-slate-800'"
+            :class="['/', '/zh/', '/zh'].includes($route.path) ? 'text-violet-600 dark:text-violet-400 bg-violet-50 dark:bg-violet-900/30' : 'text-gray-600 dark:text-slate-300 hover:text-gray-900 dark:hover:text-slate-100 hover:bg-gray-100 dark:hover:bg-slate-800'"
           >
             {{ t('nav.home') }}
           </router-link>
@@ -266,6 +266,7 @@
       </div>
     </nav>
 
+    <main>
     <!-- Hero Section -->
     <section class="relative z-10 pt-20 pb-12 px-4">
       <div class="max-w-6xl mx-auto">
@@ -294,6 +295,7 @@
                 <span class="bg-gradient-to-r from-violet-600 via-purple-600 to-fuchsia-600 bg-clip-text text-transparent">Forget</span><span class="text-gray-800 dark:text-slate-200">URL</span>
               </span>
               <span class="px-2.5 py-1 text-sm font-bold tracking-wider uppercase bg-gradient-to-r from-amber-400 to-orange-500 text-white rounded-lg shadow-lg shadow-orange-500/25">Beta</span>
+              <span class="basis-full text-xl lg:text-2xl font-semibold text-gray-800 dark:text-slate-200">{{ t('home.productType') }}</span>
             </h1>
             
             <p class="text-xl lg:text-2xl text-gray-600 dark:text-slate-300 font-medium mb-4">
@@ -548,6 +550,8 @@
       </div>
     </section>
 
+    <HomeInformation />
+
     <!-- How It Works Section -->
     <section class="relative z-10 py-20 px-4 bg-white/50 dark:bg-slate-800/30">
       <div class="max-w-6xl mx-auto">
@@ -719,6 +723,7 @@
       </div>
     </section>
 
+    </main>
     <!-- Footer -->
     <footer class="relative z-10 py-4 px-4 border-t border-gray-200 dark:border-slate-800">
       <div class="max-w-6xl mx-auto flex items-center justify-center gap-6">
@@ -758,12 +763,14 @@ import { getUserCount } from '@/api/auth'
 import { sessionStorage } from '@/utils/storage'
 import { isWechatLoginDomain, STORAGE_KEYS } from '@/utils/config'
 import LanguageSwitcher from '@/components/LanguageSwitcher.vue'
+import HomeInformation from '@/components/HomeInformation.vue'
 
 const { startAuth } = useAuth()
 const route = useRoute()
 const { isDark, toggleTheme } = useTheme()
 const { t } = useI18n()
-const { isZh } = useLocale()
+const { isZh, currentLocale } = useLocale()
+const homeLink = computed(() => currentLocale.value === 'zh-CN' ? '/zh/' : currentLocale.value === 'en' ? '/' : { path: '/', query: { lang: currentLocale.value } })
 const authStore = useAuthStore()
 
 const loading = ref(false)

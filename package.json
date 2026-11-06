@@ -5,9 +5,11 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
+    "build": "vite build && node scripts/prerender.mjs",
     "preview": "vite preview",
-    "test": "node --test tests/*.test.js"
+    "test": "node --test tests/*.test.js",
+    "test:seo": "node --test tests/seo/public-pages.test.js",
+    "test:seo:http": "node --test tests/seo/hosting.test.js"
   },
   "dependencies": {
     "@headlessui/vue": "^1.7.17",
