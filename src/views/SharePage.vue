@@ -151,6 +151,7 @@
             @update-link="(linkIndex, link, done) => updateLink(index, linkIndex, link, done)"
             @links-changed="(links) => updateCollectionLinks(index, links)"
             @transfer-collection="copyCollection(index)"
+            @add-link="openAddLink(collection.__idx)"
           />
         </div>
 
@@ -160,6 +161,16 @@
         </div>
       </div>
     </main>
+
+    <AddLinkModal
+      v-if="canEdit"
+      v-model:show="showAddLinkModal"
+      :draft-scope="page?.page_id || ''"
+      :collections="localCollections"
+      :locked-collection-id="addLinkCollectionId"
+      @add="handleAddNewLink"
+      @batch-add="handleBatchAddLinks"
+    />
   </div>
 </template>
 
@@ -175,8 +186,11 @@ import { getPage, updatePage } from '@/api/space'
 import { useAutoSave } from '@/composables/useAutoSave'
 import { resolveNextPageVersion } from '@/utils/pageVersion'
 import LinkCollection from '@/components/LinkCollection.vue'
+import AddLinkModal from '@/components/AddLinkModal.vue'
 import {
   ensureCollectionsIdx,
+  ensureLinkIdx,
+  createEmptyCollection,
   cloneCollectionWithNewIds,
   stripCollectionsForSave
 } from '@/utils/collections'
@@ -262,6 +276,13 @@ const canEdit = computed(() => pageConf.value?.can_edit || false)
 
 // Local collections for editing
 const localCollections = ref([])
+const showAddLinkModal = ref(false)
+const addLinkCollectionId = ref(null)
+const openAddLink = (collectionId) => {
+  if (!canEdit.value) return
+  addLinkCollectionId.value = collectionId
+  showAddLinkModal.value = true
+}
 
 // Auto save functionality
 const savePageSnapshot = async (payload) => {
@@ -389,6 +410,15 @@ const updateLink = async (collectionIndex, linkIndex, link, done) => {
     done?.(error)
   }
 }
+
+// Add links to the collection selected by its stable identity.
+const handleAddNewLink = ({ link, collectionIndex, collectionId, newCollectionName }, done) => completeMutation(draft => {
+  appendLinks(draft.collections, { links: [ensureLinkIdx({ ...link })], collectionIndex, collectionId, newCollectionName }, createEmptyCollection)
+}, done)
+
+const handleBatchAddLinks = ({ links, collectionIndex, collectionId, newCollectionName }, done) => completeMutation(draft => {
+  appendLinks(draft.collections, { links: links.map(link => ensureLinkIdx({ ...link })), collectionIndex, collectionId, newCollectionName }, createEmptyCollection)
+}, done)
 
 // Copy collection
 const copyCollection = (index) => {

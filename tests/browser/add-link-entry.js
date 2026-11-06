@@ -13,7 +13,7 @@ async (page) => {
     const url = route.request().url()
     let data = {}
     if (url.includes('getPage')) data = { page: {
-      page_id: 'fixture', title: 'Test page', brief: '', version: 1, is_self: true,
+      page_id: 'fixture', title: 'Test page', brief: '', version: 1, is_self: !page.url().includes('/share/'),
       page_conf: { can_edit: true }, collections: [
         { title: 'Partner', links: [] }, { title: 'Other', links: [] }
       ]
@@ -30,7 +30,7 @@ async (page) => {
     }, body: JSON.stringify({ code: 1, data }) })
   })
   const completed = []
-  for (const path of ['/my', '/page/fixture']) {
+  for (const path of ['/my', '/page/fixture', '/share/fixture']) {
     for (const mode of ['single', 'batch', 'import']) {
       saved = null
       await page.goto(origin + path)
@@ -58,6 +58,7 @@ async (page) => {
       check(saved?.collections[1].links[0]?.url === 'https://new.example', `${path} ${mode}: link was not saved to target`)
       completed.push(`${path} ${mode}`)
     }
+    if (path.startsWith('/share/')) continue
     await page.getByRole('button', { name: '添加链接' }).first().click()
     const dialog = page.getByRole('dialog', { name: '添加链接' })
     await dialog.getByRole('heading', { name: '添加链接' }).waitFor({ state: 'visible' })
